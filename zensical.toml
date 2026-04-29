@@ -11,6 +11,12 @@ edit_uri = "edit/main/docs/"
 
 nav = [
   { "Home" = "index.md" },
+  { "Introduction" = [
+    "introduction/index.md",
+    "introduction/why-datum.md",
+    "introduction/how-datum-works.md",
+    "introduction/project-status.md",
+  ] },
 ]
 
 # Treat broken internal links, unknown anchors and unresolved references as
