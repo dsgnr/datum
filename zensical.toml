@@ -18,6 +18,10 @@ nav = [
     "introduction/design-principles.md",
     "introduction/project-status.md",
   ] },
+  { "Concepts" = [
+    "concepts/desired-state.md",
+    "concepts/observed-state.md",
+  ] },
 ]
 
 # Treat broken internal links, unknown anchors and unresolved references as
