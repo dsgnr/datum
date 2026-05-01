@@ -22,6 +22,8 @@ nav = [
     "concepts/desired-state.md",
     "concepts/observed-state.md",
     "concepts/drift.md",
+    "concepts/plan.md",
+    "concepts/reconciliation.md",
   ] },
 ]
 
