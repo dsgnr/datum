@@ -26,6 +26,10 @@ nav = [
     "concepts/plan.md",
     "concepts/reconciliation.md",
   ] },
+  { "Architecture" = [
+    "architecture/components.md",
+    "architecture/reconciliation-flow.md",
+  ] },
 ]
 
 # Treat broken internal links, unknown anchors and unresolved references as
