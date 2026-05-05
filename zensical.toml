@@ -27,6 +27,7 @@ nav = [
     "concepts/reconciliation.md",
   ] },
   { "Architecture" = [
+    "architecture/index.md",
     "architecture/components.md",
     "architecture/reconciliation-flow.md",
   ] },
