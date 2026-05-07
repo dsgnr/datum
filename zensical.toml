@@ -29,6 +29,8 @@ nav = [
   { "Fleet" = [
     "fleet/repository-layout.md",
     "fleet/labels-and-selectors.md",
+    "fleet/composition.md",
+    "fleet/precedence.md",
   ] },
   { "Architecture" = [
     "architecture/index.md",
