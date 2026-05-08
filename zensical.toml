@@ -34,6 +34,10 @@ nav = [
     "fleet/precedence.md",
     "fleet/effective-manifests.md",
   ] },
+  { "Resources" = [
+    "resources/lifecycle.md",
+    "resources/identity.md",
+  ] },
   { "Architecture" = [
     "architecture/index.md",
     "architecture/components.md",
