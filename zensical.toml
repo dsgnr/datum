@@ -51,6 +51,9 @@ nav = [
       "resources/types/sysctl.md",
     ] },
   ] },
+  { "Providers" = [
+    "providers/selection.md",
+  ] },
   { "Architecture" = [
     "architecture/index.md",
     "architecture/components.md",
