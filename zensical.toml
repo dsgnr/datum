@@ -62,6 +62,7 @@ nav = [
     "architecture/components.md",
     "architecture/reconciliation-flow.md",
     "architecture/dependency-graph.md",
+    "architecture/deployment-models.md",
   ] },
 ]
 
