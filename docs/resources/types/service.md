@@ -79,9 +79,10 @@ This happens whether or not the service's own fields differ. A service that is
 already running and enabled still restarts when its configuration changes, which is
 the entire purpose.
 
-A resource in `restartOn` should normally also be in `dependsOn`. The two fields do
-different jobs, and listing a file only in `restartOn` allows the restart to be
-ordered before the write.
+Listing a resource in `restartOn` also orders it before the service, so a file named
+there does not need repeating in `dependsOn`. The example at the top of this page lists
+`File[nginx-config]` in both because the intent is clearer that way, and the second
+mention changes nothing.
 
 ## Verification
 
