@@ -89,6 +89,20 @@ not care whether that manifest arrived from a local checkout or over a network.
 
 ## The pages
 
-[Components](components.md) sets out what each component is responsible for and
-what it deliberately does not do. [Reconciliation flow](reconciliation-flow.md)
-follows the data through one pass, including how failures propagate.
+[Components](components.md)
+:   What each component is responsible for, and what it does not do.
+
+[Reconciliation flow](reconciliation-flow.md)
+:   The data moving between components during one pass, and where a failure stops it.
+
+[Dependency graph](dependency-graph.md)
+:   How ordering is derived, why document position has no effect on it, and how failure
+    propagates along edges.
+
+[Host identity](host-identity.md)
+:   The boundary between what a host asserts about itself and what the repository
+    decides about it.
+
+[Deployment](deployment-models.md)
+:   How the agent gets the repository, what that arrangement costs, and where resolution
+    stops and reconciliation begins.
