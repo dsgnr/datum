@@ -68,6 +68,7 @@ nav = [
   { "Reference" = [
     "reference/manifest-format.md",
     "reference/cli.md",
+    "reference/glossary.md",
   ] },
 ]
 
