@@ -66,6 +66,7 @@ nav = [
     "architecture/deployment-models.md",
   ] },
   { "Reference" = [
+    "reference/index.md",
     "reference/manifest-format.md",
     "reference/cli.md",
     "reference/glossary.md",
