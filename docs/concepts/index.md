@@ -37,9 +37,19 @@ can explain afterwards how each was arrived at.
 | [Reconciliation](reconciliation.md) | One complete pass of observe, diff, plan, apply and verify. |
 | [Convergence](reconciliation.md#convergence) | The condition of a host whose observed state satisfies its desired state. |
 
-Resource, resource type, provider, host, fleet, label, selector, layer and
-effective manifest are also core vocabulary, and each is defined in the section
-that owns it rather than being introduced twice.
+Several other terms are core vocabulary and are defined in the section that owns
+them rather than being introduced twice.
+
+| Term | Defined in |
+| ---- | ---------- |
+| Resource, resource type | [Resources](../resources/index.md) |
+| Resource reference, target identity | [Resource identity](../resources/identity.md) |
+| Provider | [Providers](../providers/index.md) |
+| Host, fleet, label, selector, layer | [Fleet](../fleet/index.md) |
+| Effective manifest, manifest digest | [Effective manifests](../fleet/effective-manifests.md) |
+
+The [glossary](../reference/glossary.md) carries a one-line definition of every term with a link to
+the page that specifies it, along with a list of words this documentation avoids.
 
 ## Why the phases are named separately
 

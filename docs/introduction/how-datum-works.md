@@ -1,9 +1,8 @@
 # How Datum works
 
-This page follows one change from a Git commit through to a verified result on a
-single host. The components it names are described properly in the architecture
-section, and the configuration it shows is proposed, not settled, but the
-sequence is the part being committed to.
+This page follows one change from a Git commit through to a verified result on a single host. The
+components it names are specified in [architecture](../architecture/components.md), and the
+configuration it shows is proposed, not settled, but the sequence is the part being committed to.
 
 ```mermaid
 graph TD

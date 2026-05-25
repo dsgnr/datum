@@ -15,13 +15,13 @@ spec:
   state: present
 ```
 
-There are seven resource types proposed for the first implementation: `Package`,
-`File`, `Directory`, `Service`, `User`, `Group` and `Sysctl`. The set is small
-because the behaviour every resource shares has to be settled first. How a
-resource is identified, how its state is read back from the host, how it orders
-itself against other resources and how a change is verified are all decisions
-that every type added later inherits, so getting those right matters more than
-accumulating types.
+There are seven [resource types](../resources/types/index.md) proposed for the first
+implementation: `Package`, `File`, `Directory`, `Service`, `User`, `Group` and `Sysctl`.
+The set is small because the behaviour every resource shares has to be settled first. How
+a resource is identified, how its state is read back from the host, how it orders itself
+against other resources and how a change is verified are all decisions that every type
+added later inherits, so getting those right matters more than accumulating types. The
+[resources](../resources/index.md) section specifies that shared behaviour.
 
 ## Providers
 
@@ -34,13 +34,13 @@ reading `/etc/os-release`. Once a distribution check is allowed into the resourc
 turns up in the planner and the fleet configuration as well, and none of those should hold
 an opinion about packaging.
 
-Providers will not agree with each other, and there is no pretence otherwise.
-Holding a package at a particular version is a different mechanism on each of
-the four, and on some of them it needs an additional plugin installed before it
-exists at all. Whether the package manager can report the exact file list for an
-installed package varies too. Where a difference will not sit behind a single
-resource field, the difference is documented on the resource type and on the
-provider that implements it.
+Providers do not agree with each other. Holding a package at a version is a different
+mechanism on each of the four, and on some it needs an extra plugin installed first.
+Whether the package manager can report the file list for an installed package varies too.
+
+Differences that will not sit behind a single resource field are documented on the resource type and
+on the provider that implements it. The [providers](../providers/index.md) section covers the
+boundary, provider selection, and the differences that cannot be hidden.
 
 ## Hosts, labels and selectors
 
@@ -72,7 +72,8 @@ matched, has an answer.
 
 Adding a machine to the fleet should therefore amount to a `Host` document with
 the right labels and nothing else, because configuration is reused by matching
-rather than by duplication.
+rather than by duplication. The [fleet](../fleet/index.md) section specifies the
+repository layout, selector semantics, precedence and how conflicts are handled.
 
 ## The reconciliation phases
 
@@ -88,11 +89,13 @@ one of them is useful on its own.
 5. **Verify** reads the affected resources again and confirms that they hold the
    state that was asked for.
 
-Observation happens both before any decision is taken and after any change is
-made, which is what allows drift to be treated as ordinary input. A machine
-somebody has edited by hand is not an error for Datum to report, it is a machine
-that produces a non-empty plan on the next pass and converges again, so nothing
-in the engine needs a special case for it.
+Observation happens before any decision and again after any change, which makes
+[drift](../concepts/drift.md) ordinary input. A machine somebody edited by hand is not an
+error to report. It produces a non-empty plan on the next pass and converges, so the engine
+needs no special case for it.
+
+[Concepts](../concepts/index.md) defines each phase and establishes the vocabulary the rest
+of this site uses.
 
 ## Scope
 
