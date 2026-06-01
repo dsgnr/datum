@@ -90,5 +90,6 @@ depend on rules that are not in the repository.
 !!! note "Proposed design"
 
     The common envelope and the lifecycle are the parts of this section closest to
-    settled, and identity is recorded as an accepted decision. The type schemas are
+    settled, and identity is recorded as
+    [ADR-0008](../adr/0008-resource-reference-and-target-identity.md). The type schemas are
     proposed and are where most of the remaining uncertainty sits.

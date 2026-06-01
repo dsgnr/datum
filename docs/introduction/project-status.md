@@ -25,7 +25,7 @@ fills in an answer nobody has thought through reads as settled when it is not.
 
 | Label | Meaning |
 | ----- | ------- |
-| **Accepted** | Decided, and recorded in an architecture decision record. Implementation should follow it, and changing it means superseding the record. |
+| **Accepted** | Decided, and recorded in an [architecture decision record](../adr/index.md). Implementation should follow it, and changing it means superseding the record. |
 | **Proposed** | A concrete design that has not been accepted. Detailed enough to argue with, likely to change in the detail, and not safe to depend on. |
 | **Planned** | Accepted in principle but not specified. It needs to exist and how it behaves has not been worked out. |
 | **Open question** | A known gap with no resolution yet. Stated so that it is visible rather than discovered during implementation. |
@@ -42,19 +42,38 @@ reaches a stable version.
 
 ## What is settled so far
 
-The reconciliation model is settled. Desired state comes from Git, observed state
-comes from the host, the two produce a plan, and the plan is applied and
-verified. The five phases and their order are not up for negotiation, because
-everything else in the design assumes them.
+Eight decisions are accepted, each with a record explaining what it was weighed against
+and what it costs.
 
-The separation between resources and providers is settled, as is the decision to
-keep host identity separate from host classification. Both are recorded as
-accepted decisions.
+| Decision | Record |
+| -------- | ------ |
+| Desired state is expressed as typed resources | [ADR-0001](../adr/0001-typed-resources.md) |
+| Resource types are distribution neutral, providers are not | [ADR-0002](../adr/0002-separate-resources-from-providers.md) |
+| Git is the source of desired state | [ADR-0003](../adr/0003-git-as-desired-state-source.md) |
+| Host identity is separate from host classification | [ADR-0005](../adr/0005-identity-separate-from-classification.md) |
+| Dependencies are declared, never inferred | [ADR-0006](../adr/0006-explicit-dependencies.md) |
+| The effective manifest is the engine's only input | [ADR-0007](../adr/0007-effective-manifest-as-input.md) |
+| Resource references are separate from target identities | [ADR-0008](../adr/0008-resource-reference-and-target-identity.md) |
+| Only declared resources are managed | [ADR-0009](../adr/0009-declared-only-ownership.md) |
 
-The fleet composition model is proposed rather than accepted. Labels and
-selectors are the intended mechanism, and the precedence and conflict rules are
-written down, but they have not survived contact with a real repository yet and
-are expected to move.
+The reconciliation model itself is settled. Desired state comes from Git, observed state
+comes from the host, the two produce a plan, and the plan is applied and verified. The
+five phases and their order are not up for negotiation, because everything else in the
+design assumes them.
+
+## What is not settled
+
+The [fleet composition model](../adr/0004-labels-and-selectors.md) is proposed rather
+than accepted. Labels and selectors are the intended mechanism, and the precedence and
+conflict rules are written down, but they have not survived contact with a real
+repository yet and are expected to move.
+
+Every resource type schema is proposed. The common behaviour they share is close to
+settled and the individual field sets are not.
+
+More than twenty questions are recorded as unresolved, and they are collected in [open
+questions](../development/open-questions.md). Several of them would otherwise be answered
+by accident during implementation, which is the main reason the list exists.
 
 ## What has to be true before implementation starts
 
