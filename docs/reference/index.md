@@ -1,7 +1,7 @@
 # Reference
 
-Lookup material. The pages here assume the model is already understood and are arranged for finding
-a field or a definition instead of reading through.
+The pages in this section are lookup material. They assume the model is already understood and are
+arranged for finding a field or a definition instead of reading through.
 
 [Document format](manifest-format.md)
 :   Every field of the `Fleet`, `Host` and `Layer` documents, the resource envelope,

@@ -14,8 +14,9 @@ appealing. Anything present on the machine and absent from the manifest would be
 makes a host's state exactly what the repository says and makes drift impossible to accumulate
 quietly.
 
-It is also unusable. Adopting Datum on an existing machine would begin by deleting most of it,
-because no repository describes every package, file and user on a working system. Reaching a
+It is also unusable in practice, because adopting Datum on an existing machine would begin by
+deleting most of it, given that no repository describes every package, file and user on a
+working system. Reaching a
 complete description would mean declaring thousands of resources before the first pass could
 safely run, and a single omission would delete something that mattered. The agent runs as root,
 so the cost of getting that wrong is not recoverable.

@@ -1,8 +1,8 @@
 # Architecture
 
-Datum is a pipeline. Each stage takes a defined input, produces a defined output,
-and hands it to the next stage, which means every intermediate artefact can be
-rendered, compared between runs, and inspected when something goes wrong.
+Datum is arranged as a pipeline, where each stage takes a defined input, produces a defined output
+and passes it to the next stage. Every intermediate artefact can be rendered, compared between runs
+and inspected.
 
 ```mermaid
 graph TD

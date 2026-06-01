@@ -6,8 +6,8 @@ Accepted
 
 ## Context
 
-A resource needs a name, and the obvious assumption is that one name does both jobs it is
-asked to do. It does not.
+A resource needs a name, and the obvious assumption is that one name can do both of the jobs
+a name is asked to do here, which turns out not to hold.
 
 The first job is naming the resource inside Datum, so that `dependsOn` can refer to it and so
 that two layers contributing to the same resource can be recognised as doing so. The second is
