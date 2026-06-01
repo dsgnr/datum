@@ -120,7 +120,7 @@ deciding what to do.
 $ datum diff
 
 File[nginx-config]
-  mode     0644 -> 0640
+  mode     0644 -> 0600
   content  differs
 
 1 resource differs, 13 match
@@ -141,9 +141,9 @@ manifest   sha256:3f2a9c4e
 update   File[nginx-config]
          path      /etc/nginx/nginx.conf
          provider  file
-         mode      0644 -> 0640
+         mode      0644 -> 0600
          content   differs
-         from      roles/web (selector role=web)
+         from      roles/web, hosts/web-001
 
 update   Service[nginx]
          reason    File[nginx-config] changed, restartOn matched

@@ -82,14 +82,46 @@ Nothing here names a distribution or a package manager, and nothing states an
 order of operations. The `dependsOn` fields express which resources have to be
 settled before which, and the planner derives the order from them.
 
+One host in this fleet needs a stricter mode on that file than the role gives it, which
+is expressed as a layer selecting that host alone.
+
+```yaml title="fleet/hosts/web-001/layer.yaml"
+apiVersion: datum.dev/v1alpha1
+kind: Layer
+
+metadata:
+  name: host-web-001
+
+spec:
+  precedence: 100
+  selector:
+    matchLabels:
+      datum.dev/host: web-001
+```
+
+```yaml title="fleet/hosts/web-001/nginx-tuning.yaml"
+apiVersion: datum.dev/v1alpha1
+kind: File
+
+metadata:
+  name: nginx-config
+
+spec:
+  mode: "0600"
+```
+
+The second document contributes one field. It does not repeat the path, the owner or the
+source, because those come from the role layer and only the mode is being changed.
+
 ## Resolving desired state
 
 Reconciliation starts from a repository revision, because a pass that cannot name
 the commit it acted on cannot be reproduced or audited afterwards.
 
-The fleet resolver reads the `Host` document for `web-001`, collects every layer
-whose selector matches its labels, and merges them in precedence order. The
-result is the effective manifest, the complete set of resources for that host
+The fleet resolver reads the `Host` document for `web-001`, collects every layer whose selector
+matches its labels, and merges them in precedence order. The role layer at precedence 30 is folded
+before the host layer at 100, so the mode ends up as `0600` and everything else on the file comes
+from the role. The result is the effective manifest, the complete set of resources for that host
 with the provenance of each one recorded.
 
 ```text
@@ -119,7 +151,7 @@ trusted before it is applied.
 
 Diffing compares the two states field by field. In this pass the package is
 already installed, the file content differs from what the repository holds, and
-the mode on disk is `0644` where the repository asks for `0640`.
+the mode on disk is `0644` where the resolved manifest asks for `0600`.
 
 The planner turns those differences into actions and orders them using the
 resource graph. `Package[nginx]` has no work to do but still sorts before
@@ -135,9 +167,9 @@ manifest   sha256:3f2a9c4e
 
 update   File[nginx-config]
          path     /etc/nginx/nginx.conf
-         mode     0644 -> 0640
+         mode     0644 -> 0600
          content  differs
-         from     roles/web (selector role=web)
+         from     roles/web, hosts/web-001
 
 update   Service[nginx]
          reason   File[nginx-config] changed, restartOn matched
