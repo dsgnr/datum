@@ -66,10 +66,10 @@ Identity
 
 Label
 :   A string key and string value classifying a host. Written in the `Host` document. See
-    [labels and selectors](../fleet/labels-and-selectors.md).
+    [labels and matchers](../fleet/labels-and-matchers.md).
 
 Layer
-:   A set of configuration with a selector saying which hosts it applies to and a
+:   A set of configuration with a matcher saying which hosts it applies to and a
     precedence saying how strongly. See [repository
     layout](../fleet/repository-layout.md).
 
@@ -103,7 +103,7 @@ Precedence
     applies later. See [precedence](../fleet/precedence.md).
 
 Provenance
-:   The record of which layer contributed a resource or a field value, and which selector
+:   The record of which layer contributed a resource or a field value, and which matcher
     caused that layer to match. Preserved through composition so that the reason a
     resource applies can be reported.
 
@@ -134,13 +134,13 @@ Resource reference
     manifest. See [resource identity](../resources/identity.md).
 
 Resource type
-:   The `kind` of a resource, such as `Package` or `File`. See [resource
+:   The `type` of a resource, such as `Package` or `File`. See [resource
     types](../resources/types/index.md).
 
-Selector
-:   The expression on a layer deciding which hosts it applies to, made of `matchLabels`
-    and `matchExpressions`. See [labels and
-    selectors](../fleet/labels-and-selectors.md).
+Matcher
+:   The expression on a layer deciding which hosts it applies to, made of `match.labels`
+    and `match.oneOf`. See [labels and
+    matchers](../fleet/labels-and-matchers.md).
 
 Target identity
 :   What a resource manages on the host, such as an absolute path or a package name. Two

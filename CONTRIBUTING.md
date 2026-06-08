@@ -89,9 +89,9 @@ One-line [Conventional Commits](https://www.conventionalcommits.org/) subjects, 
 per commit.
 
 ```text
-docs(fleet): describe host labels and selectors
+docs(fleet): describe host labels and matchers
 docs(adr): record typed resource decision
-fix(docs): correct selector precedence example
+fix(docs): correct matcher precedence example
 refactor(docs): simplify fleet terminology
 ```
 

@@ -3,16 +3,15 @@
 `User` describes a local user account.
 
 ```yaml
-apiVersion: datum.dev/v1alpha1
-kind: User
+datum: v1alpha1
+type: User
 
-metadata:
-  name: deploy
+name: deploy
 
-dependsOn:
+requires:
   - Group[deploy]
 
-spec:
+desired:
   state: present
   primaryGroup: deploy
   groups:
@@ -22,7 +21,7 @@ spec:
   comment: Deployment account
 ```
 
-Target identity is the user name, taken from `metadata.name`.
+Target identity is the user name, taken from `name`.
 
 ## Fields
 

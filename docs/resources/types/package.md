@@ -3,19 +3,17 @@
 `Package` describes whether a package is installed, and optionally which version.
 
 ```yaml
-apiVersion: datum.dev/v1alpha1
-kind: Package
+datum: v1alpha1
+type: Package
 
-metadata:
-  name: nginx
+name: nginx
 
-spec:
+desired:
   state: present
 ```
 
-Target identity is the package name, taken from `metadata.name`. Providers are
-`apt`, `dnf`, `apk` and `pacman`, selected from the host, never named in the
-document.
+Target identity is the package name, taken from `name`. Providers are `apt`,
+`dnf`, `apk` and `pacman`, selected from the host, never named in the document.
 
 ## Fields
 
@@ -48,14 +46,15 @@ different version is drift and gets corrected in whichever direction is required
 including downwards.
 
 ```yaml
-spec:
+
+desired:
   state: present
   version: "1.24.0-2"
 ```
 
 Version strings are provider-specific and are not translated. `1.24.0-2` is a Debian
 version and means nothing to `dnf`, so a layer pinning a version is usually a layer
-whose selector narrows to hosts of one distribution.
+whose matcher narrows to hosts of one distribution.
 
 !!! note "Important limitation"
 

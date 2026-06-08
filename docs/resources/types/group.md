@@ -3,18 +3,17 @@
 `Group` describes a local group.
 
 ```yaml
-apiVersion: datum.dev/v1alpha1
-kind: Group
+datum: v1alpha1
+type: Group
 
-metadata:
-  name: deploy
+name: deploy
 
-spec:
+desired:
   state: present
   system: false
 ```
 
-Target identity is the group name, taken from `metadata.name`.
+Target identity is the group name, taken from `name`.
 
 ## Fields
 
@@ -35,19 +34,18 @@ the ability to express it is simpler and needs no detection at all.
 
 The consequence is that this type is small. It exists so that a group can be brought
 into existence with a known id before the users that reference it, which is an
-ordering problem `dependsOn` solves.
+ordering problem `requires` solves.
 
 ```yaml
-apiVersion: datum.dev/v1alpha1
-kind: User
+datum: v1alpha1
+type: User
 
-metadata:
-  name: deploy
+name: deploy
 
-dependsOn:
+requires:
   - Group[deploy]
 
-spec:
+desired:
   state: present
   primaryGroup: deploy
 ```
@@ -78,7 +76,7 @@ creation order and has to be written out, not inferred.
 !!! note "Open question"
 
     Reversing dependency direction between creation and removal is not something
-    the model handles. `dependsOn` means "processed before this one" regardless
+    the model handles. `requires` means "processed before this one" regardless
     of the action, so a manifest that removes a group and its users has to
     express the ordering that removal needs, which is the opposite of what the
     same resources would need when being created. Whether the planner should

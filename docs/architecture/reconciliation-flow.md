@@ -43,7 +43,7 @@ between layers of equal precedence have already stopped the pass by this point,
 since resolution fails where a manifest cannot be resolved deterministically.
 
 **Graph builder to observer.** What crosses is a validated graph. Unresolvable
-`dependsOn` references, cycles and duplicate target identities are all rejected
+`requires` references, cycles and duplicate target identities are all rejected
 here, and none of them have caused the host to be read.
 
 **Observer to providers and back.** Each resource's target is read through the

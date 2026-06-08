@@ -36,13 +36,12 @@ nginx package stays installed on hosts that already have it, and Datum stops
 having an opinion about it. Removing software requires declaring that intent:
 
 ```yaml
-apiVersion: datum.dev/v1alpha1
-kind: Package
+datum: v1alpha1
+type: Package
 
-metadata:
-  name: nginx
+name: nginx
 
-spec:
+desired:
   state: absent
 ```
 
@@ -60,7 +59,7 @@ on an existing machine would then start by deleting most of it.
 
 ## Resolution does not read the host
 
-Desired state is resolved from repository content alone. Selectors match against
+Desired state is resolved from repository content alone. Matchers match against
 the labels in a host's `Host` document, which are written by whoever maintains
 the repository, so resolving desired state for any host can be done from a
 checkout without access to the machine.
@@ -75,10 +74,10 @@ resolution and does not change which resources apply, only how they are realised
 
 !!! note "Open question"
 
-    Allowing selectors to match observed host facts, such as the distribution
-    reported by `/etc/os-release`, would make some configuration more convenient
-    to express and would break offline resolution. The current position is that
-    selectors use declared labels only, and that a host needing
+    Matching on observed host facts, such as the distribution reported by
+    `/etc/os-release`, would make some configuration easier to express and would
+    remove the ability to resolve a manifest without the host. The current
+    position is that matchers use declared labels only, and that a host needing
     distribution-specific treatment carries a declared label saying so. This has
     not been tested against a real repository.
 

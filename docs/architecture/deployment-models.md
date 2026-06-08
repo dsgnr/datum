@@ -17,7 +17,7 @@ Datum agent
 
 Everything after composition consumes the effective manifest and nothing else from the
 repository. The graph builder, observer, planner and reconciler never read a `Layer`,
-evaluate a selector, or examine the revision beyond recording it.
+evaluate a matcher, or examine the revision beyond recording it.
 
 ```mermaid
 graph TD

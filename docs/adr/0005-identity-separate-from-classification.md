@@ -10,7 +10,7 @@ Resolution needs two things about a host. Which machine it is, and what that mac
 for. It is tempting to treat these as one question, because the machine appears to know
 both.
 
-If a host supplied its own classification, the labels used for selector matching would
+If a host supplied its own classification, the labels used for matcher matching would
 come from a local file.
 
 ```yaml
@@ -45,11 +45,11 @@ web-001:
   role: web
 ```
 
-Classification lives in the `Host` document. No label used for selector matching
-originates on the machine, and the `datum.dev/` label prefix is reserved so that injected
+Classification lives in the `Host` document. No label used for matcher matching
+originates on the machine, and the `datum/` label prefix is reserved so that injected
 values cannot be shadowed by a `Host` document.
 
-Observed facts about a host are not selector inputs either. The distribution a machine
+Observed facts about a host are not matcher inputs either. The distribution a machine
 reports is something it could lie about, and allowing it to influence matching would move
 part of the classification decision onto the machine.
 

@@ -45,7 +45,7 @@ them rather than being introduced twice.
 | Resource, resource type | [Resources](../resources/index.md) |
 | Resource reference, target identity | [Resource identity](../resources/identity.md) |
 | Provider | [Providers](../providers/index.md) |
-| Host, fleet, label, selector, layer | [Fleet](../fleet/index.md) |
+| Host, fleet, label, matcher, layer | [Fleet](../fleet/index.md) |
 | Effective manifest, manifest digest | [Effective manifests](../fleet/effective-manifests.md) |
 
 The [glossary](../reference/glossary.md) carries a one-line definition of every term with a link to

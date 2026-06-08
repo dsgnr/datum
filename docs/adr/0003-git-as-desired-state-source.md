@@ -44,7 +44,7 @@ Every pass can name the commit it acted on, which makes results reproducible and
 attributable without Datum keeping any state of its own.
 
 The repository becomes the control plane, and its access controls are the real security boundary. A
-change merged there reaches every host its selectors match, applied by an agent running as root, so
+change merged there reaches every host its matchers match, applied by an agent running as root, so
 review on the repository is the mechanism that limits blast radius, not a process nicety.
 
 Reverting in Git is the recovery path for a bad change. That is a deliberate consequence

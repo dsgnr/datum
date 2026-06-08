@@ -4,17 +4,16 @@
 after a reboot.
 
 ```yaml
-apiVersion: datum.dev/v1alpha1
-kind: Sysctl
+datum: v1alpha1
+type: Sysctl
 
-metadata:
-  name: net.ipv4.ip_forward
+name: net.ipv4.ip_forward
 
-spec:
+desired:
   value: "1"
 ```
 
-Target identity is the parameter key, taken from `metadata.name`.
+Target identity is the parameter key, taken from `name`.
 
 ## Fields
 

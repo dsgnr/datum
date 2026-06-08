@@ -35,7 +35,7 @@ everywhere, and the design would rather say so than paper over it.
 **Version strings have no common grammar.** A Debian version such as `1.24.0-2` and a
 Fedora version such as `1.24.0-1.fc39` describe comparable software and share no
 format. There is no translation, so a layer pinning a version is normally a layer whose
-selector narrows to one distribution.
+matcher narrows to one distribution.
 
 **Holding a package at a version differs on all four.** The mechanism is not the same
 on any two of them, and on some it needs an additional plugin installed before it
@@ -70,7 +70,7 @@ repository ever mentions it.
 
 The second is the repository, where a difference is visible and has to be written out.
 A package named differently on two distributions means two layers with narrower
-selectors, and that is a cost paid by whoever maintains the fleet.
+matchers, and that is a cost paid by whoever maintains the fleet.
 
 A third option is not allowed, where a field exists on a resource type and
 behaves differently depending on the host without saying so. Configuration
@@ -80,33 +80,30 @@ not describe.
 ## Handling a genuine difference
 
 When a resource needs to differ per distribution, the mechanism is a layer with a
-narrower selector, which requires the hosts to be classified.
+narrower matcher, which requires the hosts to be classified.
 
 ```yaml title="fleet/hosts/web-001/host.yaml"
-apiVersion: datum.dev/v1alpha1
-kind: Host
+datum: v1alpha1
+type: Host
 
-metadata:
-  name: web-001
-  labels:
-    environment: production
-    role: web
-    os: debian
+name: web-001
+labels:
+  environment: production
+  role: web
+  os: debian
 ```
 
 ```yaml title="fleet/roles/web-debian/layer.yaml"
-apiVersion: datum.dev/v1alpha1
-kind: Layer
+datum: v1alpha1
+type: Layer
 
-metadata:
-  name: role-web-debian
+name: role-web-debian
 
-spec:
-  precedence: 35
-  selector:
-    matchLabels:
-      role: web
-      os: debian
+precedence: 35
+match:
+  labels:
+    role: web
+    os: debian
 ```
 
 The `os` label is an ordinary declared label with no special meaning to Datum. Using it
@@ -117,7 +114,7 @@ is confined to one layer that says which hosts it is for.
 
     Requiring an `os` label to be declared by hand duplicates something the host
     already knows, and getting it wrong means a host receives configuration for a
-    distribution it is not running. Letting selectors match observed facts would remove
+    distribution it is not running. Letting matchers match observed facts would remove
     the duplication and would also mean desired state could no longer be resolved
     without reaching the machine, which is a property the fleet model currently
     depends on. This is the most consequential unresolved question in the design.

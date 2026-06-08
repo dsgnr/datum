@@ -5,7 +5,7 @@ arranged for finding a field or a definition instead of reading through.
 
 [Document format](manifest-format.md)
 :   Every field of the `Fleet`, `Host` and `Layer` documents, the resource envelope,
-    selector syntax, merge rules, and the validation errors raised before a host is read.
+    matcher syntax, merge rules, and the validation errors raised before a host is read.
 
 [Command line interface](cli.md)
 :   The proposed commands, their output, and their exit codes. No part of it is
@@ -31,6 +31,6 @@ Fields specific to a resource type are documented with that type, not here.
 
 ## Stability
 
-`datum.dev/v1alpha1` carries no compatibility promise. Field names, defaults and
-semantics can change without a migration path until the API group reaches a stable
-version, and nothing described anywhere on this site is implemented yet.
+The `v1alpha1` schema carries no compatibility promise. Field names, defaults and
+semantics can change without a migration path until the schema reaches a stable version,
+and nothing described anywhere on this site is implemented yet.

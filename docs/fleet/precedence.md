@@ -5,14 +5,12 @@ integer on each `Layer`, compared numerically, with higher values applied later 
 therefore winning.
 
 ```yaml
-spec:
-  precedence: 30
+precedence: 30
 ```
 
-An integer was chosen over the alternatives because a reader can compare two
-numbers without knowing anything about Datum. Ranking by selector specificity, by
-directory depth, or by the order layers happen to be discovered would all produce
-a total order that nobody could predict from looking at two layers side by side.
+An integer is used so that two layers can be compared directly. Ranking by
+matcher specificity, by directory depth or by discovery order produces an
+ordering that cannot be determined from the two layers alone.
 
 ## Ordering is total and deterministic
 
@@ -32,7 +30,7 @@ resolve disagreements, and two layers of equal precedence setting the same field
 to different values are a conflict.
 
 Resolution never depends on filesystem enumeration order, on the machine running
-the resolver, or on which host is being resolved beyond the selectors that matched
+the resolver, or on which host is being resolved beyond the matchers that selected
 it. The same repository at the same revision produces the same manifest for the
 same host every time.
 
@@ -58,25 +56,23 @@ Two layers setting the same field to the same value are not in conflict. The
 requirement is an unambiguous outcome, and several layers may mention a field.
 
 Resolving a conflict means changing precedence so one layer is clearly the
-authority, or narrowing a selector so the layers no longer overlap.
+authority, or narrowing a matcher so the layers no longer overlap.
 
 ## Host overrides
 
-A single host is overridden by a layer with a high precedence and a selector
+A single host is overridden by a layer with a high precedence and a matcher
 matching that host.
 
 ```yaml title="fleet/hosts/web-001/layer.yaml"
-apiVersion: datum.dev/v1alpha1
-kind: Layer
+datum: v1alpha1
+type: Layer
 
-metadata:
-  name: host-web-001
+name: host-web-001
 
-spec:
-  precedence: 100
-  selector:
-    matchLabels:
-      datum.dev/host: web-001
+precedence: 100
+match:
+  labels:
+    datum/host: web-001
 ```
 
 A host override is an ordinary layer, with no separate mechanism, per-host
@@ -104,8 +100,8 @@ $ datum explain File[nginx-config] --host web-001
 File[nginx-config]   /etc/nginx/nginx.conf
 
 contributed by
-  roles/web        precedence  30   selector role=web
-  hosts/web-001    precedence 100   selector datum.dev/host=web-001
+  roles/web        precedence  30   matched role=web
+  hosts/web-001    precedence 100   matched datum/host=web-001
 
 fields
   path     /etc/nginx/nginx.conf    roles/web
@@ -114,25 +110,20 @@ fields
   mode     0600                     hosts/web-001   overrides 0640 from roles/web
   source   files/nginx.conf         roles/web
 
-dependsOn
+requires
   Package[nginx]                    roles/web
 ```
 
-Two things have to survive resolution for this to be answerable. Every field needs
-the layer that set its final value and the values it displaced, and every layer
-needs the selector terms that caused it to match. Discarding either after the merge
-would make the question unanswerable, so the resolver is not permitted to discard
-them as an optimisation.
+Two things have to survive resolution. Every field retains the layer that set
+its final value and the values it displaced, and every layer retains the labels
+that caused it to match. The resolver does not discard either after merging.
 
-## Why not order by specificity
+## Ordering by specificity
 
-Ranking layers by how specific their selectors are is the obvious alternative and
-was rejected.
+Ranking layers by matcher specificity was rejected.
 
-A selector matching three labels is not reliably more authoritative than one
-matching two, since `role: web` plus `site: london` plus `architecture: amd64` is
-more specific than `datum.dev/host: web-001` by any counting rule while clearly
-being less targeted. Making specificity work would require weighting labels against
-each other, which means the repository ends up encoding a ranking of label keys
-somewhere, and at that point an integer on each layer is the same mechanism with
-less machinery.
+A matcher matching three labels is not reliably more authoritative than one
+matching two. `role: web` with `site: london` and `architecture: amd64` is more
+specific than `datum/host: web-001` by any counting rule while selecting a
+broader set of hosts. Making specificity work requires weighting label keys
+against each other, which puts a ranking of label keys in the repository.

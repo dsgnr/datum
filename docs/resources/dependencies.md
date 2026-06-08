@@ -4,27 +4,27 @@ Resources declare what has to be settled before them. Ordering is never implied 
 where a document sits in a file or by the order files appear on disk.
 
 ```yaml
-apiVersion: datum.dev/v1alpha1
-kind: Service
+datum: v1alpha1
+type: Service
 
-metadata:
-  name: nginx
+name: nginx
 
-dependsOn:
+requires:
   - Package[nginx]
   - File[nginx-config]
 
-spec:
+restartOn:
+  - File[nginx-config]
+
+desired:
   state: running
   enabled: true
-  restartOn:
-    - File[nginx-config]
 ```
 
-`dependsOn` sits alongside `spec` rather than inside it, because ordering is
-behaviour common to every resource type rather than something a type defines.
+`requires` sits alongside `desired` and not inside it, because ordering is
+behaviour common to every resource type instead of something a type defines.
 
-## What dependsOn means
+## What requires means
 
 It means three things, and they need stating precisely because the third is the one people expect
 and do not get.
@@ -41,7 +41,7 @@ dependency on something not present is an error raised by the graph builder
 before the host is read, rather than a dependency silently treated as satisfied.
 
 What it does not mean is a requirement that the target exists on the host.
-`dependsOn: [Package[nginx]]` combined with `Package[nginx]` declaring
+`requires: [Package[nginx]]` combined with `Package[nginx]` declaring
 `state: absent` is a coherent, if unusual, manifest, and Datum orders the two
 without objecting.
 
@@ -67,15 +67,16 @@ reaction is a separate mechanism.
 
 ## restartOn
 
-`Service.spec.restartOn` lists resources whose change should cause the service to
+`Service.restartOn` lists resources whose change should cause the service to
 restart.
 
 ```yaml
-spec:
+restartOn:
+  - File[nginx-config]
+
+desired:
   state: running
   enabled: true
-  restartOn:
-    - File[nginx-config]
 ```
 
 When a listed resource has a non-`none` action in the same plan, the service gets an
@@ -92,12 +93,12 @@ notification declared on files means reconstructing the list by searching for
 anything that mentions the service.
 
 `restartOn` also orders. A resource listed there is processed before the service in the
-same way as one listed in `dependsOn`, so the reference does not have to appear in both
+same way as one listed in `requires`, so the reference does not have to appear in both
 fields.
 
 | Field | Orders | Triggers an update |
 | ----- | ------ | ------------------ |
-| `dependsOn` | Yes | No |
+| `requires` | Yes | No |
 | `restartOn` | Yes | Yes |
 
 Reaction implies order because a service that restarts when its configuration changes

@@ -11,8 +11,8 @@ deciding, updating the page, and removing the entry here.
 
 These affect the shape of code that would be written first.
 
-[Selectors and observed host facts](../providers/multi-distribution.md#handling-a-genuine-difference)
-:   Whether a selector may match facts read from the host, such as the distribution reported by
+[Matchers and observed host facts](../providers/multi-distribution.md#handling-a-genuine-difference)
+:   Whether a matcher may match facts read from the host, such as the distribution reported by
     `/etc/os-release`. Allowing it removes the need to declare an `os` label by hand, which
     duplicates something the machine already knows and can be wrong. Forbidding it keeps desired
     state resolvable without reaching the machine, which the fleet model currently depends on.
@@ -35,17 +35,17 @@ These affect the shape of code that would be written first.
 ## Resource model
 
 [Package logical names](../resources/identity.md#target-identity-by-type)
-:   Whether `Package` should gain a `spec.package` field so one reference can mean `apache2` on
+:   Whether `Package` should gain a `desired.package` field so one reference can mean `apache2` on
     Debian and `httpd` on Fedora, and whether that difference belongs in the resource document or
     inside a provider.
 
-[Dependency removal](../fleet/composition.md#the-dependson-exception)
+[Dependency removal](../fleet/composition.md#the-requires-exception)
 :   There is no way for a higher-precedence layer to remove a dependency declared lower down.
     Adding one would reintroduce the ability to silently drop an ordering constraint, which is
-    what treating `dependsOn` as a set exists to prevent.
+    what treating `requires` as a set exists to prevent.
 
 [Removal ordering](../resources/types/group.md#removal)
-:   `dependsOn` means processed before, regardless of action, so removing a group and its users
+:   `requires` means processed before, regardless of action, so removing a group and its users
     needs the reverse of the creation order written out. Whether the planner should invert edges
     for `remove` actions is undecided, and doing so would make plan order depend on the action.
 
@@ -122,8 +122,8 @@ These affect the shape of code that would be written first.
 :   Whether a repository may contain more than one `Fleet` document, and what it would mean for a
     host to appear in two of them.
 
-[Reserved observed labels](../fleet/labels-and-selectors.md#reserved-labels)
-:   Related to the blocking question above. Only `datum.dev/host` is injected, and whether
+[Reserved observed labels](../fleet/labels-and-matchers.md#reserved-labels)
+:   Related to the blocking question above. Only `datum/host` is injected, and whether
     observed facts should join it is unresolved.
 
 [Provenance and the manifest digest](../fleet/effective-manifests.md#content-addressing)

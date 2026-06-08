@@ -1,6 +1,6 @@
-# Labels and selectors
+# Labels and matchers
 
-Labels classify a host. Selectors decide which layers apply to it. Between them
+Labels classify a host. Matchers decide which layers apply to it. Between them
 they are the only mechanism by which configuration reaches a machine, so there is
 no inheritance hierarchy, no include directive, and no host list to maintain
 alongside them.
@@ -10,16 +10,15 @@ alongside them.
 A host's labels come from its `Host` document and nowhere else.
 
 ```yaml
-apiVersion: datum.dev/v1alpha1
-kind: Host
+datum: v1alpha1
+type: Host
 
-metadata:
-  name: web-001
-  labels:
-    environment: production
-    site: london
-    role: web
-    architecture: amd64
+name: web-001
+labels:
+  environment: production
+  site: london
+  role: web
+  architecture: amd64
 ```
 
 Labels are strings on both sides. There are no typed values, no lists as values,
@@ -39,26 +38,24 @@ The resolver injects one label derived from the `Host` document.
 
 | Label | Value |
 | ----- | ----- |
-| `datum.dev/host` | The host's `metadata.name` |
+| `datum/host` | The host's `name` |
 
 This exists so that host-specific configuration needs no special mechanism. A
-layer targeting one machine is an ordinary layer with an ordinary selector.
+layer targeting one machine is an ordinary layer with an ordinary matcher.
 
 ```yaml
-apiVersion: datum.dev/v1alpha1
-kind: Layer
+datum: v1alpha1
+type: Layer
 
-metadata:
-  name: host-web-001
+name: host-web-001
 
-spec:
-  precedence: 100
-  selector:
-    matchLabels:
-      datum.dev/host: web-001
+precedence: 100
+match:
+  labels:
+    datum/host: web-001
 ```
 
-The `datum.dev/` prefix is reserved. A `Host` document setting a label under it is
+The `datum/` prefix is reserved. A `Host` document setting a label under it is
 an error, so that injected values cannot be shadowed.
 
 !!! note "Open question"
@@ -71,70 +68,71 @@ an error, so that injected values cannot be shadowed.
     distribution-specific treatment carries a declared label saying so, and that
     provider selection handles the rest.
 
-## Selector semantics
+## Matcher semantics
 
-A selector has two optional parts.
-
-```yaml
-spec:
-  selector:
-    matchLabels:
-      role: web
-      environment: production
-    matchExpressions:
-      - key: site
-        operator: In
-        values: [london, frankfurt]
-      - key: legacy
-        operator: DoesNotExist
-```
-
-`matchLabels` requires each named label to be present with exactly that value.
-`matchExpressions` supports four operators.
-
-| Operator | Matches when |
-| -------- | ------------ |
-| `In` | The label exists and its value is one of `values`. |
-| `NotIn` | The label does not exist, or exists with a value not in `values`. |
-| `Exists` | The label is present, whatever its value. |
-| `DoesNotExist` | The label is absent. |
-
-Every term in both parts has to match. A selector is a conjunction with no way to
-express alternation between whole selectors, so a layer that should apply to web
-hosts or to cache hosts uses `matchExpressions` with `In` rather than two
-selectors.
-
-The absence of a top-level `or` is deliberate. Selectors that can be arbitrarily
-nested become expressions to debug, and the cases needing them are usually better
-served by giving the hosts a label that says what they have in common.
-
-## The empty selector
-
-A layer with no `selector` matches every host in the fleet.
+A matcher is a `match` block with five optional forms, each testing labels a
+different way.
 
 ```yaml
-apiVersion: datum.dev/v1alpha1
-kind: Layer
-
-metadata:
-  name: base
-
-spec:
-  precedence: 0
+match:
+  labels:
+    role: web
+    environment: production
+  oneOf:
+    site: [london, frankfurt]
+  noneOf:
+    tier: [legacy]
+  has:
+    - monitoring
+  missing:
+    - decommissioned
 ```
 
-Matching everything has to be written deliberately rather than happening by
-omission somewhere else, which is why resource documents are required to sit under
-a layer. The one place an empty selector is normal is a fleet-wide base layer, and
+| Form | Matches when |
+| ---- | ------------ |
+| `labels` | Each named label is present with exactly that value. |
+| `oneOf` | Each named label is present with one of the listed values. |
+| `noneOf` | Each named label is absent, or present with a value not listed. |
+| `has` | Each named label is present, whatever its value. |
+| `missing` | Each named label is absent. |
+
+Every form present has to hold, and every term within a form has to hold, so a
+matcher is one large conjunction. Most layers need only `labels`, and the other
+four exist for cases that would otherwise need several near-identical layers.
+
+There is no way to express alternation between whole matchers. A layer that
+should apply to web hosts or to cache hosts uses `oneOf` with both values
+instead of two matchers combined with an `or`.
+
+That omission is deliberate. Matchers that can be nested arbitrarily become
+expressions to debug, and the cases that appear to need them are usually better
+served by giving the hosts a label describing what they have in common.
+
+## The empty matcher
+
+A layer with no `matcher` matches every host in the fleet.
+
+```yaml
+datum: v1alpha1
+type: Layer
+
+name: base
+
+precedence: 0
+```
+
+Matching everything has to be written out, instead of happening by omission
+somewhere else, which is why resource documents are required to sit under a
+layer. The one place an empty matcher is normal is a fleet-wide base layer, and
 the base layer is exactly the case where applying to everything is the intent.
 
-## What selectors do not do
+## What matchers do not do
 
-Selectors choose layers. They do not choose resources within a layer, filter
+Matchers choose layers. They do not choose resources within a layer, filter
 fields, or apply conditionally at reconciliation time.
 
 A resource that should only exist on some of the hosts a layer matches belongs in a
-different layer with a narrower selector. Pushing conditions down into resources
+different layer with a narrower matcher. Pushing conditions down into resources
 would put the decision about whether a resource applies into two places at once,
 and answering why a resource reached a host would then mean reading both.
 

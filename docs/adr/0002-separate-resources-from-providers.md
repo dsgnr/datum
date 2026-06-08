@@ -55,7 +55,7 @@ as evidence that a provider interface is missing, not as a pragmatic shortcut.
 
 Differences that will not fit behind a single field have to surface somewhere. They are
 allowed in two places, being inside a provider where they are invisible, or in the
-repository where a narrower selector makes them explicit. A field that silently behaves
+repository where a narrower matcher makes them explicit. A field that silently behaves
 differently depending on the host is not allowed, because configuration reviewed once
 and believed uniform is the failure this decision exists to prevent.
 

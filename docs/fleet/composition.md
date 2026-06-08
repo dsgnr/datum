@@ -7,7 +7,7 @@ rather than copying it between hosts.
 ```text
 base
  +
-matching selectors
+matching matchers
  +
 host-specific configuration
  =
@@ -17,21 +17,20 @@ effective desired state
 ## Resources are matched by reference
 
 Two layers contributing a resource with the same kind and the same
-`metadata.name` are contributing to the same resource. That pair is the resource
+`name` are contributing to the same resource. That pair is the resource
 reference, written `File[nginx-config]`, and it is unique within an effective
 manifest.
 
 ```yaml title="fleet/roles/web/nginx.yaml"
-apiVersion: datum.dev/v1alpha1
-kind: File
+datum: v1alpha1
+type: File
 
-metadata:
-  name: nginx-config
+name: nginx-config
 
-dependsOn:
+requires:
   - Package[nginx]
 
-spec:
+desired:
   path: /etc/nginx/nginx.conf
   owner: root
   group: root
@@ -40,13 +39,12 @@ spec:
 ```
 
 ```yaml title="fleet/hosts/web-001/nginx-tuning.yaml"
-apiVersion: datum.dev/v1alpha1
-kind: File
+datum: v1alpha1
+type: File
 
-metadata:
-  name: nginx-config
+name: nginx-config
 
-spec:
+desired:
   mode: "0600"
 ```
 
@@ -76,7 +74,7 @@ sees the result of every earlier one.
 | Scalar | Replaced by the higher-precedence value. |
 | Map | Merged key by key, with the higher-precedence value winning per key. |
 | List | Replaced entirely by the higher-precedence list. |
-| `dependsOn` | Combined as a set. |
+| `requires` and `restartOn` | Combined as sets. |
 
 Lists replace instead of merging because merging them requires a rule for
 identifying corresponding entries, and every such rule needs the reader to know
@@ -84,10 +82,11 @@ which key the implementation chose. Replacement is blunt and predictable, and a
 list that genuinely needs to be assembled from several layers is a sign that its
 entries should be separate resources.
 
-## The dependsOn exception
+## The requires exception
 
-`dependsOn` is a list that does not follow the list rule, and the inconsistency is
-deliberate.
+`requires` and `restartOn` are lists that do not follow the list rule, and the
+inconsistency is deliberate. Both produce edges in the resource graph, and the argument
+below applies to each of them.
 
 If a role layer declares that `Service[nginx]` depends on `Package[nginx]`, and a
 host layer adds a dependency on a tuning file, replacement would silently discard
@@ -111,24 +110,22 @@ expressiveness.
 Two layers set the same field to different values, and precedence decides.
 
 ```yaml title="fleet/base/sysctl.yaml"
-apiVersion: datum.dev/v1alpha1
-kind: Sysctl
+datum: v1alpha1
+type: Sysctl
 
-metadata:
-  name: net.ipv4.ip_forward
+name: net.ipv4.ip_forward
 
-spec:
+desired:
   value: "0"
 ```
 
 ```yaml title="fleet/environments/production/sysctl.yaml"
-apiVersion: datum.dev/v1alpha1
-kind: Sysctl
+datum: v1alpha1
+type: Sysctl
 
-metadata:
-  name: net.ipv4.ip_forward
+name: net.ipv4.ip_forward
 
-spec:
+desired:
   value: "1"
 ```
 

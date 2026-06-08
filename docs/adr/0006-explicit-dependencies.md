@@ -30,7 +30,7 @@ behaviour being derivable from the configuration and the documentation.
 
 ## Decision
 
-Dependencies are declared. `dependsOn` lists resource references that must be processed
+Dependencies are declared. `requires` lists resource references that must be processed
 before a resource, and it is the only source of ordering along with `restartOn`, which
 orders as well as triggering a reaction.
 
@@ -61,7 +61,7 @@ benefit.
 The graph is derived from the manifest on every pass and never stored, so there is no
 cached ordering that could disagree with the repository.
 
-Removal ordering is not handled. `dependsOn` means processed before, regardless of the action, so a
+Removal ordering is not handled. `requires` means processed before, regardless of the action, so a
 manifest that removes a group and the users referencing it has to express the reverse of the
 creation order explicitly. Whether the planner should invert edges for `remove` actions is an open
 question, and doing so would make plan order depend on the action rather than only on the declared

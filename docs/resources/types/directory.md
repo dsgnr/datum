@@ -3,20 +3,19 @@
 `Directory` describes the existence and metadata of one directory.
 
 ```yaml
-apiVersion: datum.dev/v1alpha1
-kind: Directory
+datum: v1alpha1
+type: Directory
 
-metadata:
-  name: nginx-conf-d
+name: nginx-conf-d
 
-spec:
+desired:
   path: /etc/nginx/conf.d
   owner: root
   group: root
   mode: "0755"
 ```
 
-Target identity is `spec.path`. The type says nothing at all about the
+Target identity is `desired.path`. The type says nothing at all about the
 directory's contents.
 
 ## Fields
@@ -49,29 +48,27 @@ Parent directories are also not created implicitly. A `Directory` at
 levels, because creating a directory nobody declared means choosing ownership
 and permissions nobody specified.
 
-Declaring the parents is the alternative, with `dependsOn` giving the order.
+Declaring the parents is the alternative, with `requires` giving the order.
 
 ```yaml
-apiVersion: datum.dev/v1alpha1
-kind: Directory
+datum: v1alpha1
+type: Directory
 
-metadata:
-  name: app-root
+name: app-root
 
-spec:
+desired:
   path: /opt/app
   mode: "0755"
 ---
-apiVersion: datum.dev/v1alpha1
-kind: Directory
+datum: v1alpha1
+type: Directory
 
-metadata:
-  name: app-etc
+name: app-etc
 
-dependsOn:
+requires:
   - Directory[app-root]
 
-spec:
+desired:
   path: /opt/app/etc
   mode: "0755"
 ```

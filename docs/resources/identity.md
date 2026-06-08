@@ -4,7 +4,7 @@ Every resource has two identities, and confusing them causes problems that only
 appear once a repository has grown.
 
 Resource reference
-:   How the resource is named inside Datum. It is the kind and `metadata.name`
+:   How the resource is named inside Datum. It is the kind and `name`
     together, written `File[nginx-config]`, and it is unique within an effective
     manifest.
 
@@ -18,30 +18,28 @@ Target identity
 A single identity cannot do both jobs.
 
 If the reference were the target, `File` resources would have to be named by their
-path, which makes every `dependsOn` entry an absolute path and makes a layer unable
+path, which makes every `requires` entry an absolute path and makes a layer unable
 to override a file's mode without repeating the path as a name. If the target were
 the reference, two differently named `File` resources could write the same path and
 Datum would have no way to notice.
 
 ```yaml
-apiVersion: datum.dev/v1alpha1
-kind: File
+datum: v1alpha1
+type: File
 
-metadata:
-  name: nginx-config
+name: nginx-config
 
-spec:
+desired:
   path: /etc/nginx/nginx.conf
 ```
 
 ```yaml
-apiVersion: datum.dev/v1alpha1
-kind: File
+datum: v1alpha1
+type: File
 
-metadata:
-  name: nginx-tls-settings
+name: nginx-tls-settings
 
-spec:
+desired:
   path: /etc/nginx/nginx.conf
 ```
 
@@ -53,23 +51,23 @@ order. The graph builder rejects the manifest instead.
 
 | Type | Target identity | Source |
 | ---- | --------------- | ------ |
-| `Package` | Package name | `metadata.name` |
-| `File` | Absolute path | `spec.path` |
-| `Directory` | Absolute path | `spec.path` |
-| `Service` | Unit name | `metadata.name` |
-| `User` | User name | `metadata.name` |
-| `Group` | Group name | `metadata.name` |
-| `Sysctl` | Parameter key | `metadata.name` |
+| `Package` | Package name | `name` |
+| `File` | Absolute path | `desired.path` |
+| `Directory` | Absolute path | `desired.path` |
+| `Service` | Unit name | `name` |
+| `User` | User name | `name` |
+| `Group` | Group name | `name` |
+| `Sysctl` | Parameter key | `name` |
 
 Where a type's natural key is a single string that reads well as a name,
-`metadata.name` supplies it, which keeps the common case short. `File` and
+`name` supplies it, which keeps the common case short. `File` and
 `Directory` are the exceptions because paths make poor names and because the same
 logical file often lives at different paths on different distributions.
 
 !!! note "Open question"
 
-    Whether `Package` should gain a `spec.package` field so that
-    `metadata.name` can be a logical name is unresolved. It would allow one
+    Whether `Package` should gain a `desired.package` field so that
+    `name` can be a logical name is unresolved. It would allow one
     reference to mean `apache2` on Debian and `httpd` on Fedora, which is exactly
     the kind of difference the provider boundary is supposed to absorb, and it is
     not yet clear whether the provider or the resource should carry it.
@@ -80,7 +78,7 @@ A resource reference is unique within one host's effective manifest and means
 nothing outside it. Two hosts can both have `File[nginx-config]` pointing at
 different content, and neither has any relationship to the other.
 
-That scope is what makes `dependsOn` simple. A dependency is a reference to another
+That scope is what makes `requires` simple. A dependency is a reference to another
 resource in the same manifest, with no need to qualify it by layer, by host, or by
 path, and a reference that does not resolve within the manifest is an error the
 graph builder raises before the host is read.
@@ -92,11 +90,11 @@ file.
 
 ## Renaming
 
-Changing `metadata.name` changes the reference and therefore creates a different
-resource, so every `dependsOn` pointing at the old name stops resolving and the
+Changing `name` changes the reference and therefore creates a different
+resource, so every `requires` pointing at the old name stops resolving and the
 manifest is rejected until they are updated.
 
-Changing `spec.path` changes the target. The old path is no longer managed and is
+Changing `desired.path` changes the target. The old path is no longer managed and is
 left exactly as it is, because nothing in the manifest describes it any more and
 undeclared paths are not touched. Moving a managed file therefore needs two
 resources for one pass, one declaring the new path and one declaring the old path
