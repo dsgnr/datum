@@ -64,7 +64,8 @@ one repository maps onto many machines. The sections after it work through the
 model in the order it is easiest to learn: the
 [vocabulary](concepts/index.md), then the [fleet layout](fleet/index.md), then
 [resources](resources/index.md) and [providers](providers/index.md), then the
-[architecture](architecture/index.md) that connects them.
+[architecture](architecture/index.md) that connects them, then the
+[security model](security/index.md).
 
 [Reference](reference/index.md) holds the field and command lookups, and
 [decisions](adr/index.md) records what has been settled and why. Everything still

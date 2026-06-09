@@ -81,8 +81,9 @@ The documentation phase is finished when an engineer who has never seen Datum ca
 read this site and come away knowing what a resource is, how identity and
 dependencies work, how one repository produces per-host desired state, what an
 effective manifest contains, where the provider boundary sits, how drift is
-detected, how planning differs from applying, and which parts of the design are
-still open.
+detected, how planning differs from applying, what the
+[security model](../security/index.md) trusts and does not defend, and which parts
+of the design are still open.
 
 Until that holds, improving the specification is more valuable than starting on
 the agent.

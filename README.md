@@ -59,11 +59,12 @@ leave the site broken. The toolchain is [Zensical](https://zensical.org/), pinne
 
 Read the site in order. The introduction covers what Datum manages and how one repository maps
 onto many machines, and the sections after it work through the vocabulary, the fleet model,
-resources, providers and the architecture.
+resources, providers, the architecture and the security model.
 
-For the current state of the design, two pages are the most useful entry points. `docs/adr/`
-records the decisions that are settled and why, and `docs/development/open-questions.md` lists
-everything that is not.
+For the current state of the design, three places are the most useful entry points. `docs/adr/`
+records the decisions that are settled and why, `docs/development/open-questions.md` lists
+everything that is not, and `docs/security/` states what is being trusted and what is not
+defended.
 
 ## Contributing
 
