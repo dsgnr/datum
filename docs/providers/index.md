@@ -71,6 +71,10 @@ Requests a provider cannot express are reported as errors. A `Package` provider 
 whose package manager has no version pinning mechanism fails a request to pin instead of
 installing the version unpinned.
 
+Programs are invoked with an argument vector and no shell, so a field value cannot be interpreted as
+syntax by a shell running as root. That requirement and the other provider-level security rules are
+in the [threat model](../security/threat-model.md#an-attacker-who-controls-resource-field-values).
+
 A provider operates on the target of its own resource. A `Service` provider
 asked to restart a unit does not install the package that provides it, which is
 either a separate resource with a dependency edge or undeclared.
