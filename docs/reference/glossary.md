@@ -41,6 +41,10 @@ Effective manifest
     identified by a digest. The only input to the reconciliation engine. See [effective
     manifests](../fleet/effective-manifests.md).
 
+Enrolment
+:   The step in which a machine with no identity acquires one the fleet recognises, along with any
+    credential that identity needs. See [enrolment](../security/handshake.md#getting-the-repository-credential-onto-a-host).
+
 Fleet
 :   The set of hosts one repository describes. See [fleet](../fleet/index.md).
 
@@ -76,6 +80,11 @@ Layer
 Manifest digest
 :   A digest of an effective manifest's content, used to identify exactly what was
     reconciled.
+
+Matcher
+:   The `match` block on a layer deciding which hosts it applies to, made of `labels`,
+    `oneOf`, `noneOf`, `has` and `missing`. See [labels and
+    matchers](../fleet/labels-and-matchers.md).
 
 Observation
 :   Reading the current state of the resources in a manifest from a host. Read-only,
@@ -137,11 +146,6 @@ Resource type
 :   The `type` of a resource, such as `Package` or `File`. See [resource
     types](../resources/types/index.md).
 
-Matcher
-:   The expression on a layer deciding which hosts it applies to, made of `match.labels`
-    and `match.oneOf`. See [labels and
-    matchers](../fleet/labels-and-matchers.md).
-
 Target identity
 :   What a resource manages on the host, such as an absolute path or a package name. Two
     resources sharing one is a conflict. See [resource
@@ -168,3 +172,11 @@ and only layer appears here.
 
 **Fact** is not used for repository-declared labels. Labels are declared, and facts would
 suggest something measured on the host.
+
+**Selector** is not used for a layer's `match` block. Matcher is the term, chosen so that
+the concept and the key share a name.
+
+**Spec**, **kind**, **metadata** and **apiVersion** do not appear as field
+names. The document format is not a Kubernetes object, and reusing those names
+would imply behaviour Datum does not have, such as a server, a status
+subresource or namespaces.

@@ -60,6 +60,7 @@ filesystem, which keeps reading order under control.
 | `resources/` | The resource model and the proposed types |
 | `providers/` | The provider boundary and multi-distribution design |
 | `architecture/` | Components, data flow, trust boundaries, deployment |
+| `security/` | Trust model, attack vectors, handshakes and authenticity |
 | `reference/` | Field and command lookup, glossary |
 | `development/` | Contributing to the design, open questions |
 | `adr/` | Architecture decision records |
