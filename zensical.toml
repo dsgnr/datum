@@ -21,6 +21,7 @@ nav = [
   { "Concepts" = [
     "concepts/desired-state.md",
     "concepts/observed-state.md",
+    "concepts/drift.md",
   ] },
 ]
 
