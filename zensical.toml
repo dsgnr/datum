@@ -15,6 +15,7 @@ nav = [
     "introduction/index.md",
     "introduction/why-datum.md",
     "introduction/how-datum-works.md",
+    "introduction/design-principles.md",
     "introduction/project-status.md",
   ] },
 ]

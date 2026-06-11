@@ -115,5 +115,6 @@ need credentials in them, and there is no answer yet for how they get there.
 
 [Why Datum?](why-datum.md) sets out the problems this design is responding to,
 and [how Datum works](how-datum-works.md) follows a single change through the
-whole pipeline. [Project status](project-status.md) explains how this site
-distinguishes settled decisions from open proposals.
+whole pipeline. [Design principles](design-principles.md) records the constraints
+the design is held to, and [project status](project-status.md) explains how this
+site distinguishes settled decisions from open proposals.
