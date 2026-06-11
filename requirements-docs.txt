@@ -1,0 +1,5 @@
+# Toolchain for building the Datum documentation site.
+#
+# Pinned so that local builds and CI produce the same output. Bump
+# deliberately, in its own commit, after checking the rendered site.
+zensical==0.0.62

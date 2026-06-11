@@ -1,0 +1,11 @@
+# Zensical build output and cache
+/site/
+/.cache/
+
+# Python environment used to run Zensical locally
+/.venv/
+__pycache__/
+
+# Editor and OS noise
+.DS_Store
+*.swp
