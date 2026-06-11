@@ -79,7 +79,8 @@ a certain fleet size.
 !!! note "Proposed behaviour"
 
     Datum does not issue credentials and has no opinion about which of these a fleet uses. The
-    credential is agent configuration rather than something Datum manages.
+    credential is agent configuration, and [Datum does not manage
+    it](../adr/0010-no-self-managed-trust-anchors.md).
 
     A credential baked into an image is documented as the weakest option rather than left out, since
     a fleet with no other route would otherwise have nothing to follow.

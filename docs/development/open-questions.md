@@ -170,48 +170,40 @@ These affect the shape of code that would be written first.
 
 ## Security
 
-[Commit signature verification](../security/threat-model.md#an-attacker-who-can-merge-to-the-repository)
-:   Whether the agent should refuse a revision not signed by a trusted key. This is the only
-    proposed control that constrains a repository writer, and the cost is that every commit
-    reaching the tracked branch has to be signed by a key the fleet trusts, which constrains
-    automation and makes key rotation a fleet-wide operation.
-
-[Downgrade protection](../security/handshake.md#verifying-that-a-revision-is-current)
-:   Requiring each revision to be a descendant of the last one applied would stop a signed old
-    commit being replayed. The awkward cases are a host that has been off long enough for
-    history to have been rewritten, and a repository that force-pushes, both of which would
-    need an override nobody has designed.
-
-[Repository credential provisioning](../security/threat-model.md#an-attacker-who-can-read-the-repository)
-:   How the credential each host uses to read Git is issued, scoped and rotated. Per-host,
-    read-only, individually revocable credentials would limit the damage from stealing one, and
-    none of that is designed.
+Most of what was open here is now specified in [trusting desired
+state](../security/repository-trust.md) and [applying state
+safely](../security/provider-safety.md). What remains is below.
 
 [Placing a repository credential](../security/handshake.md#getting-the-repository-credential-onto-a-host)
 :   The constraint is decided, being that whatever provisions a machine chooses its name and
     places its credential, and the machine asserts neither to anything. Which mechanisms ship,
     and what an attestation path looks like for each platform that offers one, is not.
 
-[Filesystem race handling](../security/threat-model.md#an-attacker-with-an-unprivileged-account-on-a-managed-host)
-:   The proposed handling for symlink substitution, hard links and directory swaps is specified
-    in outline. Whether apply should operate on a directory descriptor captured during
-    observation, which narrows the window between deciding and writing, has not been worked
-    through.
+[Trust-on-first-use at provisioning](../security/repository-trust.md#first-contact)
+:   A host with no recorded revision accepts whatever signed revision it sees first, so the
+    baseline has to be written when the machine is built. What writes it, and how a fleet checks
+    that it was written, has not been designed.
 
-[Report storage and permissions](../security/threat-model.md#an-attacker-with-an-unprivileged-account-on-a-managed-host)
-:   Plans can contain file content, so a report written readable by other local users discloses
-    it. Root ownership with mode `0600` and digests rather than text is the proposed default,
-    and it interacts with the undecided question of where reports are kept.
+[Signer key rotation](../adr/0010-no-self-managed-trust-anchors.md)
+:   Because Datum refuses to manage its own signer list, rotating a key is a provisioning task.
+    On a large fleet that is worse than a commit would have been, and no better answer exists
+    yet that does not let the control disable itself.
 
 [A Repository resource type](../security/threat-model.md#an-attacker-who-controls-upstream-content)
 :   Adding a package repository through a `File` resource looks like an ordinary file change in
-    review while granting root execution to whoever serves it. A dedicated type would make the
-    intent reviewable, and it is also listed as the type most likely to be needed soonest.
+    review while granting root execution to whoever serves it. A dedicated type carrying the
+    signing key explicitly would make the intent reviewable. This is also the type most likely to
+    be needed soonest for reasons unrelated to security.
 
 [Agent supply chain](../security/index.md#what-is-not-defended)
 :   How the agent binary is obtained, verified and updated is not designed. An agent updating
-    itself through a resource describing its own package is a particular hazard, because a
-    failed update leaves nothing running to retry it.
+    itself through a resource describing its own package is a particular hazard, because a failed
+    update leaves nothing running to retry it.
+
+[Detecting a host that has stopped reporting](../security/threat-model.md#an-attacker-with-root-on-one-managed-host)
+:   A compromised host can simply stop reconciling, and detection depends on noticing the absence
+    of reports rather than on receiving a bad one. Datum currently provides nothing for that, and
+    it is the monitoring half of the fact that reporting is not attestation.
 
 ## Identity and delivery
 
