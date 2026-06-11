@@ -54,3 +54,12 @@ desired state + observed state -> plan -> reconciliation
 Where a machine already matches the repository the plan is empty and nothing is
 applied, which is what most passes over a settled fleet are expected to look
 like.
+
+## Reading this site
+
+The documentation is the specification for Datum, so it reads as much like a
+design document as a user guide. Start with the
+[introduction](introduction/index.md), which covers what Datum manages and how
+one repository maps onto many machines. The sections after it work through the
+model in the order it is easiest to learn: the vocabulary, then the fleet
+layout, then resources and providers, then the architecture that connects them.
