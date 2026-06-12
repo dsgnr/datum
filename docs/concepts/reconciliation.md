@@ -20,13 +20,25 @@ agent serialises them rather than attempting to reconcile the result.
 
 ## Convergence
 
-A host is converged when its observed state satisfies its desired state for every
-resource in the effective manifest.
+A host is converged when every resource in its effective manifest has been
+observed and its observed state satisfies its desired state.
 
-Convergence is a property of a host at a moment, established by observation rather
-than asserted by having applied something. A pass that applied fourteen changes
-successfully and then failed to verify one of them did not converge the host, and
-reporting otherwise would make the word useless.
+Convergence requires observation, not a successful apply. A pass where every
+provider reported success has not converged the host until the affected
+resources have been read back and found to match, so convergence is established
+by [verification](../resources/lifecycle.md#verify) rather than asserted by
+having acted.
+
+```text
+apply exited zero        is not convergence
+observed state matches   is convergence
+```
+
+That distinction is the core of Datum's approach. A `systemctl restart` that
+returns zero while the service dies a second later has applied successfully and
+has not converged, and only reading the unit's state afterwards tells the two
+apart. A pass that applied fourteen changes and failed to verify one of them has
+not converged the host.
 
 ## Pass outcomes
 
@@ -53,6 +65,35 @@ changing the repository and reconciling again, which is the same mechanism as an
 other change and does not need a separate code path. This does mean the recovery
 path for a bad commit is a new commit, and that reverting in Git is the operation
 that matters.
+
+### Desired-state rollback is not system-state rollback
+
+Two things get called rollback, and only one of them is cheap.
+
+Desired-state rollback is reverting the repository to an earlier revision. Datum does this
+readily, because it is an ordinary change like any other.
+
+System-state rollback is undoing the effect of an applied change on the host, and
+Datum does not do it, because many operations that reconciliation performs are not
+reversible. Deleting a user, upgrading a database package that migrates its data on
+disk, removing a package that ran a destructive uninstall script, and rotating a
+credential all destroy state that reverting the repository cannot bring back.
+
+```text
+desired-state rollback     revert to an earlier revision      Datum can do this
+system-state rollback      undo what the last revision did    the OS often cannot
+```
+
+Reverting to an earlier revision produces an earlier desired state, and
+reconciliation then moves the host towards it using the same forward operations as
+always. Whether that restores the previous condition depends entirely on whether the
+individual changes were reversible, and for many they are not.
+
+Datum therefore promises desired-state rollback and does not promise
+transactional system rollback. Genuine system rollback needs mechanisms
+underneath Datum, such as filesystem snapshots, OSTree, Nix generations or A/B
+partitions, and a fleet that requires it builds on one of those instead of
+expecting Datum to provide it.
 
 !!! note "Security consideration"
 
@@ -99,9 +140,10 @@ failure waits for the next pass rather than being retried immediately.
 
 ## Ordering revisions
 
-Two manifest digests can be compared for equality but not for which came first. Ordering
-comes from the repository: the agent reads Git, so commit history says which revision
-supersedes which.
+Two manifest digests can be compared for equality but not for which came first. Ordering comes from
+the repository, because the agent reads Git and commit history says which revision supersedes which,
+and the [accepted revision](../security/repository-trust.md#verifying-that-a-revision-is-current)
+records how far a host has got.
 
 There is no separate counter for this. A monotonic generation number would need an authority
 to assign it, and nothing in the design is in a position to.
