@@ -82,3 +82,8 @@ be the wrong thing to do, and the tool needs a way to say what is wrong without
 changing anything. Diffing produces that answer, and because it uses the same
 observation and comparison as a full pass, the answer is not an approximation of
 what reconciliation would find.
+
+An agent can be run this way permanently and not just as a one-off command. A
+host in [`observe` mode](reconciliation-modes.md) reports drift on every pass
+and applies nothing, which turns Datum into a fleet drift detector before it is
+trusted to make changes.

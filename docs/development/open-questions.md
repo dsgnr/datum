@@ -137,13 +137,28 @@ These affect the shape of code that would be written first.
 :   There is no way to force a provider. The case for one is real, and an override is per-host
     configuration describing an implementation detail, which tends to spread once it exists.
 
-[Skipped resources and pass outcome](../providers/selection.md#when-no-provider-matches)
-:   A resource with no available provider is skipped, which lets a host sit at "mostly converged"
-    indefinitely. Whether the pass outcome should reflect skips is probably yes and is not decided.
+[Capability set overrides](../providers/capabilities.md)
+:   The [override question](../providers/selection.md#overriding-selection) applies to a whole
+    capability set as much as to one provider. Whether a host can be pinned to a named capability
+    set, and where that lives, is undecided for the same reasons.
 
 [Alpine and OpenRC](../providers/multi-distribution.md)
 :   Alpine is in the target distribution list and does not use systemd, so either an OpenRC
     provider is needed or Alpine support means images with no init system running. Unresolved.
+
+## Ownership and modes
+
+[Authoritative set composition](../resources/ownership.md#authoritative-sets-and-composition)
+:   Whether an authoritative set merges its members across layers, in defiance of list replacement,
+    or is owned by exactly one layer. This is the central difficulty in the ownership model and the reason authoritative sets are proposed and not accepted.
+
+[Per-resource reconciliation mode](../concepts/reconciliation-modes.md#per-resource-policy)
+:   Whether individual resources can override a host's `enforce`/`observe` mode, and what a host's
+    status means when some resources are enforced and others only observed.
+
+[Reboot policy](../concepts/state.md#reboot-policy)
+:   Where reboot policy lives and which options exist. Automatic reboots need a decision about what
+    happens when several hosts reach one at the same time.
 
 ## Reporting and interface
 
@@ -153,7 +168,9 @@ These affect the shape of code that would be written first.
     approved one is a possible resolution and has not been designed.
 
 [Exit code for skipped resources](../reference/cli.md#exit-codes)
-:   Whether `datum reconcile` should exit non-zero when resources were skipped.
+:   Whether `datum reconcile` should exit non-zero when resources were skipped. The
+    [`degraded` host state](../concepts/state.md#host-state-across-passes) answers the reporting
+    half, and the exit code is still undecided.
 
 [Detecting repeated correction](../concepts/drift.md#where-drift-comes-from)
 :   A resource corrected on consecutive passes suggests something else on the machine manages the
@@ -164,9 +181,19 @@ These affect the shape of code that would be written first.
 :   The contents of a plan are settled and the serialised form is not. Something structured is
     needed before anything can consume plans programmatically.
 
-[Report retention](../architecture/reconciliation-flow.md)
+[Status JSON schema](../reference/status.md#machine-readable-output)
+:   The [status model](../reference/status.md) fixes the fields, and the JSON schema that exposes
+    them is not settled. It becomes a [contract](../reference/stability.md) as soon as anything
+    parses it.
+
+[Report retention](../reference/status.md)
 :   Where pass reports are kept, for how long, and whether they are readable through
     `datum status` or only as files on the host.
+
+[Cached-revision expiry](../reconciliation/last-known-good.md#how-long-a-cached-revision-stays-usable)
+:   Whether a last-known-good revision expires when a host is offline too long, which is the same
+    decision as [signature freshness](../security/time.md#consequences-for-offline-hosts) seen from
+    the desired-state side.
 
 ## Security
 
@@ -200,6 +227,16 @@ safely](../security/provider-safety.md). What remains is below.
     itself through a resource describing its own package is a particular hazard, because a failed
     update leaves nothing running to retry it.
 
+[Agent self-update mechanism](../architecture/self-management.md)
+:   The [boundary](../architecture/self-management.md#what-the-design-commits-to-now) is decided,
+    being that the running reconciler does not replace its own binary mid-pass. Which mechanism does,
+    whether a supervisor, external package management or an init-ordered restart, is not.
+
+[Trustworthy time on hosts](../security/time.md)
+:   What an agent does when it cannot establish trustworthy time for a time-dependent check. Ordering
+    checks need no clock, and expiry checks do, and the fallback for a host with a wrong clock is
+    undecided.
+
 [Detecting a host that has stopped reporting](../security/threat-model.md#an-attacker-with-root-on-one-managed-host)
 :   A compromised host can simply stop reconciling, and detection depends on noticing the absence
     of reports rather than on receiving a bad one. Datum currently provides nothing for that, and
@@ -222,3 +259,9 @@ files need credentials and Datum has no mechanism for them, but there is no half
 waiting for a decision. Every host reads the whole repository, so a secret committed there is
 readable by every managed machine, which means a mechanism cannot be added without changing how
 desired state reaches a host.
+
+One constraint on any future secret mechanism is settled even though the mechanism is not. The
+[effective manifest describes secret references, never resolved secret
+values](../fleet/effective-manifests.md#secrets-and-the-digest), so that secrets stay out of the
+manifest, its digest, logs, plans and provenance. That is a boundary a design has to respect, not a
+design in itself.

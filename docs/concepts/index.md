@@ -36,6 +36,8 @@ can explain afterwards how each was arrived at.
 | [Action](plan.md#actions) | What the plan intends to do to a single resource. |
 | [Reconciliation](reconciliation.md) | One complete pass of observe, diff, plan, apply and verify. |
 | [Convergence](reconciliation.md#convergence) | The condition of a host whose observed state satisfies its desired state. |
+| [Mode](reconciliation-modes.md) | Whether an agent enforces desired state or only observes and reports drift. |
+| [State](state.md) | The condition of a resource within a pass, and of a host across passes. |
 
 Several other terms are core vocabulary and are defined in the section that owns
 them rather than being introduced twice.

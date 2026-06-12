@@ -93,6 +93,10 @@ preference order is not used to choose between them.
 :   How the provider for a resource is chosen, what `/etc/os-release` can and cannot
     tell Datum, and what happens when no provider matches.
 
+[Capabilities](capabilities.md)
+:   How a distribution resolves to a set of provider choices, and how that keeps
+    distribution knowledge below the provider boundary.
+
 [Multi-distribution design](multi-distribution.md)
 :   Differences between distributions, which of them cannot be represented by a single
     field, and how those are documented.

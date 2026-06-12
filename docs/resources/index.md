@@ -53,6 +53,10 @@ badly is expensive because every type added afterwards inherits the answer.
 :   What observe, diff, plan, apply and verify each mean, which of them a provider
     performs, and what idempotency requires.
 
+[Ownership](ownership.md)
+:   What a declaration claims about targets it does not mention, and the difference between an
+    assertive resource and an authoritative set.
+
 [Resource identity](identity.md)
 :   The difference between how a resource is referred to inside Datum and what it
     manages on the host, and why one identity cannot do both jobs.

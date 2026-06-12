@@ -103,3 +103,6 @@ values, temporary files and reports, and the local privilege escalations that ha
 [Handshakes and authenticity](handshake.md)
 :   How a host proves which machine it is, how it is enrolled, and how a manifest is shown to be
     genuine and current.
+
+[Time and ordering](time.md) :   How the security controls order events without depending on a host
+clock, using monotonic ordering where available.

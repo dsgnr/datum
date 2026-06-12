@@ -11,6 +11,13 @@ arranged for finding a field or a definition instead of reading through.
 :   The proposed commands, their output, and their exit codes. No part of it is
     implemented.
 
+[Status](status.md)
+:   The host and fleet status model, designed before implementation so the architecture
+    preserves the right information.
+
+[Interfaces and stability](stability.md)
+:   Which interfaces become contracts, and when. Everything is unstable before 1.0.
+
 [Glossary](glossary.md)
 :   One entry per concept, with links to the page that specifies it, and a list of terms this
     documentation avoids.
