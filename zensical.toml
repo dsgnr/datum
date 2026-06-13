@@ -82,6 +82,19 @@ nav = [
     "security/handshake.md",
     "security/time.md",
   ] },
+  { "Observability" = [
+    "observability/index.md",
+    "observability/metrics.md",
+    "observability/alerting.md",
+  ] },
+  { "Journeys" = [
+    "journeys/index.md",
+    "journeys/first-host.md",
+    "journeys/mixed-fleet.md",
+    "journeys/production-change.md",
+    "journeys/manual-change.md",
+    "journeys/bad-commit.md",
+  ] },
   { "Reference" = [
     "reference/index.md",
     "reference/manifest-format.md",
