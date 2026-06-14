@@ -187,12 +187,14 @@ finished   2 minutes ago
 
 The metrics file is rewritten each pass, so
 `datum_pass_last_success_timestamp_seconds` advances and the
-[staleness alert](../observability/alerting.md#staleness-is-the-alert-that-matters-most) stays quiet.
+[staleness alert](../observability/alerting.md#a-host-that-stops-reconciling-is-the-failure-to-catch) stays quiet.
 
 ## What this journey tests
 
-The single-host path needs nothing central, no inbound network access, and no identity beyond a name
-in a local file.
+The single-host path needs nothing central, nothing inbound for reconciliation itself, and no identity
+beyond a name in a local file, which is the [direct
+mode](../architecture/deployment-models.md) claim made concrete. The only listener is the optional
+[metrics endpoint](../observability/metrics.md#exposure), bound to loopback.
 
 More importantly it tests that adoption is incremental. A server that was configured by hand can be
 brought under management three resources at a time, and the first thing Datum does is tell you where

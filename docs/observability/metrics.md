@@ -12,25 +12,117 @@ cardinality reasons covered below, and the per-resource detail lives in logs and
 
 ## Exposure
 
-An agent writes metrics to a file rather than listening on a port.
+The agent serves metrics over HTTP, in the same way an exporter does.
 
 ```text
-/var/lib/node_exporter/textfile/datum.prom
+GET /metrics
 ```
 
-This is the textfile-collector pattern, and it is chosen because it preserves a property the
-architecture already claims. [Resolution on the host](../architecture/deployment-models.md) works on
-a machine with no inbound network access, and an agent that opened a metrics port would give that up,
-adding a listener running next to a process that holds repository credentials and runs as root.
+```yaml title="/etc/datum/agent.yaml"
+metrics:
+  listen: 127.0.0.1:10056
+```
 
-The cost is a dependency on something else already scraping that directory, which on most fleets is
-`node_exporter` and on some is nothing at all.
+!!! note "Proposed behaviour"
+
+    10056 is taken from the second exporter range in the Prometheus port allocation list, where 9100
+    to 9999 is fully allocated. The entry has to be added to that list so another exporter does not
+    claim the same number.
+
+## Why a port rather than a file
+
+The alternative is writing a file for a textfile collector to pick up, which avoids a listener
+entirely. It also has a failure mode that defeats the most important thing metrics are for.
+
+When an agent dies, the textfile stops being rewritten and the collector keeps serving the last file
+it found. Every metric in it continues to be scraped successfully, reporting the values the agent held
+at the moment it stopped, so a dead agent looks like a healthy one until somebody reasons about
+timestamps.
+
+An HTTP endpoint fails honestly. A dead agent is not listening, the scrape fails, and `up` goes to
+zero straight away.
+
+```text
+up{job="datum"} == 0
+```
+
+That is a direct, immediate signal that the agent is gone, and it needs no threshold, no timestamp
+arithmetic and no assumption about the reconciliation interval. Serving metrics from the process whose
+health is in question is what makes the absence of that process detectable.
+
+The two failures are distinct and both matter. `up == 0` means the agent is not running, and a
+[stale success timestamp](#emit-absolute-timestamps-never-elapsed-time) means the agent is running and
+not converging. An endpoint gives the first, and the metric design gives the second.
+
+## Serving does not read the host
+
+A scrape returns values recorded by the last pass. It does not trigger a pass, read the host, or touch
+the repository.
+
+That matters because a metrics endpoint is scraped far more often than a host is reconciled, and an
+endpoint that observed the host on demand would turn a monitoring system into a source of load on
+every managed machine, with a scrape storm becoming a fleet-wide read of every managed path.
+
+It also keeps the endpoint honest about what it is. Metrics describe the last pass, and the
+freshness of that description is itself reported through the pass timestamps and not implied by the
+scrape having succeeded.
+
+## Binding and exposure
+
+The default binds to loopback.
+
+```text
+metrics:
+  listen: 127.0.0.1:10056      # default
+```
+
+An exporter normally listens on all interfaces by default. The listener here runs inside a process
+that holds repository credentials and runs as root, on hosts that otherwise need no inbound access,
+so remote exposure is configured rather than assumed.
+
+Exposing it to a remote scraper is one line.
+
+```text
+metrics:
+  listen: 0.0.0.0:10056
+```
+
+Fleets already running a local collector, whether that is `node_exporter` with a scrape config, an
+OpenTelemetry collector or a Prometheus agent on the same host, need nothing beyond the default,
+because loopback is reachable from the same machine.
+
+!!! note "Security consideration"
+
+    The endpoint discloses the revision and manifest digest a host is running, its state, and its
+    resource counts. That is reconnaissance value, not secret material, and it reveals which hosts
+    are behind on configuration, which is exactly the set an attacker would find interesting.
+
+    It carries no file content, no field values and no credentials, which follows from the same
+    [redaction rule](../security/provider-safety.md#reports-and-content-disclosure) that applies to
+    reports. Nothing reachable through `/metrics` is absent from what the metric catalogue below
+    describes.
 
 !!! note "Open question"
 
-    Whether an agent should also be able to expose metrics over HTTP, for fleets with no textfile
-    collector, is undecided. It is clearly convenient and it introduces a listener, which is a
-    security decision rather than a convenience one.
+    Whether the endpoint supports TLS and authentication is undecided. Exporters conventionally have
+    neither and rely on network controls, and an agent that already manages certificates for its own
+    source might reasonably serve them. Leaving it unauthenticated on loopback is safe, and exposing
+    it on all interfaces without either is a decision a fleet should make consciously.
+
+## Writing a file as well
+
+Some fleets prefer the file, either because a textfile collector is already the established pattern or
+because no listener is acceptable on a particular host.
+
+```text
+metrics:
+  textfile: /var/lib/node_exporter/textfile/datum.prom
+```
+
+Both mechanisms can be configured at once, and both carry identical metrics. Where only the file is
+used, the `up == 0` signal is unavailable and staleness detection through the pass timestamps is the
+only way a stopped agent is noticed, which makes the [absolute timestamp
+rule](#emit-absolute-timestamps-never-elapsed-time) load-bearing and not merely correct.
 
 ## The metrics
 
@@ -79,25 +171,27 @@ datum_last_known_good_info{revision}        gauge, always 1
 
 ## Emit absolute timestamps, never elapsed time
 
-This is the single most important detail on the page, because getting it wrong produces a monitoring
-system that reports healthy while the fleet is dead.
+A metric like `datum_seconds_since_last_pass` seems natural and is a trap, because an elapsed-time
+gauge is only correct while something keeps recomputing it.
 
-A metric like `datum_seconds_since_last_pass` seems natural and is a trap. When an agent stops, the
-textfile stops being rewritten, and the collector keeps serving the last file it found. A frozen
-elapsed-time gauge therefore keeps reporting the small value it held when the agent died, and every
-alert built on it stays quiet forever.
+An agent that is running but no longer completing passes keeps serving metrics, so the endpoint stays
+up and the gauge keeps reporting whatever it last calculated. The same applies more severely to a
+[textfile](#writing-a-file-as-well), where a stopped agent leaves a frozen file that continues to
+scrape successfully.
 
-An absolute timestamp does not have that failure. A frozen
-`datum_pass_last_success_timestamp_seconds` holds the moment of the last success, and the age
-computed from it grows on its own as the clock advances.
+An absolute timestamp does not have that failure, because the age is computed at query time from a
+value that does not need updating to stay truthful.
 
 ```text
 time() - datum_pass_last_success_timestamp_seconds
 ```
 
-That expression keeps rising whether the agent is failing, stopped, or removed, which is exactly the
-behaviour staleness detection needs. Every time-related metric here is therefore an absolute
-timestamp, and no metric reports an age.
+That expression rises on its own whether the agent is failing, wedged, stopped, or removed. Every
+time-related metric here is therefore an absolute timestamp, and no metric reports an age.
+
+The rule matters even with an HTTP endpoint. `up == 0` catches an agent that has exited, and an agent
+that is alive and stuck is exactly the case `up` cannot see, which is the case these timestamps exist
+for.
 
 ## Answering "is this host up to date?"
 

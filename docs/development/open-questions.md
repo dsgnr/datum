@@ -186,11 +186,11 @@ These affect the shape of code that would be written first.
     them is not settled. It becomes a [contract](../reference/stability.md) as soon as anything
     parses it.
 
-[Metrics exposure without a textfile collector](../observability/metrics.md#exposure)
-:   Metrics are written to a file for a [node_exporter](../observability/metrics.md#exposure) textfile
-    collector, which keeps the agent from opening a port on a host that may have no inbound network
-    access. Whether an HTTP endpoint should also exist, for fleets with no such collector, is a
-    security decision rather than a convenience one and is undecided.
+[Metrics endpoint port, TLS and authentication](../observability/metrics.md#binding-and-exposure)
+:   The agent serves metrics over HTTP, and the default port is provisional and needs registering in
+    the Prometheus port allocation list. Whether the endpoint supports TLS and authentication is
+    undecided, since exporters conventionally have neither and this one runs inside a root process
+    holding repository credentials.
 
 [Fleet expected revision](../observability/metrics.md#answering-is-this-host-up-to-date)
 :   Revision lag is computed from the maximum across reporting hosts, so a fleet where every host is
@@ -254,7 +254,7 @@ safely](../security/provider-safety.md). What remains is below.
 
 [Independent evidence that a host is in the state it claims](../observability/alerting.md#what-these-alerts-cannot-detect)
 :   A host that has stopped reconciling is now detectable through [staleness
-    alerting](../observability/alerting.md#staleness-is-the-alert-that-matters-most), which relies on
+    alerting](../observability/alerting.md#a-host-that-stops-reconciling-is-the-failure-to-catch), which relies on
     metrics being absolute timestamps. What remains unsolved is a host that has been compromised and
     reports healthy, because every signal Datum emits is produced by the host about itself. Closing
     that needs something a host cannot forge, which is a different problem from monitoring.
