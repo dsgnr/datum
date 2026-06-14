@@ -19,6 +19,7 @@ nav = [
     "introduction/project-status.md",
   ] },
   { "Concepts" = [
+    "concepts/index.md",
     "concepts/desired-state.md",
     "concepts/observed-state.md",
     "concepts/drift.md",
