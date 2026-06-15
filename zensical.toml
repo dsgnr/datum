@@ -27,6 +27,7 @@ nav = [
     "concepts/reconciliation.md",
   ] },
   { "Fleet" = [
+    "fleet/index.md",
     "fleet/repository-layout.md",
     "fleet/labels-and-selectors.md",
     "fleet/composition.md",
