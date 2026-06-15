@@ -26,6 +26,10 @@ nav = [
     "concepts/plan.md",
     "concepts/reconciliation.md",
   ] },
+  { "Fleet" = [
+    "fleet/repository-layout.md",
+    "fleet/labels-and-selectors.md",
+  ] },
   { "Architecture" = [
     "architecture/index.md",
     "architecture/components.md",
