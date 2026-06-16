@@ -37,6 +37,8 @@ nav = [
   { "Resources" = [
     "resources/lifecycle.md",
     "resources/identity.md",
+    "resources/dependencies.md",
+    "resources/conflicts.md",
   ] },
   { "Architecture" = [
     "architecture/index.md",
