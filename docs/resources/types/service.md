@@ -30,6 +30,13 @@ provider is `systemd`.
 | `state` | `running`, `stopped` | Yes | Whether the service should be running now. |
 | `enabled` | boolean | Yes | Whether the service should start at boot. |
 | `restartOn` | list of resource references | No | Resources whose change should restart the service. |
+| `reloadOn` | list of resource references | No | Resources whose change should reload the service. |
+
+`restartOn` and `reloadOn` behave identically except for the operation they ask the provider for,
+and declaring both for the same resource is an error. A provider whose unit cannot reload fails the
+action instead of restarting, because substituting a restart for a reload turns a stated requirement
+into an outage. The reasoning is on the [applications](../applications.md#reload-against-restart)
+page.
 
 ## Running and enabled are independent
 
@@ -102,11 +109,6 @@ yet at that point.
     units.
 
 ## Open questions
-
-There is no way to ask for a reload rather than a restart, which matters for services
-where a restart drops connections and where the configuration change does not need
-one. Whether that belongs on `restartOn`, as a field on the service, or as something
-the provider decides from the unit's capabilities has not been worked out.
 
 Units with instances, such as `getty@tty1`, are not addressed. The name would work as
 a target identity, and whether anything else about them needs modelling is unexplored.

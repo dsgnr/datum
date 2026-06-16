@@ -32,6 +32,11 @@ Classification
 :   What a host is for, expressed as labels in its `Host` document. Decided by the
     repository, never by the host. See [host identity](../architecture/host-identity.md).
 
+Configuration validation
+:   Checking that an application will accept proposed configuration content, performed on staged
+    content inside apply and before the change goes live. Distinct from manifest validation and from
+    verification. See [configuration validation](../resources/validation.md).
+
 Convergence
 :   The condition of a host whose observed state satisfies its desired state for every
     resource in its effective manifest. Established by observation, not asserted.
@@ -62,6 +67,11 @@ Effective manifest
 Enrolment
 :   The step in which a machine with no identity acquires one the fleet recognises, along with any
     credential that identity needs. See [enrolment](../security/handshake.md#getting-the-repository-credential-onto-a-host).
+
+Extension
+:   Code installed on a host supplying provider implementations for resource types Datum does not
+    ship. Runs out of process and as root, and is not installed through desired state. See
+    [applications](../resources/applications.md#extensions).
 
 Fleet
 :   The set of hosts one repository describes. See [fleet](../fleet/index.md).
@@ -95,10 +105,6 @@ Last known good
     revision fails to resolve. A revision identifier, not stored system state. See [last
     known good](../reconciliation/last-known-good.md).
 
-Mode
-:   Whether an agent applies changes or only reports drift, being `enforce` or `observe`.
-    Set on the host. See [reconciliation modes](../concepts/reconciliation-modes.md).
-
 Layer
 :   A set of configuration with a matcher saying which hosts it applies to and a
     precedence saying how strongly. See [repository
@@ -108,10 +114,19 @@ Manifest digest
 :   A digest of an effective manifest's content, used to identify exactly what was
     reconciled.
 
+Manifest validation
+:   Checking that repository documents are well formed and internally consistent, performed before the
+    host is read. Distinct from configuration validation. See [document
+    format](../reference/manifest-format.md#validation-summary).
+
 Matcher
 :   The `match` block on a layer deciding which hosts it applies to, made of `labels`,
     `oneOf`, `noneOf`, `has` and `missing`. See [labels and
     matchers](../fleet/labels-and-matchers.md).
+
+Mode
+:   Whether an agent applies changes or only reports drift, being `enforce` or `observe`.
+    Set on the host. See [reconciliation modes](../concepts/reconciliation-modes.md).
 
 Observation
 :   Reading the current state of the resources in a manifest from a host. Read-only,
@@ -153,15 +168,15 @@ Reconciliation
 :   One complete pass for one host. See
     [reconciliation](../concepts/reconciliation.md).
 
+Repository revision
+:   The exact commit that desired state was resolved from. See [desired
+    state](../concepts/desired-state.md#repository-revision).
+
 Reproducible
 :   The property that the same revision produces the same result on the same host at any
     time. Distinct from declarative, and only as strong as the pinning of the inputs a
     revision refers to. See [last known
     good](../reconciliation/last-known-good.md#declarative-is-not-reproducible).
-
-Repository revision
-:   The exact commit that desired state was resolved from. See [desired
-    state](../concepts/desired-state.md#repository-revision).
 
 Resource
 :   A typed description of one thing on a host, stating the condition it should be in. See

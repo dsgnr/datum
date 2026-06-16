@@ -43,6 +43,8 @@ nav = [
     "resources/identity.md",
     "resources/dependencies.md",
     "resources/conflicts.md",
+    "resources/validation.md",
+    "resources/applications.md",
     { "Resource types" = [
       "resources/types/index.md",
       "resources/types/package.md",
@@ -106,6 +108,7 @@ nav = [
   { "Development" = [
     "development/index.md",
     "development/documentation.md",
+    "development/testing.md",
     "development/open-questions.md",
   ] },
   { "Decisions" = [
@@ -120,6 +123,7 @@ nav = [
     "adr/0008-resource-reference-and-target-identity.md",
     "adr/0009-declared-only-ownership.md",
     "adr/0010-no-self-managed-trust-anchors.md",
+    "adr/0011-no-command-execution-from-desired-state.md",
   ] },
 ]
 

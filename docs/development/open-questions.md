@@ -50,9 +50,10 @@ These affect the shape of code that would be written first.
     for `remove` actions is undecided, and doing so would make plan order depend on the action.
 
 [Generic change reaction](../resources/dependencies.md#restarton)
-:   Reacting to change is specific to `Service`. Whether a general mechanism is needed, and what
-    it would mean for a type whose reaction is not a restart, is unresolved. There is also no way
-    to request a reload rather than a restart.
+:   Reacting to change is specific to `Service`, which now has both `restartOn` and
+    [`reloadOn`](../resources/applications.md#reload-against-restart). Whether a general mechanism is
+    needed for a type whose reaction is neither is unresolved, and adding one prematurely risks a
+    generic trigger system used to sequence arbitrary work.
 
 [Warning on likely missing dependencies](../resources/dependencies.md#where-dependencies-come-from)
 :   Whether Datum should warn about a `File` under a managed `Directory` with no edge between
@@ -145,6 +146,39 @@ These affect the shape of code that would be written first.
 [Alpine and OpenRC](../providers/multi-distribution.md)
 :   Alpine is in the target distribution list and does not use systemd, so either an OpenRC
     provider is needed or Alpine support means images with no init system running. Unresolved.
+
+## Applications and extensions
+
+[Extension distribution](../resources/applications.md#extensions)
+:   How extensions are built, distributed, signed, installed, discovered and updated. This is the
+    largest gap created by [ADR-0011](../adr/0011-no-command-execution-from-desired-state.md), because
+    extensions are the only path for anything Datum does not already model, and it interacts with the
+    [agent supply chain](../architecture/self-management.md) question since both are about getting
+    trusted code onto a host outside the mechanism used for everything else.
+
+[Application-level configuration validation](../resources/validation.md#configurations-spanning-several-files)
+:   Validating a configuration spread across several files needs a way to express that those resources
+    form one application configuration, which is the first genuine argument for a grouping concept the design has [avoided so far](../resources/applications.md#an-application-is-not-a-datum-concept).
+
+[Recording a pending reload](../resources/validation.md#configurations-spanning-several-files)
+:   When multi-file validation fails after the files are written, the files match desired state so
+    nothing shows as drift, while the service is still running its old configuration. The pending
+    reload has to be recorded somewhere or the host reports converged while holding a configuration
+    that would fail on restart. This has the same shape as
+    [`awaiting-reboot`](../concepts/state.md#reboots) and neither is designed.
+
+[Validator output in reports](../resources/validation.md#privileges-and-output)
+:   How much validator output belongs in a report that may be collected centrally. Truncating loses
+    the diagnostic, keeping it risks disclosure through a channel the
+    [redaction rule](../security/provider-safety.md#reports-and-content-disclosure) otherwise closes,
+    and the `sensitive` flag only covers files somebody remembered to mark.
+
+## Testing
+
+[Where the VM matrix runs](testing.md#keeping-the-matrix-affordable)
+:   Hosted runners with nested virtualisation are slow and simple, dedicated hardware is fast and needs
+    maintaining, and cloud instances per run cost money continuously. The choice decides whether a
+    nightly full matrix is achievable or becomes weekly.
 
 ## Ownership and modes
 
