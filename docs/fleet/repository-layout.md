@@ -1,6 +1,6 @@
 # Repository layout
 
-A Datum repository holds four kinds of document. `Fleet` declares the root of a
+A Datum repository holds four types of document. `Fleet` declares the root of a
 fleet, `Host` declares a machine and its classification, `Layer` declares a set of
 configuration along with the hosts it applies to, and resource documents declare
 the state to be reconciled.
