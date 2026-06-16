@@ -39,6 +39,16 @@ nav = [
     "resources/identity.md",
     "resources/dependencies.md",
     "resources/conflicts.md",
+    { "Resource types" = [
+      "resources/types/index.md",
+      "resources/types/package.md",
+      "resources/types/file.md",
+      "resources/types/directory.md",
+      "resources/types/service.md",
+      "resources/types/user.md",
+      "resources/types/group.md",
+      "resources/types/sysctl.md",
+    ] },
   ] },
   { "Architecture" = [
     "architecture/index.md",
