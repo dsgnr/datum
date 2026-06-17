@@ -22,6 +22,16 @@ datum status      the last pass result             no host access
 Only `reconcile` changes anything. Everything above it in that list is safe to run on a production
 machine in the middle of an incident.
 
+A second group operates on the repository and not on a host, and none of the commands in it read a
+managed machine at any point.
+
+```text
+datum init        create a new repository          writes local files
+datum validate    parse and resolve every host     no host access
+datum affected    which hosts a change reaches     no host access
+datum migrate     rewrite documents to a schema    writes local files
+```
+
 ## Global flags
 
 | Flag | Meaning |
@@ -190,6 +200,86 @@ finished   2 minutes ago
 
 Reads a local report, not the repository or the host, so it is cheap and says
 nothing about whether the host has drifted since.
+
+## datum init
+
+Creates the two documents a repository needs in order to be discovered, and stops there.
+
+```text
+$ datum init
+
+created fleet/datum.yaml
+created fleet/base/layer.yaml
+
+next steps
+  add a Host document under fleet/hosts/
+  add resources under fleet/base/ or a new layer
+```
+
+`--with-examples` adds a commented example host and resource. The reasoning behind the
+generated content being this small, and behind the command leaving Git alone, is set out
+under [creating a repository](../repository/index.md#datum-init).
+
+## datum validate
+
+Parses every document, checks each against its declared schema version, then resolves and
+builds a graph for every host in the fleet.
+
+```text
+$ datum validate
+
+fleet      example
+revision   9c02ab
+hosts      500
+layers     14
+
+resolved 500 hosts, 0 errors
+```
+
+Errors report how many hosts they affect instead of repeating once per host, and
+`--strict` promotes warnings to errors. There is no separate lint command, for
+[the reasons given alongside
+it](../repository/validating-changes.md#there-is-no-datum-lint).
+
+## datum affected
+
+Resolves every host at two revisions and reports which of them end up with a different
+[manifest digest](../fleet/effective-manifests.md#content-addressing).
+
+```text
+$ datum affected --from origin/main --to HEAD
+
+42 of 500 hosts affected
+
+web-001    sha256:3f2a9c4e -> sha256:8d10b7f2
+web-002    sha256:3f2a9c4e -> sha256:8d10b7f2
+...
+db-001     unchanged
+```
+
+`--show-resources --host NAME` expands one host into a diff between its two
+manifests, which reports what that host's desired state becomes, not what
+changed in the repository.
+
+## datum migrate
+
+Rewrites documents from one schema version to another, in place, and leaves the result for
+a human to review and commit.
+
+```text
+$ datum migrate --to v1beta1
+
+rewrote 41 documents in 18 files
+  fleet/base/packages.yaml
+  fleet/roles/web/nginx.yaml
+  ...
+
+review the diff before committing
+```
+
+A migration that cannot be performed mechanically stops and names the documents needing a
+human, and no agent ever performs one. Both points are covered under
+[schema versions](../repository/schema-versions.md#migration-is-a-repository-operation).
 
 ## Exit codes
 
