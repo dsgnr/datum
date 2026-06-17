@@ -36,6 +36,11 @@ nav = [
     "fleet/precedence.md",
     "fleet/effective-manifests.md",
   ] },
+  { "Repository" = [
+    "repository/index.md",
+    "repository/schema-versions.md",
+    "repository/validating-changes.md",
+  ] },
   { "Resources" = [
     "resources/index.md",
     "resources/lifecycle.md",
