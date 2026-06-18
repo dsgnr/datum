@@ -11,6 +11,10 @@ the state to be reconciled.
     convention, not semantics, and Datum attaches no meaning to a directory
     being called `roles` or `environments`.
 
+The layout shown here is the one a growing fleet tends towards, and it is larger than what
+Datum requires. [The minimum](../repository/index.md#the-minimum) is four documents in as
+few as one file.
+
 ## A worked layout
 
 ```text
