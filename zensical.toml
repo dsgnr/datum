@@ -52,6 +52,7 @@ nav = [
     ] },
   ] },
   { "Providers" = [
+    "providers/index.md",
     "providers/selection.md",
     "providers/multi-distribution.md",
     "providers/support-matrix.md",
