@@ -53,6 +53,8 @@ nav = [
   ] },
   { "Providers" = [
     "providers/selection.md",
+    "providers/multi-distribution.md",
+    "providers/support-matrix.md",
   ] },
   { "Architecture" = [
     "architecture/index.md",
