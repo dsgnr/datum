@@ -81,6 +81,12 @@ nav = [
     "architecture/deployment-models.md",
     "architecture/self-management.md",
   ] },
+  { "Host lifecycle" = [
+    "lifecycle/index.md",
+    "lifecycle/installation.md",
+    "lifecycle/enrolment.md",
+    "lifecycle/decommissioning.md",
+  ] },
   { "Security" = [
     "security/index.md",
     "security/threat-model.md",
