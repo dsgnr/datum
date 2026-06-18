@@ -35,6 +35,7 @@ nav = [
     "fleet/effective-manifests.md",
   ] },
   { "Resources" = [
+    "resources/index.md",
     "resources/lifecycle.md",
     "resources/identity.md",
     "resources/dependencies.md",
