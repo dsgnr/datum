@@ -3,7 +3,7 @@
 Every unresolved question recorded on this site, collected in one place. Each entry links to
 the section that states it in full.
 
-The list exists because open questions scattered across forty pages are easy to lose, and
+The list exists because open questions scattered across ninety pages are easy to lose, and
 because the count is a reasonable measure of how ready the design is. Resolving one means
 deciding, updating the page, and removing the entry here.
 
@@ -307,6 +307,23 @@ safely](../security/provider-safety.md). What remains is below.
 [Concurrency within a pass](../architecture/dependency-graph.md#concurrency)
 :   Whether unrelated actions should be applied concurrently, given that package manager locks
     would serialise the most expensive actions anyway.
+
+## Host lifecycle
+
+[An agent with no identity](../lifecycle/installation.md#verifying-an-installation)
+:   Whether the agent refuses to start when it has no identity or runs and reports an unenrolled
+    state. Running makes the state observable through metrics before any enrolment has happened,
+    and it also means a misconfigured machine looks alive to anything checking only the process.
+
+[Discovering machines that never enrolled](../lifecycle/enrolment.md#machines-that-never-enrol)
+:   Whether unenrolled machines should be discoverable. A fleet cannot distinguish a machine that
+    was never meant to be managed from one whose enrolment failed, and closing that gap means
+    something outside Datum holding a list of machines that are supposed to exist.
+
+[Retaining per-host reports](../lifecycle/decommissioning.md#what-the-fleet-keeps-afterwards)
+:   Where a host's own reporting is retained once the machine is gone. Git records what a host was
+    told to do and nothing records what it reported doing, so an audit after decommissioning has
+    the intent and not the outcome.
 
 ## Not an open question
 
