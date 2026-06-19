@@ -90,9 +90,19 @@ Reading `Service[nginx]` shows everything that can restart it, whereas
 notification declared on files means reconstructing the list by searching for
 anything that mentions the service.
 
-A resource named in `restartOn` does not become a dependency automatically, and both
-are usually wanted. Listing a file in `restartOn` without also listing it in
-`dependsOn` would allow the restart to be planned before the file was written.
+`restartOn` also orders. A resource listed there is processed before the service in the
+same way as one listed in `dependsOn`, so the reference does not have to appear in both
+fields.
+
+| Field | Orders | Triggers an update |
+| ----- | ------ | ------------------ |
+| `dependsOn` | Yes | No |
+| `restartOn` | Yes | Yes |
+
+Reaction implies order because a service that restarts when its configuration changes
+always wants the configuration written first. A rule requiring both fields to name the
+same resource would have no effect other than allowing somebody to write one and forget
+the other.
 
 !!! note "Open question"
 
