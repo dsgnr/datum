@@ -129,6 +129,13 @@ the meantime.
     [avoided](applications.md#an-application-is-not-a-datum-concept) so far and which validation is
     the first genuine argument for.
 
+    A specific form of the same problem is a configuration that is a whole directory, such as an
+    `nginx` `conf.d` or a `sudoers.d`, where the set of files matters as much as the contents of each
+    one. Validating the assembled result covers the files a repository declares and says nothing about
+    a stale fragment somebody left behind, and declaring the directory's membership needs an
+    [authoritative set](ownership.md#authoritative-sets) whose composition rules are themselves
+    unresolved.
+
     The second is that files left wrong on disk do not show as drift, because they match desired state,
     so the pending reload has to be recorded somewhere or the next pass will consider the host
     converged while it holds a configuration that would fail on restart. That interacts with the
@@ -144,6 +151,34 @@ nothing saying so. A repository asking for validation gets validation or gets an
 
 The usual cause is a missing dependency, and the fix is an ordering edge to the package providing the
 validator, which the manifest can already express.
+
+## Validators run the binary that is installed
+
+A validator invokes the application's own tooling as it exists on that host, so the content is
+checked against the version that is going to consume it rather than against whatever version the
+repository was written for.
+
+This is what makes validation useful. A directive accepted by nginx 1.24 and removed in 1.26 is
+caught on the hosts running 1.26 and nowhere else, which is the set of hosts it affects. Checking in
+CI against a fixed version does not reproduce it.
+
+The same property is a hazard on a fleet that is not uniform. A change validated successfully on every
+host running one version and rejected on the hosts running another produces a partial rollout, where
+some hosts converged and some are `failed`, and the repository content is identical across all of them.
+
+```text
+web-001   nginx 1.24   converged
+web-002   nginx 1.24   converged
+web-003   nginx 1.26   failed      validation rejected an unknown directive
+```
+
+That outcome is correct, and it is where somebody has to decide what the fleet should run.
+Diagnosing it depends on the failure report naming the validator and the host rather than reporting
+a generic validation error, which is why validator output is captured.
+
+Version differences between hosts are expressible the same way any other difference is, through a layer
+whose matcher narrows to the hosts running each version. That costs a declared label per host and it is
+the only mechanism that keeps the difference visible in the repository.
 
 ## Validators must not have side effects
 
@@ -211,3 +246,70 @@ In all three the resource is `failed`, dependents are
 the next pass observes and tries again. Datum attempts no recovery of its own, since [there is no
 rollback](../concepts/reconciliation.md#there-is-no-rollback), and a recovery path for the
 validation case alone would cover the least damaging failure of the three.
+
+## Verification can be stronger than field comparison
+
+Verification re-reads a resource and confirms it holds the state that was asked for, which for most
+resources means comparing the same fields the diff compared. A provider is permitted to check more than
+that where it knows something the field set does not express.
+
+```text
+File[sshd-config]     fields match, and the staged content validated
+Service[sshd]         active, enabled, and the unit reports no failed reload
+Package[nginx]        installed at the requested version, and the package database is consistent
+```
+
+A `Service` provider confirming that a unit is active, not merely that systemd accepted the start
+request, is the clearest example. The field says `state: running` and the useful check is whether
+the process stayed up, which are different questions on any service that exits shortly after
+starting, and [how long a provider should wait](types/service.md#verification) before deciding is
+undecided.
+
+The limit on this is that a stronger check has to be a check on the same thing. A provider may read more
+of the host to establish that the resource reached its declared state, and it may not extend
+verification into a claim about whether the resulting system works, which is the subject of the next
+section.
+
+## Verification is not a health check
+
+Verification establishes that a host reached the state the repository described. It does not
+establish that the software on that host is functioning, and that line is where Datum's
+responsibility ends rather than a gap to be filled later.
+
+```text
+Datum verifies      nginx is installed, its configuration matches, its unit is active
+Datum does not      the site returns 200, certificates are valid, latency is acceptable
+```
+
+An HTTP check would be the obvious addition and it is declined. A resource whose verified state
+depends on a response from a network service is a resource whose convergence depends on something
+outside the host, so a downstream outage would report as configuration drift, and a pass would fail
+for a reason no change to the repository could fix.
+
+The schedule is the deeper problem. Datum runs periodically and reports what it found during a pass,
+and a health check is only useful continuously, so one on a reconciliation schedule reports that a
+service was responding at some point in the last interval. That is not monitoring, and building it
+would produce something that looks like monitoring closely enough to be relied on.
+
+## Where Datum's responsibility ends
+
+The boundary is stated here so that the rest of the site can rely on it.
+
+| Question | Answered by |
+| -------- | ----------- |
+| Does this host match its desired state? | Datum, through verification |
+| Has this host reconciled recently, and against which revision? | Datum, through [metrics](../observability/metrics.md) |
+| Is the agent on this host running at all? | Monitoring, through the scrape failing |
+| Is the software on this host working? | Monitoring, and nothing in Datum |
+| Is the service this host provides available to users? | Monitoring, and nothing in Datum |
+
+The first two rows are the whole of Datum's claim. Everything below them is a different discipline
+with different tooling, different data retention and a different response time, and the reason
+[metrics are exposed over HTTP](../observability/metrics.md#why-a-port-rather-than-a-file) is to
+make Datum a source of data for that tooling rather than a substitute for it.
+
+The third row is the one with a catch. Datum cannot report that its own agent has stopped, since a
+stopped agent reports nothing, so the signal that a host is no longer being managed has to come from
+something outside it noticing an absence. That is [staleness
+alerting](../observability/alerting.md#a-host-that-stops-reconciling-is-the-failure-to-catch), and
+it is the one part of monitoring a Datum deployment cannot do without.
