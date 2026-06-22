@@ -71,6 +71,17 @@ nav = [
     "reference/cli.md",
     "reference/glossary.md",
   ] },
+  { "Decisions" = [
+    "adr/0001-typed-resources.md",
+    "adr/0002-separate-resources-from-providers.md",
+    "adr/0003-git-as-desired-state-source.md",
+    "adr/0004-labels-and-selectors.md",
+    "adr/0005-identity-separate-from-classification.md",
+    "adr/0006-explicit-dependencies.md",
+    "adr/0007-effective-manifest-as-input.md",
+    "adr/0008-resource-reference-and-target-identity.md",
+    "adr/0009-declared-only-ownership.md",
+  ] },
 ]
 
 # Treat broken internal links, unknown anchors and unresolved references as
