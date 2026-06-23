@@ -52,12 +52,12 @@ text, because the fields are what matters and parsing prose is how log pipelines
 {
   "pass": "01JQ8Z3M0000000000000000",
   "host": "web-001",
-  "revision": "7ab21f",
-  "manifest": "sha256:9d74e3",
+  "revision": "8b91f20",
+  "manifest": "sha256:3f2a9c4e",
   "mode": "enforce",
   "outcome": "changed",
   "duration_ms": 183,
-  "resources": { "total": 47, "converged": 47 }
+  "resources": { "total": 14, "converged": 14 }
 }
 ```
 

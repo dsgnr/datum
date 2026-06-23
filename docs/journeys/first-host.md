@@ -108,7 +108,7 @@ matters is the difference between a safe experiment and a surprise.
 
 ## The first pass
 
-**Obtaining a revision.** The agent fetches `main` and gets `7ab21f`. With no recorded revision in
+**Obtaining a revision.** The agent fetches `main` and gets `4d7e1a2`. With no recorded revision in
 its state directory, this becomes the baseline, and the [trust-on-first-use
 gap](../security/repository-trust.md#first-contact) applies, and the host cannot detect a downgrade
 on its first pass because it has nothing to compare against.
@@ -177,12 +177,12 @@ Passes continue on a schedule, each one resolving, observing, diffing, and findi
 $ datum status
 
 host       web-001
-revision   7ab21f
-manifest   sha256:3f2a9c4e
+revision   4d7e1a2
+manifest   sha256:6c1ab4f0
 outcome    converged
 finished   2 minutes ago
 
-1 unchanged, 2 unchanged
+3 unchanged
 ```
 
 The metrics file is rewritten each pass, so
