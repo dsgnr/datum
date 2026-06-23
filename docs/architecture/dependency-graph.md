@@ -40,19 +40,24 @@ common mistake the model allows.
 
 ## Edge kinds
 
-Two fields produce edges, and both order.
+Three fields produce edges, and all three order.
 
 | Field | Ordering | Reaction |
 | ----- | -------- | -------- |
 | `requires` | Yes | No |
-| `restartOn` | Yes | Yes |
+| `restartOn` | Yes | Restart |
+| `reloadOn` | Yes | Reload |
 
-`requires` says the referenced resource is processed first. `restartOn` says the same
-and adds that a change to the referenced resource causes this one to be updated.
+`requires` says the referenced resource is processed first. `restartOn` and `reloadOn` say
+the same and add that a change to the referenced resource causes this one to be updated,
+differing only in what the provider is asked to do.
 
 Reaction implying order is deliberate. A service declaring `restartOn` for its
 configuration file requires the file to be written before the restart, so the
 reference does not have to be repeated in `requires`.
+
+The graph treats all three identically, because an edge is an edge and what happens at the far end
+of it is the reconciler's concern and not the builder's.
 
 ## Validation
 

@@ -31,8 +31,8 @@ behaviour being derivable from the configuration and the documentation.
 ## Decision
 
 Dependencies are declared. `requires` lists resource references that must be processed
-before a resource, and it is the only source of ordering along with `restartOn`, which
-orders as well as triggering a reaction.
+before a resource, and ordering comes from that field together with `restartOn` and
+`reloadOn`, both of which order as well as triggering a reaction.
 
 Nothing is inferred. A `File` whose path sits inside a managed `Directory` gets no edge
 unless one is declared, even though the relationship is obvious from the paths.
