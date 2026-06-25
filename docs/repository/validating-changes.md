@@ -105,7 +105,7 @@ web-001    sha256:3f2a9c4e -> sha256:8d10b7f2
 
   File[sshd-config]     added     environments/production
   Service[sshd]         added     environments/production
-  File[nginx-config]    mode      0644 -> 0600
+  File[nginx-config]    mode      0640 -> 0600
 ```
 
 The per-host detail is a diff between two manifests instead of two revisions, so it reports what a

@@ -57,9 +57,14 @@ update   File[nginx-config]
          content   differs
          from      roles/web, hosts/web-001
 
+update   Service[nginx]
+         provider  systemd
+         reason    File[nginx-config] changed, restartOn matched
+         from      roles/web
+
 none     Package[nginx]      present, 1.24.0-2
 
-0 to create, 1 to update, 0 to remove, 0 to skip, 13 unchanged
+0 to create, 2 to update, 0 to remove, 0 to skip, 12 unchanged
 ```
 
 !!! note "Proposed output format"
