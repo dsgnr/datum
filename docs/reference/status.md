@@ -26,9 +26,10 @@ host
   identity        web-001
 
   desired
-    revision      7ab21f
-    manifest      sha256:9d74e3
-    lastKnownGood 7ab21f
+    revisionAttempted    8b91f20
+    revisionApplied      8b91f20
+    manifest             sha256:3f2a9c4e
+    lastKnownGood        8b91f20
 
   state
     condition       converged
@@ -42,8 +43,8 @@ host
     duration        183ms
 
   resources
-    total       47
-    converged   47
+    total       14
+    converged   14
     drifted      0
     failed       0
     blocked      0
@@ -52,9 +53,10 @@ host
 
 | Field | Meaning |
 | ----- | ------- |
-| `desired.revision` | The revision the last pass resolved. |
+| `desired.revisionAttempted` | The newest revision the last pass tried to resolve, whether or not it succeeded. |
+| `desired.revisionApplied` | The revision whose desired state the host is actually reconciling. |
 | `desired.manifest` | The [digest](../fleet/effective-manifests.md) of the effective manifest applied. |
-| `desired.lastKnownGood` | The last revision that resolved cleanly. Differs from `revision` when a newer commit failed to resolve, per [last known good](../reconciliation/last-known-good.md). |
+| `desired.lastKnownGood` | The newest revision that resolved and validated cleanly, per [last known good](../reconciliation/last-known-good.md). |
 | `state.condition` | The host [state](../concepts/state.md#host-state-across-passes). |
 | `state.mode` | The [reconciliation mode](../concepts/reconciliation-modes.md) this host runs in. |
 | `reconciliation.lastAttempt` | When the last pass ran, converged or not. |
@@ -68,19 +70,22 @@ attempted lately.
 
 ## Divergence between desired and observed
 
-`desired.revision` and `desired.lastKnownGood` being equal is the healthy case. Their divergence is
-how a bad commit shows up in status without needing a separate error field.
+All three revision fields being equal is the healthy case. Their divergence is how a bad commit shows
+up in status without needing a separate error field.
 
 ```text
 desired
-  revision       9c02ab   (failed to resolve: unknown type PackageSet)
-  lastKnownGood  7ab21f
+  revisionAttempted  9c02ab   (failed to resolve: unknown type PackageSet)
+  revisionApplied    8b91f20
+  lastKnownGood      8b91f20
 ```
 
-The host is reconciling `7ab21f`, the newest commit did not resolve, and the reason is on the
-record. Reading it across a fleet shows immediately which hosts have picked up a bad revision, which
-is every host the commit reached, and confirms they are still enforcing the last good state instead
-of sitting idle.
+The host is reconciling `8b91f20`, the newest commit did not resolve, and the reason is on the
+record. Separating attempted from applied is what makes that legible, because a single `revision`
+field has to mean one or the other and each reading loses a question somebody needs answered.
+Reading it across a fleet shows immediately which hosts have picked up a bad revision, which is
+every host the commit reached, and confirms they are still enforcing the last good state instead of
+sitting idle.
 
 ## Fleet status
 
@@ -88,7 +93,7 @@ A fleet is a set of hosts, so fleet status aggregates host status and introduces
 
 ```text
 fleet     example
-revision  7ab21f
+revision  8b91f20
 
 hosts     500
   converged        486
@@ -98,7 +103,7 @@ hosts     500
   awaiting-reboot    2
   unknown            0
 
-behind revision      11   (last known good older than 7ab21f)
+behind revision      11   (last known good older than 8b91f20)
 ```
 
 `behind revision` counts hosts whose last-known-good is older than the fleet's newest revision, which

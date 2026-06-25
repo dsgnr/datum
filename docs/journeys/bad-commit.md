@@ -41,24 +41,23 @@ error: unrecognised type "Sysctrl"
 host is not read. This is a whole-pass failure with [nothing to clean
 up](../architecture/reconciliation-flow.md#where-failure-stops-the-pass).
 
-**The host keeps working.** The agent reports the failure and continues reconciling
-[last known good](../reconciliation/last-known-good.md), which is `7ab21f`. Drift is still detected and
-still corrected against that revision. The fleet has stopped moving forward and has not stopped
-working.
+**The host keeps working.** The agent reports the failure and continues reconciling [last known
+good](../reconciliation/last-known-good.md), which is `8b91f20`. Drift is still detected and
+corrected against that revision. The fleet stops advancing and continues to reconcile.
 
 ```text
 desired
-  revision       9c02ab   (failed to resolve: unrecognised type "Sysctrl")
-  lastKnownGood  7ab21f
+  revisionAttempted  9c02ab   (failed to resolve: unrecognised type "Sysctrl")
+  revisionApplied    8b91f20
+  lastKnownGood      8b91f20
 
 state
-  condition      converged
+  condition          converged
 ```
 
-The host reports `converged`, because it is converged on the desired state it is able to resolve. The
-failure is visible in the divergence between `revision` and `lastKnownGood` rather than in the host
-state, which is the distinction that lets an operator tell "this host is broken" from "this host cannot
-move forward".
+The host reports `converged`, since it is converged on the desired state it can resolve. The failure
+appears as a difference between `revisionAttempted` and `revisionApplied` rather than in the host
+state, which separates a host that is broken from one that cannot advance.
 
 ## What the fleet looks like
 
@@ -66,16 +65,16 @@ Every host the role matched trips the same condition at roughly the same time, s
 [bad-revision alert](../observability/alerting.md#alerts-worth-having) fires across all of them.
 
 ```text
-datum_revision_timestamp_seconds != datum_last_known_good_timestamp_seconds
+datum_revision_attempted_timestamp_seconds != datum_revision_applied_timestamp_seconds
 ```
 
 The alert is grouped by revision rather than by host. Two hundred web servers failing on the same
 commit is one problem, and grouping by host would page two hundred times for it.
 
-Hosts the role did not match are unaffected, because the broken document is in a layer whose
-[matcher](../fleet/labels-and-matchers.md) does not select them. Their resolution succeeds, they advance
-to `9c02ab`, and their `revision` and `lastKnownGood` stay equal. The blast radius of the typo is
-exactly the set of hosts the layer was aimed at.
+Hosts the role did not match are unaffected, since the broken document is in a layer whose
+[matcher](../fleet/labels-and-matchers.md) does not select them. Their resolution succeeds, they
+advance to `9c02ab`, and their three revision fields stay equal. The typo affects the set of hosts
+the layer selected.
 
 ## Abandoning desired state instead
 
@@ -92,15 +91,14 @@ A new commit, `3f81cd`, fixes the type. Nothing was applied, so there is no roll
 no state to repair.
 
 The next pass on each affected host resolves `3f81cd`, validates it, records it as the new last known
-good, and reconciles it. The sysctl applies, `revision` and `lastKnownGood` converge again, and the
+good, and reconciles it. The sysctl applies, the revision fields converge again, and the
 alert clears.
 
-Reverting the bad commit in Git would work equally well and produce a revision identical in content to
-`7ab21f`. Either way the fix is a commit that moves history forward, which is what
-[downgrade protection](../security/repository-trust.md#verifying-that-a-revision-is-current) requires,
-since it refuses a revision that is not a descendant of the one last applied. A `git revert` satisfies
-that and a `git reset` followed by a force push does not, which is the workflow the control is designed
-to encourage.
+Reverting the bad commit produces a revision identical in content to `8b91f20` and works equally
+well. Either way the fix is a commit that moves history forward, which [downgrade
+protection](../security/repository-trust.md#verifying-that-a-revision-is-current) requires, since it
+refuses a revision that does not descend from the one last applied. A `git revert` satisfies that
+and a `git reset` followed by a force push does not.
 
 ## The other bad commits
 
