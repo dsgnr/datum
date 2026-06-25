@@ -104,10 +104,10 @@ complaint about a specific resource.
 
 !!! note "Open question"
 
-    This needs history across passes, which sits awkwardly against the rule that
-    Datum keeps no state it later depends on. The distinction is probably that
-    such history is diagnostic output, not an input to the comparison, so losing
-    it degrades reporting without changing behaviour, but that has not been
+    This needs history across passes, and the only thing currently [carried between
+    passes](../architecture/reconciliation-flow.md#what-is-written-down) is the accepted revision
+    pointer. The distinction is probably that such history is diagnostic output, not an input to the
+    comparison, so losing it degrades reporting without changing behaviour, but that has not been
     specified.
 
 ## Why conflicts are not resolved automatically
