@@ -98,6 +98,9 @@ the limits of this.
 [Trusting desired state](repository-trust.md) :   Signature verification, downgrade protection, and
 the trust anchors Datum keeps outside desired state.
 
+[Obtaining the repository](repository-fetch.md) :   The requirement for complete history, what a
+hardened checkout disables, and the limits applied to a fetch.
+
 [Applying state safely](provider-safety.md) :   How a provider running as root handles paths, field
 values, temporary files and reports, and the local privilege escalations that handling prevents.
 

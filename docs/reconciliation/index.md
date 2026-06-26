@@ -5,9 +5,21 @@ Reconciliation is the loop that makes a host match its desired state and keeps i
 [architecture](../architecture/reconciliation-flow.md) section follows the data through one pass.
 This section covers behaviour that spans passes rather than happening within one.
 
+[Scheduling](scheduling.md)
+:   What makes a pass happen, why the agent is a resident process, the interval, and how a fleet
+    avoids reconciling in lockstep.
+
+[One pass at a time](locking.md)
+:   The lock that stops a scheduled pass and an operator's `datum reconcile` applying overlapping
+    plans to one host.
+
+[Failure, back-off and timeouts](failure-handling.md)
+:   What the agent does after a failed pass, why upstream and local failures are timed differently,
+    and what bounds a pass that does not finish.
+
 [Last known good](last-known-good.md)
 :   What an agent reconciles when the newest revision fails to resolve, how the same mechanism keeps
     offline hosts working, and why declarative is not the same as reproducible.
 
-More pages will land here as behaviour that is currently an open question becomes settled, in
-particular the reconciliation interval and how a failed pass affects the timing of the next one.
+Between them these answer what a pass does over time, as distinct from what one pass does, which is
+the [concepts](../concepts/reconciliation.md) section.

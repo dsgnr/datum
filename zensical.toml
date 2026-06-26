@@ -70,6 +70,9 @@ nav = [
   ] },
   { "Reconciliation" = [
     "reconciliation/index.md",
+    "reconciliation/scheduling.md",
+    "reconciliation/locking.md",
+    "reconciliation/failure-handling.md",
     "reconciliation/last-known-good.md",
   ] },
   { "Architecture" = [
@@ -91,6 +94,7 @@ nav = [
     "security/index.md",
     "security/threat-model.md",
     "security/repository-trust.md",
+    "security/repository-fetch.md",
     "security/provider-safety.md",
     "security/handshake.md",
     "security/time.md",

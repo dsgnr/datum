@@ -288,6 +288,7 @@ human, and no agent ever performs one. Both points are covered under
 | `0` | Success, and no differences were found by a read-only command. |
 | `1` | Error. Resolution failed, validation failed, or an action failed. |
 | `2` | Differences found. Only from `diff` and `plan`. |
+| `3` | Could not acquire the [pass lock](../reconciliation/locking.md). Another pass is running. |
 
 Separating code 2 from code 0 is what makes `datum diff` usable as a drift check in
 scheduled jobs. Without it, a script cannot distinguish a converged host from a host with
