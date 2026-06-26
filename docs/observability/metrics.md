@@ -18,16 +18,8 @@ The agent serves metrics over HTTP, in the same way an exporter does.
 GET /metrics
 ```
 
-```yaml title="/etc/datum/agent.yaml"
-metrics:
-  listen: 127.0.0.1:10056
-```
-
-!!! note "Proposed behaviour"
-
-    10056 is taken from the second exporter range in the Prometheus port allocation list, where 9100
-    to 9999 is fully allocated. The entry has to be added to that list so another exporter does not
-    claim the same number.
+The listener is on by default and bound to loopback, and the full binding rules, how to expose it to a
+remote scraper and how to turn it off are under [binding and exposure](#binding-and-exposure).
 
 ## Why a port rather than a file
 
@@ -76,6 +68,12 @@ metrics:
   listen: 127.0.0.1:10056      # default
 ```
 
+!!! note "Proposed behaviour"
+
+    10056 is taken from the second exporter range in the Prometheus port allocation list, where 9100
+    to 9999 is fully allocated. The entry has to be added to that list so another exporter does not
+    claim the same number.
+
 An exporter normally listens on all interfaces by default. The listener here runs inside a process
 that holds repository credentials and runs as root, on hosts that otherwise need no inbound access,
 so remote exposure is configured rather than assumed.
@@ -90,6 +88,11 @@ metrics:
 Fleets already running a local collector, whether that is `node_exporter` with a scrape config, an
 OpenTelemetry collector or a Prometheus agent on the same host, need nothing beyond the default,
 because loopback is reachable from the same machine.
+
+Setting `metrics.listen` to `none` disables the listener entirely, leaving the
+[textfile output](#writing-a-file-as-well) as the only signal. That exists because loopback is not a
+privilege boundary, so a host with untrusted local users may prefer no listener at all, and because a
+fleet is entitled to decide that a root process should open no socket whatsoever.
 
 !!! note "Security consideration"
 
@@ -163,11 +166,64 @@ rather than only as a host state.
 **Desired state identity.**
 
 ```text
-datum_revision_timestamp_seconds            gauge
-datum_revision_info{revision,manifest}      gauge, always 1
-datum_last_known_good_timestamp_seconds     gauge
-datum_last_known_good_info{revision}        gauge, always 1
+datum_revision_attempted_timestamp_seconds       gauge
+datum_revision_attempted_info{revision}          gauge, always 1
+datum_revision_applied_timestamp_seconds         gauge
+datum_revision_applied_info{revision,manifest}   gauge, always 1
+datum_last_known_good_timestamp_seconds          gauge
+datum_last_known_good_info{revision}             gauge, always 1
 ```
+
+Three revisions, not one, because a single `revision` series has to mean either the newest revision
+the host tried or the one it is actually running, and the two questions a fleet asks need different
+answers. Attempted is what the host last fetched and tried to resolve. Applied is the revision whose
+desired state it is reconciling, which stays behind attempted whenever resolution fails. Last known
+good is the newest that resolved and validated cleanly, and it only ever advances.
+
+On a healthy host all three are equal. Attempted running ahead of applied is the signal that a
+revision failed to resolve, and it is the only combination that needs an alert, which is covered
+under [alerting](alerting.md#alerts-worth-having).
+
+## Security controls
+
+Every trust control in the design works by refusing something, and a refusal that nothing outside the
+host can see is indistinguishable from a control that was never switched on.
+
+```text
+datum_trust_require{mode}                     gauge, 1 for the configured mode
+datum_trust_signer_info{keyid}                gauge, always 1, one series per trusted key
+datum_trust_baseline_present                  gauge, 0 or 1
+datum_revisions_refused_total{reason}         counter
+datum_resources_refused_total{reason}         counter
+```
+
+`mode` takes the values of
+[`trust.require`](../security/repository-trust.md#verifying-that-a-revision-is-genuine), which is
+what makes an unverified fleet visible. A fleet running `require: none` is a fleet that decided not
+to verify, and that decision belongs on a dashboard instead of in a configuration file nobody reads.
+
+`reason` on the two refusal counters names the control that fired.
+
+| Counter | Reasons |
+| ------- | ------- |
+| `datum_revisions_refused_total` | `unsigned`, `untrusted-signer`, `ambiguous-tag`, `not-descendant`, `unsupported-schema` |
+| `datum_resources_refused_total` | `trust-anchor`, `hard-link`, `untrusted-path`, `unsafe-mode` |
+
+Counters, not gauges, because the useful question is whether refusals are happening at all and
+whether the rate changed, and a gauge showing the most recent pass loses everything before it.
+
+`datum_trust_baseline_present` reports whether the host had a
+[baseline revision](../lifecycle/enrolment.md#the-baseline-revision) when it started, which is how a
+fleet finds the machines whose provisioning skipped that step. Those machines are the ones for which
+downgrade protection was never armed, and nothing else reveals them.
+
+`datum_trust_signer_info` exists for key rotation. Rotating a signer is [a provisioning task, not
+something Datum does](../adr/0010-no-self-managed-trust-anchors.md), so the only way to know how far
+a rotation has progressed is to ask every host which keys it trusts.
+
+None of these disclose anything an attacker benefits from. A key identifier is public, a refusal count
+is not a credential, and the mode is inferable from behaviour anyway, which is the test applied to
+everything on this endpoint.
 
 ## Emit absolute timestamps, never elapsed time
 
@@ -196,10 +252,11 @@ for.
 ## Answering "is this host up to date?"
 
 The revision a host applied is a string, and strings do not compare usefully in a metrics query. The
-commit timestamp of that revision does.
+commit timestamp of that revision does, which is why the applied series answers this question and
+the attempted one does not.
 
 ```text
-max(datum_revision_timestamp_seconds) - datum_revision_timestamp_seconds
+max(datum_revision_applied_timestamp_seconds) - datum_revision_applied_timestamp_seconds
 ```
 
 That gives, per host, how far behind the newest revision any host has reported it is, in seconds.
@@ -218,9 +275,9 @@ it, which matters because no component reads Git on the fleet's behalf.
 
 ## Cardinality
 
-There are no per-resource metrics. A fleet of 500 hosts with 47 resources each would produce over
-23,000 series before labels, and the questions those series would answer are ones logs and status
-answer better.
+There are no per-resource metrics. A fleet of 500 hosts with 14 resources each would produce 7,000
+series before labels, and the questions those series would answer are ones logs and status answer
+better.
 
 Aggregate counts by state cost six series per host regardless of manifest size, which is what makes
 the export scale with the fleet rather than with the configuration.

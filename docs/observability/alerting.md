@@ -53,9 +53,22 @@ entirely down produces `up == 0` for every job on it and is not specifically a D
 | Not converging | `time() - datum_pass_last_success_timestamp_seconds > 3600` | The agent is running and passes are not succeeding. |
 | Failing | `datum_host_state{state="failed"} == 1` | A resource failed to apply or verify. |
 | Coverage gap | `datum_host_state{state="degraded"} == 1` | Part of the manifest cannot be reconciled here. |
-| Behind the fleet | `max(datum_revision_timestamp_seconds) - datum_revision_timestamp_seconds > 86400` | A host has not picked up changes others have. |
-| Stuck on a bad revision | `datum_revision_timestamp_seconds != datum_last_known_good_timestamp_seconds` | The newest revision failed to resolve, and the host is on [last known good](../reconciliation/last-known-good.md). |
+| Behind the fleet | `max(datum_revision_applied_timestamp_seconds) - datum_revision_applied_timestamp_seconds > 86400` | A host has not picked up changes others have. |
+| Stuck on a bad revision | `datum_revision_attempted_timestamp_seconds != datum_revision_applied_timestamp_seconds` | The newest revision failed to resolve, and the host is on [last known good](../reconciliation/last-known-good.md). |
 | Awaiting reboot too long | `datum_reboot_required == 1` held for longer than the reboot policy allows | A change has been applied and is not in effect. |
+| Verification disabled | `datum_trust_require{mode="none"} == 1` | A host is applying desired state it has not verified. |
+| Downgrade protection unarmed | `datum_trust_baseline_present == 0` | Provisioning skipped the [baseline revision](../lifecycle/enrolment.md#the-baseline-revision). |
+| Revisions being refused | `increase(datum_revisions_refused_total[1h]) > 0` | A signature, tag or ancestry check is rejecting what the host fetched. |
+| Resources being refused | `increase(datum_resources_refused_total[1h]) > 0` | A safety control is refusing to apply something a repository declared. |
+
+The last four are different in kind from the ones above them, because they fire on a control instead
+of a failure. A host refusing revisions is behaving as specified, and the reason to page on it is
+that the host has stopped receiving changes, which has the same effect as an agent that has stopped
+running.
+
+The two `mode="none"` and `baseline_present == 0` conditions are better treated as an inventory
+query than an alert on most fleets, because they are steady states, not events. Both indicate a
+control that is switched off, so they are listed here even though they are steady states.
 
 A commit that fails to resolve trips the bad-revision alert on every host the change matched. Group
 the alert by revision rather than by host, or one bad commit produces one page per host.

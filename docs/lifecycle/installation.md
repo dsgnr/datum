@@ -38,6 +38,7 @@ anything that identifies a particular machine or grants access to a fleet.
 | Trusted signing keys for the repository | Yes |
 | A host name in `/etc/datum/agent.yaml` | No |
 | A repository credential | No |
+| A baseline revision in `/var/lib/datum/` | No |
 
 Two of those prohibitions need stating plainly instead of being left as a table row.
 
@@ -49,6 +50,12 @@ usually more widely than anyone intends. It cannot be scoped to one machine, it 
 anyone who can obtain the image or a snapshot of a disk built from it, and revoking it requires
 rebuilding every machine that ever booted from it. That is the weakest of the
 [ways of placing a credential](../security/handshake.md#getting-the-repository-credential-onto-a-host) for exactly this reason.
+
+The [baseline revision](enrolment.md#the-baseline-revision) is excluded for a different reason. It
+is not a secret and it is not host-specific, and it goes stale, because an image built in March
+would give a machine booted in September a baseline six months behind the repository. Every revision
+between the two would then satisfy the descendant check, which is most of what the control exists to
+refuse, so the baseline is written at enrolment and not baked in.
 
 ## The repository URL is configuration, not discovery
 
