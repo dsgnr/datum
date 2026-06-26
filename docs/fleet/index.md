@@ -39,6 +39,10 @@ between revisions.
 [Composition](composition.md)
 :   How matching layers are merged into one set of resources, field by field.
 
+[Substituting label values](substitution.md)
+:   How a layer puts a host's own label values into the desired state it contributes, and
+    the limits on what can be substituted.
+
 [Precedence and conflicts](precedence.md)
 :   Which layer wins, why equal-precedence disagreements are errors, and how provenance is
     preserved.
@@ -46,9 +50,9 @@ between revisions.
 [Effective manifests](effective-manifests.md)
 :   The artefact composition produces, and its content address.
 
-Once the model itself makes sense, [creating a repository](../repository/index.md) covers
-what a working repository needs at minimum, how schema versions govern which agents can
-read it, and what a change can be checked for before it is merged.
+[Creating a repository](../repository/index.md) covers the minimum a working repository
+needs, how schema versions govern which agents can read it, and what a change can be
+checked for before merging.
 
 ## The question the model has to answer
 

@@ -33,6 +33,7 @@ nav = [
     "fleet/repository-layout.md",
     "fleet/labels-and-matchers.md",
     "fleet/composition.md",
+    "fleet/substitution.md",
     "fleet/precedence.md",
     "fleet/effective-manifests.md",
   ] },

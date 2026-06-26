@@ -29,17 +29,23 @@ different names and the same path are a conflict.
 | `path` | absolute path | Yes | The file being managed. |
 | `state` | `present`, `absent` | No, defaults to `present` | Whether the file should exist. |
 | `content` | string | No | Literal content, held in the resource. |
-| `source` | path | No | Content taken from a file in the repository. |
+| `source` | path | No | Content taken from a file in the repository, verbatim. |
+| `template` | path | No | Content taken from a file in the repository and [rendered](../../fleet/substitution.md#substituting-into-file-content). |
 | `owner` | string | No | Owning user name. |
 | `group` | string | No | Owning group name. |
 | `mode` | string | No | Permission bits, quoted. |
 | `sensitive` | boolean | No, defaults to `false` | Suppresses rendering of the content anywhere. |
 | `validate` | string | No | Names a [validator](../validation.md) run against the staged content before it goes live. |
 
-`content` and `source` are mutually exclusive, and a resource setting both is
-rejected. Setting neither manages metadata only, which is how ownership or
-permissions on a file created by a package are corrected without taking over what is
+`content`, `source` and `template` are mutually exclusive, and a resource setting more
+than one is rejected. Setting none of them manages metadata only, which is how ownership
+or permissions on a file created by a package are corrected without taking over what is
 in it.
+
+`template` differs from `source` only in that [label values are
+substituted](../../fleet/substitution.md) as the content is read. Keeping them as separate fields
+rather than one field with a flag means whether a file is rendered is visible on the line that names
+it.
 
 `source` is resolved relative to the layer directory, so a resource in `fleet/roles/web/` referring
 to `files/nginx.conf` means `fleet/roles/web/files/nginx.conf`. It must be a relative path and must
@@ -121,15 +127,6 @@ usually by adding or removing a trailing newline, which produces a resource that
 appears to change on every pass.
 
 ## Open questions
-
-Templating is not part of the design. Rendering content from host facts would make
-`File` the most-used part of Datum and would also reintroduce a dependency on
-observed state during resolution, which the fleet model currently rules out. The
-alternative of one file per variation is verbose and reviewable, and it is not clear
-that verbosity is the worse problem.
-
-Symbolic links have no representation. Whether they belong in `File`, in a separate
-type, or nowhere is undecided.
 
 Whether `owner` and `group` should accept numeric ids alongside names is undecided.
 Names are clearer and depend on the user existing, which is a dependency the manifest
