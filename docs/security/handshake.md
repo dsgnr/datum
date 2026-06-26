@@ -11,7 +11,7 @@ desired state genuine, and is it current. Each has its own mechanism.
 ## There is no Datum handshake
 
 An agent reading Git authenticates to the Git remote and to nothing else. There is no Datum
-protocol, no server, and no identity exchange.
+protocol for desired state, nothing that serves it, and no identity exchange.
 
 ```text
 agent  --- SSH key or token --->  Git remote
@@ -20,12 +20,17 @@ agent  --- SSH key or token --->  Git remote
 The credential is the whole of the authentication, and it should be read-only, since an agent never
 writes to the repository. The security properties are the Git server's.
 
+The agent does open one inbound socket, the optional [metrics
+endpoint](../observability/metrics.md#binding-and-exposure) bound to loopback by default. Nothing
+reaching it can change what the host applies, so it discloses rather than controls, and it can be
+turned off.
+
 Identity is local. The agent reads the host name it claims from its own configuration, and since it
 can read the entire repository anyway, that claim grants it nothing it did not already have.
 Identity selects which configuration to apply. It is not a security control, which [host
 identity](../architecture/host-identity.md) sets out in full.
 
-### Verifying that a revision is genuine
+## Verifying that a revision is genuine
 
 Transport authentication proves the connection reached the right server. It says nothing about who
 produced the content, since a commit pushed by a compromised account on the Git server arrives over
@@ -94,12 +99,11 @@ Revocation happens on the Git server, with
     its credential is still running whatever it last applied, and still holds whatever that
     configuration contained. Cutting a host off leaves it to be contained separately.
 
-## What a handshake cannot fix
+## The limit of what a handshake covers
 
-Authentication establishes which host is talking. It says nothing about whether that host is
-behaving, so an authenticated, enrolled, credential-holding machine that has been compromised at
-root level is still reporting whatever it likes.
+Authentication establishes which host is talking. It says nothing about how that host is behaving,
+so an authenticated machine holding a valid credential and compromised at root reports whatever its
+operator chooses.
 
-The boundary a handshake protects is what a host can obtain, not what it can claim about itself.
-Confusing the two would lead to treating agent reports as compliance evidence, which they are
-not.
+A handshake bounds what a host can obtain. It does not bound what a host can claim about itself, so
+an agent report is not compliance evidence.
