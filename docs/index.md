@@ -61,5 +61,12 @@ The documentation is the specification for Datum, so it reads as much like a
 design document as a user guide. Start with the
 [introduction](introduction/index.md), which covers what Datum manages and how
 one repository maps onto many machines. The sections after it work through the
-model in the order it is easiest to learn: the vocabulary, then the fleet
-layout, then resources and providers, then the architecture that connects them.
+model in the order it is easiest to learn: the
+[vocabulary](concepts/index.md), then the [fleet layout](fleet/index.md), then
+[resources](resources/index.md) and [providers](providers/index.md), then the
+[architecture](architecture/index.md) that connects them.
+
+[Reference](reference/index.md) holds the field and command lookups, and
+[decisions](adr/index.md) records what has been settled and why. Everything still
+unresolved is listed in [open
+questions](development/open-questions.md).
