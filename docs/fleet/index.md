@@ -62,7 +62,8 @@ caused it to match. Neither may be dropped as an optimisation.
 
 !!! note "Proposed design"
 
-    The fleet model is proposed, not accepted. Labels and selectors are the intended
-    mechanism and the merge and precedence rules are specified. None of it has been tested
-    against a repository of real size, which is where composition models usually turn out
-    to be too rigid or too clever.
+    The fleet model is proposed rather than accepted, and the reasoning is recorded in
+    [ADR-0004](../adr/0004-labels-and-selectors.md). Labels and selectors are the
+    intended mechanism and the merge and precedence rules are specified, but none of
+    it has been tested against a repository of real size, which is where composition
+    models usually turn out to be either too rigid or too clever.
