@@ -31,12 +31,12 @@ several of them end by naming something the design does not do.
 
 Writing them changed the specification rather than only describing it, which was the point.
 
-Three gaps came out of the exercise and are recorded as
-[open questions](../development/open-questions.md) rather than papered over. There is no staged rollout,
-so a fleet-wide change reaches every matching host within one interval. Five hundred agents polling one
-Git remote is a load question that interacts with the undecided reconciliation interval. And a
-partially-supported distribution is visibly partial, which is correct and still leaves the Alpine hosts
-unable to manage services at all.
+Three gaps came out of the exercise, and two of them have since been closed by the work they prompted.
+Staging a change across a fleet is now [ring branches](../reconciliation/staged-rollout.md), and five
+hundred agents reaching one Git remote is now a
+[deterministically spread schedule](../reconciliation/scheduling.md#passes-are-spread-deterministically).
+The third stands, because a partially-supported distribution is visibly partial, which is correct and
+still leaves the Alpine hosts unable to manage services at all.
 
 The journeys also confirmed three things the design gets right. Drift from a human and drift from a
 commit are genuinely the same measurement with no special case. Validation failing before the host is

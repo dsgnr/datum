@@ -64,12 +64,14 @@ the mitigations, and the second one Datum does not currently provide.
 
 !!! note "Important limitation"
 
-    There is no canary, no staged rollout, and no way to hold hosts back. Every production host the
-    layer matches will pick the change up on its next pass, which for a fleet reconciling every few
-    minutes means the whole estate within minutes.
+    This journey merges straight to the branch every production host tracks, so every production
+    host the layer matches picks the change up on its next pass. A fleet that wants the change to
+    reach five hosts first uses [ring branches](../reconciliation/staged-rollout.md), which is a
+    property of how the fleet is provisioned, not something this journey's repository expresses.
 
-    Deciding *which* hosts get a change and *when* is fleet orchestration rather than host
-    reconciliation, and an agent deliberately knows nothing about it.
+    What remains absent either way is a gate. Nothing holds a promotion back until the canary ring
+    reports healthy, because deciding what healthy means for `sshd` is
+    [outside what Datum measures](../resources/validation.md#where-datums-responsibility-ends).
 
 ## What a host does
 
@@ -142,5 +144,7 @@ not of anything specific to this journey.
 Verification has to be a distinct phase, because a restart exiting zero is a weaker claim than a service
 running, and this is the case where the difference locks people out of an estate.
 
-It also shows the clearest gap in the current design. Reconciliation is correct per host, and there is no
-mechanism for controlling the order or the rate at which hosts receive a change.
+It also shows where per-host correctness stops being enough. Reconciliation is correct on each
+machine independently, and the order and rate at which machines receive a change is a separate
+concern that [ring branches](../reconciliation/staged-rollout.md) answer with Git instead of a
+central component.
