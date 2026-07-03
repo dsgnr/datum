@@ -37,12 +37,19 @@ The distributions the design targets differ in some capabilities and agree on ot
 | `Group` | `linux-group` | `linux-group` | `linux-group` | `linux-group` |
 | `Sysctl` | `proc-sys` | `proc-sys` | `proc-sys` | `proc-sys` |
 | `File` | `posix-file` | `posix-file` | `posix-file` | `posix-file` |
+| `Symlink` | `posix-file` | `posix-file` | `posix-file` | `posix-file` |
+| `Repository` | `apt` | `dnf` | `apk` | `pacman` |
 
 Two things are visible in that table that a distribution-centric model obscures. Most capabilities
 are shared, so the great majority of provider code is written once and is not per-distribution at
 all. And the differences do not line up with distribution boundaries, since Alpine differs from the
 others in `Service` and agrees on everything else, so the meaningful unit is the capability, not the
 distribution.
+
+`Repository` is the one type where every distribution needs its own provider, since each package
+manager expresses a package source differently. That difference is also why it is [a type rather
+than a file](../resources/types/repository.md#a-package-source-is-its-own-type), since a file would
+carry the format into the repository.
 
 ## How a capability set is resolved
 
