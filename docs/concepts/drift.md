@@ -11,7 +11,7 @@ Drift is recorded at the level of individual fields, not whole resources.
 
 ```text
 File[nginx-config]
-  mode     0644 -> 0640        drift
+  mode     0644 -> 0600        drift
   owner    root                match
   content  sha256:91c4de2a     match
 ```

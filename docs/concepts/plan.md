@@ -52,9 +52,9 @@ manifest   sha256:3f2a9c4e
 update   File[nginx-config]
          path      /etc/nginx/nginx.conf
          provider  file
-         mode      0644 -> 0640
+         mode      0644 -> 0600
          content   differs
-         from      roles/web (selector role=web)
+         from      roles/web, hosts/web-001
 
 none     Package[nginx]      present, 1.24.0-2
 
