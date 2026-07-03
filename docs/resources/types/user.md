@@ -35,6 +35,7 @@ Target identity is the user name, taken from `name`.
 | `shell` | absolute path | No | Login shell. |
 | `comment` | string | No | The GECOS comment field. |
 | `system` | boolean | No | Whether to allocate a system-range id. |
+| `passwordRef` | string | No | Names a [secret](../secrets.md) holding the password hash. |
 
 Fields not set are not managed, so a resource declaring `shell` and nothing else
 corrects the shell and leaves the rest of the account alone.
@@ -86,6 +87,7 @@ matching account, and the manifest does not describe which files to reassign.
 | `home` | Home directory from the account record. |
 | `shell` | Login shell. |
 | `comment` | The GECOS comment field. |
+| `password` | A digest of the stored hash, never the hash. |
 
 `home` is read from the account record, not from the filesystem, so a user whose
 home directory is recorded but missing reports the recorded path. Managing the
@@ -110,9 +112,12 @@ absent`, which puts the deletion in the plan.
 
 ## Open questions
 
-Passwords and authentication are not modelled at all. Password hashes are secret
-material, which Datum has no mechanism for, and authorised keys are a `File` resource
-with the same problem. This is the largest gap in the type.
+Datum does not compute password hashes. `passwordRef` names a [secret](../secrets.md) that already
+holds one, so the plaintext is handled by whatever populates the secret backend.
+
+`passwordRef` is not observable in the way other fields are. A hash can be read from the account
+record and compared, so drift is detectable, and the comparison happens on the host after the
+reference resolves, not while diffing against the manifest.
 
 Whether `absent` should have a `locked` counterpart, which disables login without
 removing the account, is undecided and is probably the more common operational need.

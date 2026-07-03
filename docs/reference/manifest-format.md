@@ -188,6 +188,17 @@ declared label can be referenced, and there are no expressions, conditionals or 
 are under [substituting label values](../fleet/substitution.md) and the reasoning is
 [ADR-0012](../adr/0012-substitution-from-declared-labels.md).
 
+## Secret references
+
+A field may name a [secret](../resources/secrets.md) instead of carrying a value, and a `template`
+may contain `{{ secrets.NAME }}`. Neither is resolved during resolution. The effective manifest
+holds the reference, the digest covers the reference, and the value is resolved on the host during
+apply.
+
+That is a different phase from [substitution](#substitution) above, which is why a secret never affects
+a manifest digest and a label value always does. The reasoning is
+[ADR-0013](../adr/0013-secret-references-resolved-on-the-host.md).
+
 ## Merge rules
 
 How two layers contributing the same resource reference are combined.
@@ -228,7 +239,7 @@ Errors raised before the host is read, in the order they are detected.
 | Control character, whitespace or shell metacharacter in a name or key | Discovery |
 | Path that is not absolute, or contains `..` or an empty component | Discovery |
 | `source` or `template` that is absolute, or resolves outside the fleet root | Discovery |
-| More than one of `content`, `source` and `template` on one `File` | Discovery |
+| More than one of `content`, `source`, `template` and `secretRef` on one `File` | Discovery |
 | Substitution referencing a label the host does not declare | Fleet resolver |
 | Resource targeting one of Datum's own trust anchors | Fleet resolver |
 | Equal-precedence field conflict between layers | Fleet resolver |

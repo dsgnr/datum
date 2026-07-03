@@ -50,6 +50,7 @@ nav = [
     "resources/dependencies.md",
     "resources/conflicts.md",
     "resources/validation.md",
+    "resources/secrets.md",
     "resources/applications.md",
     { "Resource types" = [
       "resources/types/index.md",

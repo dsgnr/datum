@@ -105,10 +105,9 @@ repository, granted to the machine as a whole.
 Every host having read access to the whole repository is a real limitation, not a temporary one, and
 it shapes what belongs in a repository.
 
-Anything committed is available to every managed machine, so a single compromised host
-exposes the configuration of the entire fleet. That is why secret material is
-referenced rather than committed, instead of being an omission
-waiting for a convenient mechanism.
+Anything committed is available to every managed machine, so a single compromised host exposes the
+configuration of the entire fleet. That is why secret material is [referenced, never
+committed](../resources/secrets.md) instead of being an omission waiting for a convenient mechanism.
 
 ## What a compromised host can do
 

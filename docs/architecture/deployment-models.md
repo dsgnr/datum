@@ -22,8 +22,8 @@ exposes it reconciles exactly the same way.
 Every managed host needs read access to the whole repository. Resolution requires every `Layer` and
 every `Host` document, so a host cannot be given only its own configuration, and anything committed
 to the repository is readable by every machine under management. A single compromised host exposes
-the fleet's configuration, not just its own. Secrets are referenced rather than committed for that
-reason.
+the fleet's configuration, not just its own. Secrets are [referenced and resolved on the
+host](../resources/secrets.md) for that reason.
 
 Host identity is not a security control. A machine that claims to be a different host gains nothing
 it could not already read, which is why identity is [about classification, not

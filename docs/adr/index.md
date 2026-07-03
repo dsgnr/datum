@@ -17,6 +17,7 @@ Each one records why a decision was needed, what was decided, and what the decis
 | [0010](0010-no-self-managed-trust-anchors.md) | Datum does not manage its own trust anchors | Accepted |
 | [0011](0011-no-command-execution-from-desired-state.md) | No command execution from desired state | Accepted |
 | [0012](0012-substitution-from-declared-labels.md) | Substitute declared label values, and nothing else | Accepted |
+| [0013](0013-secret-references-resolved-on-the-host.md) | Secret references, resolved on the host | Accepted |
 
 ## What gets an ADR
 
