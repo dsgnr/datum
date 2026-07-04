@@ -64,6 +64,9 @@ The agent reads its host name from local configuration.
 host: web-001
 ```
 
+That is one key of the [agent configuration](../reference/agent-config.md#identity), and the only one
+that answers which machine this is.
+
 The system hostname is the obvious alternative and is rejected as the primary
 source. Hostnames are assigned by DHCP on some networks, are not reliably unique
 across sites, and change for reasons unrelated to a machine's purpose. A rename

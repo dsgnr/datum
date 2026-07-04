@@ -52,7 +52,8 @@ repository until the reported drift is what you expect and not a surprise, then 
 
 ## Where the mode is set
 
-The mode is agent configuration, set locally and not in the repository, alongside the [trust
+The mode is [agent configuration](../reference/agent-config.md#reconciliation), set locally and not
+in the repository, alongside the [trust
 settings](../security/repository-trust.md#agent-configuration).
 
 ```yaml title="/etc/datum/agent.yaml"

@@ -120,6 +120,7 @@ nav = [
   { "Reference" = [
     "reference/index.md",
     "reference/manifest-format.md",
+    "reference/agent-config.md",
     "reference/cli.md",
     "reference/status.md",
     "reference/stability.md",

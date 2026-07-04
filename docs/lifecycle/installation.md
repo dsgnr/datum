@@ -34,7 +34,7 @@ anything that identifies a particular machine or grants access to a fleet.
 | ----------- | ------- |
 | The agent and its providers | Yes |
 | Default configuration with no host name | Yes |
-| The repository URL | Yes, with the caveat below |
+| The repository URL in `source.url` | Yes, with the caveat below |
 | Trusted signing keys for the repository | Yes |
 | A host name in `/etc/datum/agent.yaml` | No |
 | A repository credential | No |
@@ -49,7 +49,7 @@ A credential in the image means the credential is as widely distributed as the i
 usually more widely than anyone intends. It cannot be scoped to one machine, it is readable by
 anyone who can obtain the image or a snapshot of a disk built from it, and revoking it requires
 rebuilding every machine that ever booted from it. That is the weakest of the
-[ways of placing a credential](../security/handshake.md#getting-the-repository-credential-onto-a-host) for exactly this reason.
+[enrolment approaches](../security/handshake.md#getting-the-repository-credential-onto-a-host) for exactly this reason.
 
 The [baseline revision](enrolment.md#the-baseline-revision) is excluded for a different reason. It
 is not a secret and it is not host-specific, and it goes stale, because an image built in March
@@ -63,8 +63,12 @@ The agent learns where its repository is from explicit local configuration, and 
 does not discover that location from the network.
 
 ```yaml title="/etc/datum/agent.yaml"
-repository: git@github.com:example/fleet.git
+source:
+  url: https://git.example.com/fleet.git
 ```
+
+Every other setting is in the [agent configuration reference](../reference/agent-config.md), and the
+one line above is the only part an image may carry.
 
 DNS service records and DHCP options are the conventional way to make this self-configuring, and
 both are rejected. The agent runs as root and applies whatever the resolved location gives it, so
@@ -112,8 +116,8 @@ virtualisation mechanism, and nothing about Datum's model objects to it.
 $ datum status
 
 host       (not enrolled)
-repository git@github.com:example/fleet.git
-providers  package, file, directory, service, user, group, sysctl
+source     https://git.example.com/fleet.git
+providers  package, file, directory, symlink, service, user, group, sysctl
 
 this host has no identity, so nothing has been reconciled
 ```

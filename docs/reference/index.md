@@ -7,6 +7,10 @@ arranged for finding a field or a definition instead of reading through.
 :   Every field of the `Fleet`, `Host` and `Layer` documents, the resource envelope,
     matcher syntax, merge rules, and the validation errors raised before a host is read.
 
+[Agent configuration](agent-config.md)
+:   Every key in `/etc/datum/agent.yaml`, with its default, and the one file that decides how much a
+    machine trusts Datum.
+
 [Command line interface](cli.md)
 :   The proposed commands, their output, and their exit codes. No part of it is
     implemented.
@@ -35,6 +39,8 @@ Fields specific to a resource type are documented with that type, not here.
 | `User` | [resources/types/user](../resources/types/user.md) |
 | `Group` | [resources/types/group](../resources/types/group.md) |
 | `Sysctl` | [resources/types/sysctl](../resources/types/sysctl.md) |
+| `Symlink` | [resources/types/symlink](../resources/types/symlink.md) |
+| `Repository` | [resources/types/repository](../resources/types/repository.md) |
 
 ## Stability
 
