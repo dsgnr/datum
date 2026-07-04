@@ -67,23 +67,29 @@ the class of attack rather than reducing its impact.
 
 ## What is not defended
 
-**Blast radius of a merge.** A change matching a thousand hosts reaches a thousand hosts.
-There is no staged rollout, no canary, and no mechanism for holding some hosts back, so the
-first place a bad change is noticed is production. Recovery is a revert and another pass,
-because there is no rollback.
+**The health of what a change produces.** A change can be staged across [ring
+branches](../reconciliation/staged-rollout.md) so that it reaches five hosts before five hundred,
+and nothing holds a promotion until the first ring is known to be healthy. What healthy means for
+the service being configured is [outside what Datum
+measures](../resources/validation.md#where-datums-responsibility-ends), so the gate belongs to the
+fleet. A promoted change affects the whole ring, and recovery is a revert and another pass.
 
 **Fleet-wide configuration disclosure.** Every managed host reads the whole repository, so one
-compromised host discloses the configuration of every host, which is the reason secret material has
-no place in the repository.
+compromised host discloses the configuration of every host. [Secret values are not stored in the
+repository](../resources/secrets.md), so the disclosure covers what the fleet is configured to do
+and not the credentials it uses.
 
-**Secret material.** Configuration files frequently need credentials, and Datum has no way to
-supply them. Committing them to the repository would hand them to every managed machine.
-There is no half-designed mechanism waiting for a decision, which is why this is recorded as a
-gap rather than an open question.
+**Where secret values come from.** Desired state [references a secret rather than containing
+one](../adr/0013-secret-references-resolved-on-the-host.md), and the backend that resolves the
+reference is not provided by Datum. A fleet distributes secret material to its hosts by its own
+means. Datum supplies the interface and keeps the value out of the repository, the manifest and
+every report.
 
-**Agent supply chain.** How the agent binary is obtained, verified and updated is not
-designed. An agent that updates itself through a resource describing its own package is a
-particular hazard, because a failed update leaves nothing running to retry it.
+**Agent and extension supply chain.** How the agent binary, its bundled providers and any
+[extension](../resources/applications.md#extensions) are obtained, verified and updated is not
+designed. A tampered agent package grants root across the fleet, which places this second to
+repository merge in impact. An agent updating itself through a resource describing its own package
+is a further hazard, since a failed update leaves nothing running to retry it.
 
 **Compliance claims.** A host reports its own status, so a converged fleet report is a statement by
 the hosts rather than independent evidence about them. The [threat model](threat-model.md) covers
