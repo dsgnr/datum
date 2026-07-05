@@ -1,6 +1,6 @@
 # Journey: 500 mixed hosts
 
-Ubuntu web servers, RHEL database servers, and Alpine edge nodes, in two sites and two environments,
+Ubuntu web servers, RHEL database servers, and Alpine edge servers, in two sites and two environments,
 from one repository. This journey is about composition and about where distribution differences are
 allowed to surface.
 
@@ -123,7 +123,7 @@ is allowed to appear.
 Alpine is in the target distribution list and does not use systemd. The `Service` capability on those
 hosts resolves to `openrc`, and no such provider exists.
 
-Until it does, `Service` resources on the edge nodes are
+Until it does, `Service` resources on the edge hosts are
 [skipped](../providers/selection.md#when-no-provider-matches) with the reason recorded, and those
 hosts report [`degraded`](../concepts/state.md#host-state-across-passes) instead of `converged`.
 

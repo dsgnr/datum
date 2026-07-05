@@ -217,7 +217,7 @@ next steps
 ```
 
 `--with-examples` adds a commented example host and resource. The reasoning behind the
-generated content being this small, and behind the command leaving Git alone, is set out
+the created files being this few, and behind the command leaving Git alone, is set out
 under [creating a repository](../repository/index.md#datum-init).
 
 ## datum validate

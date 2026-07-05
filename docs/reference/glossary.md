@@ -3,6 +3,11 @@
 One entry per concept. Where a term has a fuller treatment elsewhere, the entry links to it rather
 than repeating it.
 
+Accepted revision
+:   The newest revision a host has verified, resolved and validated. The only state an agent carries
+    between passes, serving both downgrade protection and [last known
+    good](../reconciliation/last-known-good.md).
+
 Action
 :   What a plan intends to do to a single resource. One of `none`, `create`, `update`,
     `remove` or `skip`. See [plan](../concepts/plan.md#actions).
@@ -153,6 +158,11 @@ Pass
 :   One complete run of resolve, observe, diff, plan, apply and verify for one host. Used
     interchangeably with reconciliation where no ambiguity arises.
 
+Pass lock
+:   The exclusive lock every process that reconciles holds from observation through verification, so a
+    scheduled pass and an operator's `datum reconcile` cannot overlap. See
+    [one pass at a time](../reconciliation/locking.md).
+
 Plan :   The ordered set of actions that would resolve the drift found in one pass. Data, not an
 execution. See [plan](../concepts/plan.md).
 
@@ -209,10 +219,30 @@ Revocation
     credential expires. Stops future changes and undoes nothing. See [leaving the
     fleet](../lifecycle/decommissioning.md#revocation-stops-changes).
 
+Ring
+:   A set of hosts tracking one Git ref, used to get a change to a few machines before the fleet.
+    Membership is agent configuration, not repository content. See [staged
+    rollout](../reconciliation/staged-rollout.md).
+
 Schema version
 :   The version a single document declares in its `datum` field, deciding how that document
     is interpreted. Declared per document, not per repository. See [schema
     versions](../repository/schema-versions.md).
+
+Secret reference
+:   A name in desired state standing for a credential, resolved on the host during apply. The value
+    never enters the repository, the manifest, its digest, a plan, a log or a report. See [secret
+    references](../resources/secrets.md).
+
+Splay
+:   The per-host offset that spreads reconciliation across a fleet, derived from the host identity so
+    that a machine's pass times are stable. See
+    [scheduling](../reconciliation/scheduling.md#passes-are-spread-deterministically).
+
+Substitution
+:   Replacing `{{ labels.NAME }}` or `{{ host }}` in desired state with values declared in a `Host`
+    document, during resolution. Declared labels are the only source. See [substituting label
+    values](../fleet/substitution.md).
 
 Target identity
 :   What a resource manages on the host, such as an absolute path or a package name. Two
@@ -232,7 +262,14 @@ Verify
 
 Deliberate omissions, recorded so that they do not creep back in.
 
-**Node** and **machine** are not used as synonyms for host. Host is the term.
+**Node** is not used for a managed system. Host is the term, and node appears only for a graph node
+or a device node.
+
+**Machine** is not a synonym for host and is not avoided either. A host is what the fleet model
+describes, meaning a `Host` document and the desired state that resolves for it, and a machine is the
+physical or virtual computer that host runs on. A machine can exist before it is a host, which is what
+[installation before enrolment](../lifecycle/installation.md) means, and a host can be described in a
+repository before any machine claims it.
 
 **Manifest** on its own is avoided where **effective manifest** is meant, because the
 resolved artefact is a different thing from the documents in the repository.
