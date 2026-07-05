@@ -6,6 +6,9 @@
 /.venv/
 __pycache__/
 
+# Compiled binaries
+/bin/
+
 # Editor and OS noise
 .DS_Store
 *.swp
