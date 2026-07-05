@@ -26,7 +26,8 @@ behaviour common to every resource type rather than something a type defines.
 
 ## What dependsOn means
 
-Three things, precisely.
+It means three things, and they need stating precisely because the third is the one people expect
+and do not get.
 
 The referenced resources are processed before this one, so `Package[nginx]` is
 applied, or determined to need nothing, before `Service[nginx]` is considered.

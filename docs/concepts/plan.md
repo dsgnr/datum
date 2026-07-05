@@ -4,9 +4,10 @@ A plan is the ordered set of actions that would resolve the drift found in one
 pass. A plan is derived from one desired state, one observation and the
 dependencies declared between resources, and is valid only for that combination.
 
-A plan is data. Producing one changes nothing on the host, which is what allows
-the same code path to serve a preview and a real pass rather than the preview
-being a separate approximation that drifts away from the thing it predicts.
+A plan is data, not an execution, so producing one changes nothing on the host.
+That is what allows the same code path to serve a preview and a real pass,
+rather than the preview being a separate approximation that drifts away from the
+thing it is meant to predict.
 
 ## Actions
 
