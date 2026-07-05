@@ -77,11 +77,41 @@ These affect the shape of code that would be written first.
     immediately reports success for a service that dies a second later, and waiting introduces a
     timeout nobody can choose correctly.
 
-[File templating and symlinks](../resources/types/file.md)
+[File templating and symlinks](../resources/types/file.md#open-questions)
 :   Templating is absent, and rendering content from host facts would reintroduce a dependency on
     observed state during resolution. Symbolic links have no representation at all.
 
-[Provider path ownership](../resources/conflicts.md)
+[Numeric owner and group ids](../resources/types/file.md#open-questions)
+:   Whether `owner` and `group` should accept numeric ids alongside names. Names are clearer and
+    depend on the user existing, which is an ordering problem the manifest can express, and ids
+    avoid that problem while being harder to read.
+
+[Package repository configuration](../resources/types/package.md#open-questions)
+:   Installing a package outside a distribution's default repositories needs a repository
+    definition. Expressing it means either a new resource type per packaging system, which breaks
+    distribution neutrality, or a `File` resource writing a sources list, which pushes a
+    distribution difference up into the fleet configuration. This is the type most likely to be
+    needed soonest.
+
+[Removing unused dependencies](../resources/types/package.md#open-questions)
+:   Whether removing a package should also remove packages that become unused. The set that
+    becomes removable depends on everything else installed and not on anything in the manifest, so
+    the honest answer may be that Datum should not.
+
+[Instanced service units](../resources/types/service.md#open-questions)
+:   Units with instances, such as `getty@tty1`, are not addressed. The name would work as a
+    target identity, and whether anything else about them needs modelling is unexplored.
+
+[Passwords and authentication](../resources/types/user.md#open-questions)
+:   `User` models no authentication at all. Password hashes are secret material, which Datum has
+    no mechanism for, and authorised keys are a `File` resource with the same problem. This is
+    the largest gap in the type.
+
+[Locking an account without removing it](../resources/types/user.md#open-questions)
+:   Whether `state` needs a `locked` value alongside `absent`, which is probably the more common
+    operational need than deletion.
+
+[Provider path ownership](../resources/conflicts.md#overlapping-types)
 :   Providers writing paths as an implementation detail, such as the `Sysctl` provider writing
     into `/etc/sysctl.d`, can collide with `File` resources. Declared path ownership is proposed
     and unspecified, and it is complicated by ownership depending on which provider was selected.
