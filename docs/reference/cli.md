@@ -70,8 +70,8 @@ $ datum explain File[nginx-config] --host web-001
 File[nginx-config]   /etc/nginx/nginx.conf
 
 contributed by
-  roles/web        precedence  30   selector role=web
-  hosts/web-001    precedence 100   selector datum.dev/host=web-001
+  roles/web        precedence  30   matched role=web
+  hosts/web-001    precedence 100   matched datum/host=web-001
 
 fields
   path     /etc/nginx/nginx.conf    roles/web
@@ -80,7 +80,7 @@ fields
   mode     0600                     hosts/web-001   overrides 0640 from roles/web
   source   files/nginx.conf         roles/web
 
-dependsOn
+requires
   Package[nginx]                    roles/web
 ```
 

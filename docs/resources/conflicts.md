@@ -64,13 +64,12 @@ groups it belongs to, and a `Group` could plausibly declare its members, at whic
 point a repository can say two incompatible things and both are valid on their own.
 
 ```yaml
-apiVersion: datum.dev/v1alpha1
-kind: User
+datum: v1alpha1
+type: User
 
-metadata:
-  name: deploy
+name: deploy
 
-spec:
+desired:
   state: present
   groups:
     - docker

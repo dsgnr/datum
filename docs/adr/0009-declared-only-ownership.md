@@ -36,13 +36,12 @@ is not scheduled for removal.
 Removing something requires declaring that intent.
 
 ```yaml
-apiVersion: datum.dev/v1alpha1
-kind: Package
+datum: v1alpha1
+type: Package
 
-metadata:
-  name: nginx
+name: nginx
 
-spec:
+desired:
   state: absent
 ```
 

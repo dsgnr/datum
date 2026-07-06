@@ -46,8 +46,8 @@ document it claims to be, and that claim is the thing to authenticate.
 
 !!! note "Security consideration"
 
-    This is why no observed fact from the host is a selector input, and why the
-    `datum.dev/` label prefix is reserved and cannot be set by a `Host` document.
+    This is why no observed fact from the host is a matcher input, and why the
+    `datum/` label prefix is reserved and cannot be set by a `Host` document.
     Allowing a host to influence matching, even indirectly through a fact like the
     distribution it reports, moves part of the classification decision onto the
     machine.

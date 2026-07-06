@@ -16,9 +16,9 @@ adding types is cheap once that behaviour is right and expensive before it is.
 
 !!! note "Proposed schemas"
 
-    Every field on every page in this section is proposed. The `datum.dev/v1alpha1`
-    API version means field names, defaults and semantics can change without a
-    migration path.
+    Every field on every page in this section is proposed. The `datum: v1alpha1` schema
+    marker means field names, defaults and semantics can change without a migration
+    path.
 
 ## How these types were chosen
 

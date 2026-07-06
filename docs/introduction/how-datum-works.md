@@ -22,91 +22,84 @@ Three resources describe nginx on a web server. They live together in a layer
 that selects hosts labelled `role: web`.
 
 ```yaml title="fleet/roles/web/layer.yaml"
-apiVersion: datum.dev/v1alpha1
-kind: Layer
+datum: v1alpha1
+type: Layer
 
-metadata:
-  name: web
+name: web
 
-spec:
-  precedence: 30
-  selector:
-    matchLabels:
-      role: web
+precedence: 30
+match:
+  labels:
+    role: web
 ```
 
 ```yaml title="fleet/roles/web/nginx.yaml"
-apiVersion: datum.dev/v1alpha1
-kind: Package
+datum: v1alpha1
+type: Package
 
-metadata:
-  name: nginx
+name: nginx
 
-spec:
+desired:
   state: present
 ---
-apiVersion: datum.dev/v1alpha1
-kind: File
+datum: v1alpha1
+type: File
 
-metadata:
-  name: nginx-config
+name: nginx-config
 
-dependsOn:
+requires:
   - Package[nginx]
 
-spec:
+desired:
   path: /etc/nginx/nginx.conf
   owner: root
   group: root
   mode: "0640"
   source: files/nginx/nginx.conf
 ---
-apiVersion: datum.dev/v1alpha1
-kind: Service
+datum: v1alpha1
+type: Service
 
-metadata:
-  name: nginx
+name: nginx
 
-dependsOn:
+requires:
   - Package[nginx]
   - File[nginx-config]
 
-spec:
+restartOn:
+  - File[nginx-config]
+
+desired:
   state: running
   enabled: true
-  restartOn:
-    - File[nginx-config]
 ```
 
 Nothing here names a distribution or a package manager, and nothing states an
-order of operations. The `dependsOn` fields express which resources have to be
+order of operations. The `requires` fields express which resources have to be
 settled before which, and the planner derives the order from them.
 
 One host in this fleet needs a stricter mode on that file than the role gives it, which
 is expressed as a layer selecting that host alone.
 
 ```yaml title="fleet/hosts/web-001/layer.yaml"
-apiVersion: datum.dev/v1alpha1
-kind: Layer
+datum: v1alpha1
+type: Layer
 
-metadata:
-  name: host-web-001
+name: host-web-001
 
-spec:
-  precedence: 100
-  selector:
-    matchLabels:
-      datum.dev/host: web-001
+precedence: 100
+match:
+  labels:
+    datum/host: web-001
 ```
 
 ```yaml title="fleet/hosts/web-001/nginx-tuning.yaml"
-apiVersion: datum.dev/v1alpha1
-kind: File
+datum: v1alpha1
+type: File
 
-metadata:
-  name: nginx-config
+name: nginx-config
 
-spec:
+desired:
   mode: "0600"
 ```
 
@@ -118,7 +111,7 @@ source, because those come from the role layer and only the mode is being change
 Reconciliation starts from a repository revision, because a pass that cannot name
 the commit it acted on cannot be reproduced or audited afterwards.
 
-The fleet resolver reads the `Host` document for `web-001`, collects every layer whose selector
+The fleet resolver reads the `Host` document for `web-001`, collects every layer whose matcher
 matches its labels, and merges them in precedence order. The role layer at precedence 30 is folded
 before the host layer at 100, so the mode ends up as `0600` and everything else on the file comes
 from the role. The result is the effective manifest, the complete set of resources for that host
@@ -173,7 +166,7 @@ update   File[nginx-config]
 
 update   Service[nginx]
          reason   File[nginx-config] changed, restartOn matched
-         from     roles/web (selector role=web)
+         from     roles/web (matched role=web)
 
 none     Package[nginx]      present, 1.24.0-2
 none     User[www-data]      present

@@ -94,9 +94,9 @@ Exactly one candidate has to remain. Zero candidates means the resource cannot
 be reconciled on that host. Two candidates at the same level of specificity is
 an error, and no preference order is applied to resolve it.
 
-Probing is used as a check rather than as a selector. A provider chosen from `ID` that
-then finds its package manager missing reports that as a failure, which is more useful
-than silently selecting a different one.
+Probing is used as a check, not as a matcher. A provider chosen from `ID` that
+then finds its package manager missing reports that as a failure, which is more
+useful than silently selecting a different one.
 
 ## When no provider matches
 

@@ -98,9 +98,9 @@ Provenance
 
 Everything after composition consumes the manifest and nothing else from the
 repository. The graph builder, observer, planner and reconciler never read a
-`Layer`, evaluate a selector, or look at the revision beyond recording it.
+`Layer`, evaluate a matcher, or look at the revision beyond recording it.
 
-It also bounds what the rest of the system has to understand. A bug in ordering or
-verification can be reproduced from a manifest without a repository, and a
+It also bounds what the rest of the system has to understand. A bug in ordering
+or verification can be reproduced from a manifest without a repository, and a
 disagreement about what should have happened can be settled by comparing two
-manifests rather than by reasoning about selectors.
+manifests instead of reasoning about matchers.

@@ -59,17 +59,17 @@ contract.
 
 ## Provider constraints
 
-A provider carries out the action the planner selected without re-checking
-whether it is needed. A provider that re-checked could disagree with the plan,
-and the plan would no longer describe what the pass does.
+A provider carries out the action the planner selected without re-checking whether it is
+needed. A provider that re-checked could disagree with the plan, and the plan would no
+longer describe what the pass does.
 
-A provider is called with one resource. Layers, selectors, labels and precedence
-are resolved before any provider runs, and a provider has no view of the
-manifest the resource came from.
+A provider is called with one resource. Layers, matchers, labels and precedence are
+resolved before any provider runs, and a provider has no view of the manifest the resource
+came from.
 
-Requests a provider cannot express are reported as errors. A `Package` provider
-on a system whose package manager has no version pinning mechanism fails a
-request to pin instead of installing the version unpinned.
+Requests a provider cannot express are reported as errors. A `Package` provider on a system
+whose package manager has no version pinning mechanism fails a request to pin instead of
+installing the version unpinned.
 
 A provider operates on the target of its own resource. A `Service` provider
 asked to restart a unit does not install the package that provides it, which is

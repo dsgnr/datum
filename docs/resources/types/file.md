@@ -3,16 +3,15 @@
 `File` describes the content and metadata of one file.
 
 ```yaml
-apiVersion: datum.dev/v1alpha1
-kind: File
+datum: v1alpha1
+type: File
 
-metadata:
-  name: nginx-config
+name: nginx-config
 
-dependsOn:
+requires:
   - Package[nginx]
 
-spec:
+desired:
   path: /etc/nginx/nginx.conf
   owner: root
   group: root
@@ -20,8 +19,8 @@ spec:
   source: files/nginx.conf
 ```
 
-Target identity is `spec.path` rather than `metadata.name`, so two `File` resources
-with different names and the same path are a conflict.
+Target identity is `desired.path` and not `name`, so two `File` resources with
+different names and the same path are a conflict.
 
 ## Fields
 

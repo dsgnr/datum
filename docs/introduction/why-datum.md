@@ -26,15 +26,13 @@ in.
 
 ## Tracing why a value reached a host
 
-On a fleet of any size, configuration arrives at a host from several places at
-once, and the mechanisms tend to be inheritance hierarchies, group variables,
-include files and conditionals. Tracing why a particular value ended up on a
-particular machine becomes an exercise in reading the whole repository.
+Configuration reaches a host from several places at once, through inheritance hierarchies,
+group variables, include files and conditionals. Tracing why a value ended up on a
+particular machine means reading the whole repository.
 
-That question is treated here as a first-class requirement. Because every
-resource in an effective manifest retains the layer it came from and the selector
-that matched, Datum can answer directly why a resource applies to a host, rather
-than leaving an engineer to reconstruct it.
+Datum treats that question as a requirement. Every resource in an effective manifest
+retains the layer it came from and the matcher that matched, so the answer is available
+directly.
 
 ## Distribution differences spread
 

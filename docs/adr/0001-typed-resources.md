@@ -30,8 +30,8 @@ state to be readable and comparable, which only the third option provides.
 ## Decision
 
 Desired state is expressed as typed resources. Every resource has the same envelope,
-being `apiVersion`, `kind`, `metadata`, `dependsOn` and `spec`, and each type defines
-the fields its `spec` accepts.
+being `datum`, `type`, `name` and `labels`, `requires` and `desired`, and each type defines
+the fields its `desired` accepts.
 
 A type is only admitted if its state can be read back from the host. Observability is the admission
 criterion, not a quality to aim for, which rules out any type whose effect cannot be measured after

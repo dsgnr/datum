@@ -64,7 +64,7 @@ Most of these fall out of separating the phases. The one that constrains the
 design hardest is why a configuration applies, because answering it means
 carrying provenance through fleet resolution instead of discarding it once the
 merge is done. Every resource in an effective manifest therefore records the
-layer that contributed it and the selector that matched.
+layer that contributed it and the labels that caused the layer to match.
 
 This rules out merge behaviour that cannot be attributed, and it rules out
 optimisations in the resolver that lose the trail.
@@ -91,7 +91,7 @@ One repository describes one machine or several thousand. Configuration is reuse
 by composition, and never by copying between hosts.
 
 A host is classified by labels, and configuration attaches to labels through
-selectors. Adding a machine means adding a `Host` document rather than
+matchers. Adding a machine means adding a `Host` document rather than
 duplicating an existing one, and a repository where two hosts have similar
 configuration should express that similarity once.
 
@@ -119,10 +119,9 @@ Behaviour should be predictable from the configuration and the documentation
 alone, without knowing how Datum is built.
 
 A simple mechanism with an obvious failure mode is worth more than a clever one
-that is usually right. Precedence is an integer a reader can compare rather than
-a specificity score derived from selector shape. Lists replace instead of
-merging, because keyed list merging requires knowing which key the
-implementation chose.
+that is usually right. Precedence is an integer a reader can compare, not a
+specificity score derived from matcher shape. Lists replace instead of merging,
+because keyed list merging requires knowing which key the implementation chose.
 
 This rules out features whose behaviour needs internal knowledge to predict, and
 it is the principle most likely to be cited when rejecting something that would

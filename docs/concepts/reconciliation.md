@@ -57,7 +57,7 @@ that matters.
 !!! note "Security consideration"
 
     Because the agent is assumed to run as root, and because a bad commit
-    propagates to every host its selectors match, the repository is the control
+    propagates to every host its matchers match, the repository is the control
     plane and its access controls are the real ones. Review on the repository is
     not a process nicety. It is the mechanism that stops a single change from
     reaching a thousand machines.

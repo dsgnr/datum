@@ -44,10 +44,10 @@ Two fields produce edges, and both order.
 
 | Field | Ordering | Reaction |
 | ----- | -------- | -------- |
-| `dependsOn` | Yes | No |
+| `requires` | Yes | No |
 | `restartOn` | Yes | Yes |
 
-`dependsOn` says the referenced resource is processed first. `restartOn` says the same
+`requires` says the referenced resource is processed first. `restartOn` says the same
 and adds that a change to the referenced resource causes this one to be updated.
 
 Reaction implying order is deliberate. A service declaring `restartOn` for its
@@ -64,7 +64,7 @@ in the manifest is an error, not an edge silently dropped.
 ```text
 error: unresolved dependency
 
-  Service[nginx] dependsOn Package[nginx]
+  Service[nginx] requires Package[nginx]
   Package[nginx] is not present in the manifest for web-001
 ```
 

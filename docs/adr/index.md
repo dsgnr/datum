@@ -8,7 +8,7 @@ Each one records why a decision was needed, what was decided, and what the decis
 | [0001](0001-typed-resources.md) | Use typed resources | Accepted |
 | [0002](0002-separate-resources-from-providers.md) | Separate resources from providers | Accepted |
 | [0003](0003-git-as-desired-state-source.md) | Use Git as the source of desired state | Accepted |
-| [0004](0004-labels-and-selectors.md) | Use labels and selectors for fleet composition | Proposed |
+| [0004](0004-labels-and-matchers.md) | Use labels and matchers for fleet composition | Proposed |
 | [0005](0005-identity-separate-from-classification.md) | Keep host identity separate from classification | Accepted |
 | [0006](0006-explicit-dependencies.md) | Represent resource dependencies explicitly | Accepted |
 | [0007](0007-effective-manifest-as-input.md) | Use effective manifests as the reconciliation input | Accepted |

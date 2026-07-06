@@ -5,13 +5,12 @@ host. A resource states the condition that thing should be in and carries no
 instruction for how to reach it.
 
 ```yaml
-apiVersion: datum.dev/v1alpha1
-kind: Package
+datum: v1alpha1
+type: Package
 
-metadata:
-  name: nginx
+name: nginx
 
-spec:
+desired:
   state: present
 ```
 
@@ -42,38 +41,33 @@ Differences that will not sit behind a single resource field are documented on t
 on the provider that implements it. The [providers](../providers/index.md) section covers the
 boundary, provider selection, and the differences that cannot be hidden.
 
-## Hosts, labels and selectors
+## Hosts, labels and matchers
 
 A repository does not hold one file per machine. It holds layers of
-configuration, each carrying a selector that says which hosts the layer applies
+configuration, each carrying a matcher that says which hosts the layer applies
 to, together with one `Host` document per machine that supplies its identity and
 its labels.
 
 ```yaml
-apiVersion: datum.dev/v1alpha1
-kind: Host
+datum: v1alpha1
+type: Host
 
-metadata:
-  name: web-001
-  labels:
-    environment: production
-    site: london
-    role: web
-    architecture: amd64
+name: web-001
+labels:
+  environment: production
+  site: london
+  role: web
+  architecture: amd64
 ```
 
-A layer whose selector matches `role: web` applies to `web-001`, and so does a
-layer matching `environment: production`, along with every other production
-host. Gathering every layer that matches and resolving them in a defined order
-produces the effective manifest for that host, which is the full set of
-resources to be reconciled there. Provenance is kept through that resolution, so
-that the question of which layer contributed a resource, and why its selector
-matched, has an answer.
+A layer matching `role: web` applies to `web-001`, as does one matching `environment: production`
+along with every other production host. Resolving every matching layer in a defined order produces
+the effective manifest, the full set of resources to reconcile there. Provenance survives
+resolution, so which layer contributed a resource, and why its matcher matched, both have answers.
 
-Adding a machine to the fleet should therefore amount to a `Host` document with
-the right labels and nothing else, because configuration is reused by matching
-rather than by duplication. The [fleet](../fleet/index.md) section specifies the
-repository layout, selector semantics, precedence and how conflicts are handled.
+Adding a machine to the fleet is a `Host` document with the right labels and nothing else.
+The [fleet](../fleet/index.md) section specifies repository layout, matcher semantics,
+precedence and conflict handling.
 
 ## The reconciliation phases
 

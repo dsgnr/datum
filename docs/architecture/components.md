@@ -21,9 +21,9 @@ into configuration.
 **Produces** an effective manifest for that host.
 
 The resolver reads the `Host` document for the named host, evaluates every
-`Layer` selector against that host's labels, orders the matching layers by
+`Layer` matcher against that host's labels, orders the matching layers by
 precedence, and merges them. It records for each resulting resource which layer
-contributed it and which selector matched.
+contributed it and which labels caused the layer to match.
 
 Resolution uses the labels declared in the repository and requires no access to
 the host, so a manifest can be rendered for any host from a checkout. Provider
@@ -43,7 +43,7 @@ every resource and identified by a digest of its content.
 **Takes** an effective manifest.
 **Produces** a validated resource graph.
 
-The graph builder turns `dependsOn` references into edges, checks that every
+The graph builder turns `requires` references into edges, checks that every
 reference resolves to a resource present in the manifest, detects cycles, and
 detects two resources claiming the same target identity. Any of those failures
 aborts the pass.
@@ -122,7 +122,7 @@ updates it, since the comparison that selected the action has already happened
 in the planner.
 
 A provider receives one resource and has no access to fleet configuration,
-selectors, labels or the rest of the manifest.
+matchers, labels or the rest of the manifest.
 
 A request a provider cannot express is reported as an error and never
 approximated.

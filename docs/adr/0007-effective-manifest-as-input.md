@@ -7,7 +7,7 @@ Accepted
 ## Context
 
 Resolving fleet configuration and reconciling a host are two different jobs. Resolution
-reads a repository, evaluates selectors and merges layers. Reconciliation reads a machine,
+reads a repository, evaluates matchers and merges layers. Reconciliation reads a machine,
 compares, plans, applies and verifies.
 
 They could be one process with a shared data structure passed internally, which is the
@@ -27,7 +27,7 @@ every field, and is identified by a digest of its content.
 
 The reconciliation engine takes an effective manifest and nothing else from the repository.
 The graph builder, observer, planner and reconciler never read a `Layer`, evaluate a
-selector, or examine the revision beyond recording it.
+matcher, or examine the revision beyond recording it.
 
 The manifest contains no observed state, no provider selection and no plan, all of which are
 produced later from it.
@@ -38,8 +38,8 @@ The engine can be exercised without a repository. A manifest is enough to reprod
 reconciliation problem, which makes ordering and verification bugs reportable by handing over
 one file.
 
-Disagreements about what should have happened can be settled by comparing two manifests
-rather than by reasoning about selectors and precedence.
+Disagreements about what should have happened can be settled by comparing two manifests instead of
+reasoning about matchers and precedence.
 
 A digest gives one value standing for the entire resolved desired state. Two hosts reporting
 the same digest were given the same instructions, a host reporting an old digest has not

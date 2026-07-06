@@ -35,9 +35,9 @@ exists there will be a support matrix recording what actually works, per resourc
 type and per distribution, and entries will only appear in it after the behaviour
 exists and is tested.
 
-Most configuration examples are proposed. The `datum.dev/v1alpha1` API version in
-them says the same thing more formally: the alpha suffix means field names,
-defaults and semantics can change without a migration path until the group
+Most configuration examples are proposed. The `datum: v1alpha1` marker at the top of
+every document says the same thing more formally, because the alpha suffix means field
+names, defaults and semantics can change without a migration path until the schema
 reaches a stable version.
 
 ## What is settled so far
@@ -63,10 +63,10 @@ design assumes them.
 
 ## What is not settled
 
-The [fleet composition model](../adr/0004-labels-and-selectors.md) is proposed rather
-than accepted. Labels and selectors are the intended mechanism, and the precedence and
-conflict rules are written down, but they have not survived contact with a real
-repository yet and are expected to move.
+The [fleet composition model](../adr/0004-labels-and-matchers.md) is proposed,
+not accepted. Labels and matchers are the intended mechanism, and the precedence
+and conflict rules are written down, but they have not survived contact with a
+real repository yet and are expected to move.
 
 Every resource type schema is proposed. The common behaviour they share is close to
 settled and the individual field sets are not.
@@ -90,5 +90,5 @@ the agent.
 ## Versioning
 
 There are no releases. When there are, the documentation will carry a version
-selector and this page will be replaced by something that records what shipped
+matcher and this page will be replaced by something that records what shipped
 rather than what is intended.

@@ -5,16 +5,15 @@ condition that thing should be in, and the steps for reaching it are the
 provider's implementation.
 
 ```yaml
-apiVersion: datum.dev/v1alpha1
-kind: File
+datum: v1alpha1
+type: File
 
-metadata:
-  name: nginx-config
+name: nginx-config
 
-dependsOn:
+requires:
   - Package[nginx]
 
-spec:
+desired:
   path: /etc/nginx/nginx.conf
   owner: root
   group: root
@@ -24,20 +23,26 @@ spec:
 
 ## The common envelope
 
-Every resource document has the same four top-level keys, and only `spec` varies by
-type.
+Every document shares the same three opening keys, and only `desired` varies by type.
 
 | Key | Meaning |
 | --- | ------- |
-| `apiVersion` | The API group and version, currently `datum.dev/v1alpha1`. |
-| `kind` | The resource type. |
-| `metadata` | `name`, which forms the resource reference, and optional `labels`. |
-| `dependsOn` | Resource references that must be processed before this one. |
-| `spec` | Type-specific desired state. |
+| `datum` | Schema version, currently `v1alpha1`. |
+| `type` | The resource type. |
+| `name` | Combined with `type`, forms the resource reference. |
+| `labels` | Optional labels on the resource itself. |
+| `requires` | Resource references processed before this one. |
+| `restartOn` | Resource references processed before this one, whose change also updates it. |
+| `desired` | Type-specific desired state. |
 
-`dependsOn` sits outside `spec` because ordering is behaviour shared by every type
-rather than something a type defines. Putting it inside `spec` would mean every type's
-schema repeated it, and a type could plausibly give it different semantics.
+The envelope is flat on purpose. A Datum document is a configuration file, not an object submitted
+to an API, so there is no wrapper around identity and no wrapper around desired state. Anything not
+inside `desired` is behaviour every type shares.
+
+`requires` and `restartOn` therefore sit outside `desired`, because both produce edges in
+the resource graph and neither describes a condition the host should be in. Putting them
+inside `desired` would mean every type's schema repeated them, and a type could plausibly
+give them different meanings.
 
 ## Settling common behaviour first
 
@@ -53,8 +58,8 @@ badly is expensive because every type added afterwards inherits the answer.
     manages on the host, and why one identity cannot do both jobs.
 
 [Dependencies](dependencies.md)
-:   What `dependsOn` guarantees, how change reaction differs from ordering, and why
-    Datum does not infer dependencies from paths or ownership.
+:   What `requires` guarantees, how change reaction differs from ordering, and why dependencies
+    are declared rather than inferred.
 
 [Conflicts](conflicts.md)
 :   What happens when two resources manage the same thing, and why none of the

@@ -29,7 +29,7 @@ nav = [
   { "Fleet" = [
     "fleet/index.md",
     "fleet/repository-layout.md",
-    "fleet/labels-and-selectors.md",
+    "fleet/labels-and-matchers.md",
     "fleet/composition.md",
     "fleet/precedence.md",
     "fleet/effective-manifests.md",
@@ -81,7 +81,7 @@ nav = [
     "adr/0001-typed-resources.md",
     "adr/0002-separate-resources-from-providers.md",
     "adr/0003-git-as-desired-state-source.md",
-    "adr/0004-labels-and-selectors.md",
+    "adr/0004-labels-and-matchers.md",
     "adr/0005-identity-separate-from-classification.md",
     "adr/0006-explicit-dependencies.md",
     "adr/0007-effective-manifest-as-input.md",

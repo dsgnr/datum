@@ -3,24 +3,24 @@
 `Service` describes whether a service is running now and whether it starts at boot.
 
 ```yaml
-apiVersion: datum.dev/v1alpha1
-kind: Service
+datum: v1alpha1
+type: Service
 
-metadata:
-  name: nginx
+name: nginx
 
-dependsOn:
+requires:
   - Package[nginx]
   - File[nginx-config]
 
-spec:
+restartOn:
+  - File[nginx-config]
+
+desired:
   state: running
   enabled: true
-  restartOn:
-    - File[nginx-config]
 ```
 
-Target identity is the unit name, taken from `metadata.name`. The only candidate
+Target identity is the unit name, taken from `name`. The only candidate
 provider is `systemd`.
 
 ## Fields
@@ -49,7 +49,7 @@ There is no `create` action. A unit exists because a package installed it or
 because a `File` resource wrote it, so a `Service` resource for a unit that does
 not exist is an error at apply time and not something to be created.
 
-The usual cause is a missing `dependsOn` on the package providing the unit. It works
+The usual cause is a missing `requires` on the package providing the unit. It works
 on a host where the package is already installed and fails on a fresh one, which is
 the most common shape of dependency mistake.
 
@@ -80,7 +80,7 @@ already running and enabled still restarts when its configuration changes, which
 the entire purpose.
 
 Listing a resource in `restartOn` also orders it before the service, so a file named
-there does not need repeating in `dependsOn`. The example at the top of this page lists
+there does not need repeating in `requires`. The example at the top of this page lists
 `File[nginx-config]` in both because the intent is clearer that way, and the second
 mention changes nothing.
 

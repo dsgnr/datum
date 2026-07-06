@@ -42,7 +42,7 @@ adding resource types does not add vocabulary that has to be explained.
 
 For each resource, a plan records the resource reference, the action, the fields
 that differ with their observed and desired values, the provider selected to carry
-the action out, the layer the resource came from and the selector that matched, and
+the action out, the layer the resource came from and the labels that caused it to match, and
 the reason if the action is `skip`.
 
 ```text
