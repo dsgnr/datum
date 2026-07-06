@@ -65,6 +65,11 @@ nav = [
     "architecture/host-identity.md",
     "architecture/deployment-models.md",
   ] },
+  { "Security" = [
+    "security/index.md",
+    "security/threat-model.md",
+    "security/handshake.md",
+  ] },
   { "Reference" = [
     "reference/index.md",
     "reference/manifest-format.md",
