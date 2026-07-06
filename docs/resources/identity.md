@@ -54,15 +54,20 @@ order. The graph builder rejects the manifest instead.
 | `Package` | Package name | `name` |
 | `File` | Absolute path | `desired.path` |
 | `Directory` | Absolute path | `desired.path` |
+| `Symlink` | Absolute path | `desired.path` |
+| `Repository` | Source identifier | `desired.id` |
 | `Service` | Unit name | `name` |
 | `User` | User name | `name` |
 | `Group` | Group name | `name` |
 | `Sysctl` | Parameter key | `name` |
 
 Where a type's natural key is a single string that reads well as a name,
-`name` supplies it, which keeps the common case short. `File` and
-`Directory` are the exceptions because paths make poor names and because the same
+`name` supplies it, which keeps the common case short. `File`, `Directory` and
+`Symlink` are exceptions because paths make poor names and because the same
 logical file often lives at different paths on different distributions.
+`Repository` is an exception for a different reason, which is that the identifier a
+package manager knows a source by is not something a reader would recognise as the
+source's name.
 
 !!! note "Open question"
 
