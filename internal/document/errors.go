@@ -15,6 +15,10 @@ type Error struct {
 }
 
 func (e Error) Error() string {
+	// A layer conflict belongs to no single file.
+	if e.Position.File == "" {
+		return e.Msg
+	}
 	return e.Position.String() + ": " + e.Msg
 }
 
