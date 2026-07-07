@@ -106,7 +106,21 @@ upgrading it cannot be expressed. Provisioning machines and building images sit
 outside Datum as well.
 
 Secret material is a gap rather than a decision. Configuration files frequently
-need credentials in them, and there is no answer yet for how they get there.
+need credentials in them, and there is no answer yet for how they get there. Every host reads the
+whole repository, so anything committed there is readable by every managed machine, which is why a
+mechanism cannot simply be added.
+
+## Security
+
+An agent running as root, taking instructions from a repository several people can write
+to, is the whole of the security problem. The [security](../security/index.md) section
+states what is trusted, enumerates the attack vectors by what the attacker can already do,
+and covers how a host might prove its identity.
+
+Two things need saying before reading further. Anyone who can merge to the tracked branch can run
+configuration as root on every host their change matches, and that is a trust assumption, not
+something Datum defends against. A host reports its own status, so a converged fleet report is a
+claim made by the hosts, not evidence about them.
 
 ## Reading on
 
