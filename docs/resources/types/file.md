@@ -95,6 +95,15 @@ window where the file exists with the wrong permissions.
 Writing to the same directory matters because a rename across filesystems is not
 atomic, and `/tmp` is frequently a different filesystem from `/etc`.
 
+!!! note "Security consideration"
+
+    A provider writing as root has to assume the path is hostile. An unprivileged user who can
+    create entries in the target directory, which is common under `/var/lib` and `/srv`, can replace
+    the target with a symbolic link and have root write somewhere else. The handling that follows
+    from this, covering `O_NOFOLLOW`, exclusive temporary file creation, setting metadata on the
+    file descriptor and not the path, and hard link counts, is specified in the [threat
+    model](../../security/threat-model.md#an-attacker-with-an-unprivileged-account-on-a-managed-host).
+
 ## Verification
 
 The file is re-read and every declared field compared. The most common verification

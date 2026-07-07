@@ -83,13 +83,10 @@ fails with an error naming the identity it claimed.
 
 ## Identity is not a security control
 
-This is the part that changes between [deployment
-models](deployment-models.md), and the difference is larger than it first appears.
-
-The agent has the repository. It reads every `Host` document, every
-`Layer`, and every file any resource references, because resolution happens on the
-machine. A host claiming to be `db-001` instead of `web-001` gains nothing, since it
-could already read `db-001`'s configuration either way.
+The agent has the repository. It reads every `Host` document, every `Layer`, and every file
+any resource references, because [resolution happens on the
+machine](deployment-models.md). A host claiming to be `db-001` instead of `web-001` gains
+nothing, since it could already read `db-001`'s configuration either way.
 
 ```text
 Git
@@ -97,25 +94,17 @@ Git
 Datum agent          (reads the whole repository)
 ```
 
-Identity selects which configuration to apply, and the real boundary is read access to the
-repository, which is granted to the machine as a whole.
+Identity selects which configuration to apply. The real boundary is read access to the
+repository, granted to the machine as a whole.
 
-!!! note "Open question"
-
-    What matters for the current design is that the boundary is identified and that
-    nothing in the model assumes identity is trustworthy, so adding authentication later
-    does not require rearranging how classification works.
-
-## How it works
+## Consequences
 
 Every host having read access to the whole repository is a real limitation, not a temporary one, and
 it shapes what belongs in a repository.
 
-Any secret in the repository is available to every managed machine. A single compromised
-host therefore exposes the configuration of the entire fleet, which is a blast radius
-much larger than the machine.
-
-That is why secret material is referenced rather than committed, instead of being an omission
+Anything committed is available to every managed machine, so a single compromised host
+exposes the configuration of the entire fleet. That is why secret material is
+referenced rather than committed, instead of being an omission
 waiting for a convenient mechanism.
 
 ## What a compromised host can do
@@ -130,3 +119,6 @@ agent runs there.
 What it cannot do is change what any other host receives, because that would require committing to
 the repository. The blast radius of a compromised machine is bounded by that machine plus whatever
 the repository exposed to it, and the second half of that is the part to reduce.
+
+The full set of vectors, including the ones available to an unprivileged local user and not to root,
+is in the [security](../security/index.md) section.
