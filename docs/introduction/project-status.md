@@ -71,7 +71,7 @@ real repository yet and are expected to move.
 Every resource type schema is proposed. The common behaviour they share is close to
 settled and the individual field sets are not.
 
-More than thirty questions are recorded as unresolved, and they are collected in [open
+More than forty questions are recorded as unresolved, and they are collected in [open
 questions](../development/open-questions.md). Several of them would otherwise be answered
 by accident during implementation, which is the main reason the list exists.
 
