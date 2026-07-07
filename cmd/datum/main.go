@@ -3,6 +3,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"os"
 	"sort"
@@ -54,6 +55,24 @@ func run(args []string) int {
 	fmt.Fprintf(os.Stderr, "datum: unknown command %q\n\n", name)
 	usage(os.Stderr)
 	return exitError
+}
+
+// parseFlags handles flags before or after positional arguments, which flag.Parse will
+// not do, because it stops at the first argument that is not a flag. The documented
+// usage is "datum explain File[x] --host y".
+func parseFlags(fs *flag.FlagSet, args []string) ([]string, error) {
+	var positional []string
+	rest := args
+	for {
+		if err := fs.Parse(rest); err != nil {
+			return nil, err
+		}
+		if fs.NArg() == 0 {
+			return positional, nil
+		}
+		positional = append(positional, fs.Arg(0))
+		rest = fs.Args()[1:]
+	}
 }
 
 func usage(out *os.File) {
