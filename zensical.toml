@@ -68,6 +68,8 @@ nav = [
   { "Security" = [
     "security/index.md",
     "security/threat-model.md",
+    "security/repository-trust.md",
+    "security/provider-safety.md",
     "security/handshake.md",
   ] },
   { "Reference" = [
@@ -92,6 +94,7 @@ nav = [
     "adr/0007-effective-manifest-as-input.md",
     "adr/0008-resource-reference-and-target-identity.md",
     "adr/0009-declared-only-ownership.md",
+    "adr/0010-no-self-managed-trust-anchors.md",
   ] },
 ]
 

@@ -92,8 +92,14 @@ the limits of this.
 
 [Threat model](threat-model.md)
 :   Attack vectors organised by what the attacker can already do, with the impact of each and
-    what the design does about it.
+    the control that addresses it.
+
+[Trusting desired state](repository-trust.md) :   Signature verification, downgrade protection, and
+the trust anchors Datum keeps outside desired state.
+
+[Applying state safely](provider-safety.md) :   How a provider running as root handles paths, field
+values, temporary files and reports, and the local privilege escalations that handling prevents.
 
 [Handshakes and authenticity](handshake.md)
-:   How a host proves which machine it is, how it might be enrolled, and how a manifest could
-    be shown to be genuine.
+:   How a host proves which machine it is, how it is enrolled, and how a manifest is shown to be
+    genuine and current.
