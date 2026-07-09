@@ -42,7 +42,7 @@ reaches a stable version.
 
 ## What is settled so far
 
-Eight decisions are accepted, each with a record explaining what it was weighed against
+Nine decisions are accepted, each with a record explaining what it was weighed against
 and what it costs.
 
 | Decision | Record |
@@ -55,6 +55,7 @@ and what it costs.
 | The effective manifest is the engine's only input | [ADR-0007](../adr/0007-effective-manifest-as-input.md) |
 | Resource references are separate from target identities | [ADR-0008](../adr/0008-resource-reference-and-target-identity.md) |
 | Only declared resources are managed | [ADR-0009](../adr/0009-declared-only-ownership.md) |
+| Datum does not manage its own trust anchors | [ADR-0010](../adr/0010-no-self-managed-trust-anchors.md) |
 
 The reconciliation model itself is settled. Desired state comes from Git, observed state
 comes from the host, the two produce a plan, and the plan is applied and verified. The

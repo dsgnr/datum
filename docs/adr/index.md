@@ -14,6 +14,7 @@ Each one records why a decision was needed, what was decided, and what the decis
 | [0007](0007-effective-manifest-as-input.md) | Use effective manifests as the reconciliation input | Accepted |
 | [0008](0008-resource-reference-and-target-identity.md) | Separate resource references from target identities | Accepted |
 | [0009](0009-declared-only-ownership.md) | Manage only declared resources | Accepted |
+| [0010](0010-no-self-managed-trust-anchors.md) | Datum does not manage its own trust anchors | Accepted |
 
 ## What gets an ADR
 
