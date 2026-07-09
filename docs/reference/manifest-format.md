@@ -207,6 +207,10 @@ Errors raised before the host is read, in the order they are detected.
 | `Host` setting a `datum/` label | Discovery |
 | Unrecognised form inside a `match` block | Discovery |
 | `restartOn` on a type that does not support it | Discovery |
+| Control character, whitespace or shell metacharacter in a name or key | Discovery |
+| Path that is not absolute, or contains `..` or an empty component | Discovery |
+| `source` that is absolute, or resolves outside the fleet root | Discovery |
+| Resource targeting one of Datum's own trust anchors | Fleet resolver |
 | Equal-precedence field conflict between layers | Fleet resolver |
 | Unresolved resource reference in `requires` or `restartOn` | Graph builder |
 | Dependency cycle | Graph builder |

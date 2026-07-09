@@ -33,15 +33,23 @@ different names and the same path are a conflict.
 | `owner` | string | No | Owning user name. |
 | `group` | string | No | Owning group name. |
 | `mode` | string | No | Permission bits, quoted. |
+| `sensitive` | boolean | No, defaults to `false` | Suppresses rendering of the content anywhere. |
 
 `content` and `source` are mutually exclusive, and a resource setting both is
 rejected. Setting neither manages metadata only, which is how ownership or
 permissions on a file created by a package are corrected without taking over what is
 in it.
 
-`source` is resolved relative to the layer directory, so a resource in
-`fleet/roles/web/` referring to `files/nginx.conf` means
-`fleet/roles/web/files/nginx.conf`.
+`source` is resolved relative to the layer directory, so a resource in `fleet/roles/web/` referring
+to `files/nginx.conf` means `fleet/roles/web/files/nginx.conf`. It must be a relative path and must
+resolve to somewhere inside the fleet root, which is
+[confinement](../../security/provider-safety.md#confining-content-sources), not a convention.
+
+`sensitive: true` stops the content appearing in a diff, a plan or a report, while ownership and
+mode are still reported normally. It is not secret management, because the content still sits in the
+repository in plain text, and the
+[limitation](../../security/provider-safety.md#marking-content-as-sensitive) needs reading before
+anything relies on it.
 
 ## Quoting mode
 
