@@ -90,9 +90,8 @@ Provenance
 
 !!! note "Implementation status"
 
-    Signing and rollback support are not designed, let alone
-    built. Listing them here is a statement about why the manifest is shaped this
-    way, not a claim that any of it works.
+    Signing and rollback support are not designed, let alone built. Listing them here is a
+    statement about why the manifest is shaped this way, not a claim that any of it works.
 
 ## The manifest is the engine's only input
 
@@ -100,7 +99,41 @@ Everything after composition consumes the manifest and nothing else from the
 repository. The graph builder, observer, planner and reconciler never read a
 `Layer`, evaluate a matcher, or look at the revision beyond recording it.
 
-It also bounds what the rest of the system has to understand. A bug in ordering
-or verification can be reproduced from a manifest without a repository, and a
-disagreement about what should have happened can be settled by comparing two
-manifests instead of reasoning about matchers.
+That boundary bounds what the rest of the system has to understand. A bug in ordering or
+verification can be reproduced from a manifest without a repository, and a disagreement about what
+should have happened can be settled by comparing two manifests instead of reasoning about matchers.
+
+## Secrets and the digest
+
+If Datum ever resolves secret material, and it currently does
+[not](../security/index.md#what-is-not-defended), the manifest and its digest must describe the
+reference to a secret and never the secret itself.
+
+```yaml
+datum: v1alpha1
+type: File
+
+name: db-credentials
+
+desired:
+  path: /etc/app/db.conf
+  secretRef: production/db
+```
+
+The digest would then cover `secretRef: production/db`, not the credential that reference resolves
+to. A manifest is rendered, logged, reported and compared, and a secret value present in it would
+leak through every one of those. Keeping the reference in the manifest and resolving it later,
+through a separate mechanism close to where the value is used, keeps the secret out of all of them.
+
+This also keeps the digest stable. A digest over resolved secret values would change every time a
+secret rotated, so two hosts with identical desired state but different secret values would report
+different digests, which would break the digest's use for [status](../reference/status.md) and
+comparison. A digest over references changes only when the desired state changes, which is what it
+is supposed to mean.
+
+!!! note "Implementation status"
+
+    Secret resolution does not exist, `secretRef` is illustrative, and the mechanism that would
+    resolve it is undesigned. What is settled is the constraint on any future design, which is that
+    the manifest describes references and secret values never enter it, its digest, its logs or its
+    provenance.
