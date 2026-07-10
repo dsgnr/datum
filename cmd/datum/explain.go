@@ -3,9 +3,8 @@
 package main
 
 import (
-	"flag"
 	"fmt"
-	"os"
+	"io"
 	"strings"
 	"text/tabwriter"
 
@@ -21,8 +20,8 @@ func init() {
 	})
 }
 
-func runExplain(args []string) int {
-	fs := flag.NewFlagSet("explain", flag.ContinueOnError)
+func runExplain(e *env, args []string) int {
+	fs := newFlagSet(e, "explain")
 	host := fs.String("host", "", "resolve for a named host")
 	repo := fs.String("repo", ".", "use a local checkout")
 	positional, parseErr := parseFlags(fs, args)
@@ -30,38 +29,38 @@ func runExplain(args []string) int {
 		return exitError
 	}
 	if len(positional) != 1 {
-		fmt.Fprintln(os.Stderr, "usage: datum explain Type[name] --host NAME")
+		e.errorf("usage: datum explain Type[name] --host NAME\n")
 		return exitError
 	}
 	if *host == "" {
-		fmt.Fprintln(os.Stderr, "datum explain: --host is required")
+		e.errorf("datum explain: --host is required\n")
 		return exitError
 	}
 
 	wanted, ok := document.ParseReference(positional[0])
 	if !ok {
-		fmt.Fprintf(os.Stderr, "datum explain: %q is not a resource reference, write it as Type[name]\n", positional[0])
+		e.errorf("datum explain: %q is not a resource reference, write it as Type[name]\n", positional[0])
 		return exitError
 	}
 
 	result, revision, err := loadRepo(*repo)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
+		e.errorf("%v\n", err)
 		return exitError
 	}
 	manifest, err := resolve.Host(result.Set, *host, revision)
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%v\n", err)
+		e.errorf("%v\n", err)
 		return exitError
 	}
 
 	resource, found := findResource(manifest, wanted)
 	if !found {
-		fmt.Fprintf(os.Stderr, "%s does not apply to %s\n", wanted, *host)
+		e.errorf("%s does not apply to %s\n", wanted, *host)
 		return exitError
 	}
 
-	printExplanation(manifest, resource)
+	printExplanation(e.out, manifest, resource)
 	return exitOK
 }
 
@@ -74,20 +73,20 @@ func findResource(m resolve.Manifest, ref document.Reference) (resolve.Resource,
 	return resolve.Resource{}, false
 }
 
-func printExplanation(m resolve.Manifest, r resolve.Resource) {
+func printExplanation(out io.Writer, m resolve.Manifest, r resolve.Resource) {
 	target, err := document.TargetIdentity(r.Ref.Type, r.Ref.Name, r.Desired)
 	if err != nil {
 		target = "(no target identity)"
 	}
-	fmt.Printf("%s   %s\n\n", r.Ref, target)
+	fmt.Fprintf(out, "%s   %s\n\n", r.Ref, target)
 
 	contributed := map[string]bool{}
 	for _, name := range r.Layers {
 		contributed[name] = true
 	}
 
-	fmt.Println("contributed by")
-	w := tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	fmt.Fprintln(out, "contributed by")
+	w := tabwriter.NewWriter(out, 0, 0, 2, ' ', 0)
 	for _, layer := range m.Layers {
 		if !contributed[layer.Name] {
 			continue
@@ -96,18 +95,18 @@ func printExplanation(m resolve.Manifest, r resolve.Resource) {
 	}
 	w.Flush()
 
-	fmt.Println("\nfields")
-	w = tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+	fmt.Fprintln(out, "\nfields")
+	w = tabwriter.NewWriter(out, 0, 0, 2, ' ', 0)
 	printFields(w, "", r.Desired)
 	w.Flush()
 
-	printRefs("requires", r.Requires)
-	printRefs("restartOn", r.RestartOn)
-	printRefs("reloadOn", r.ReloadOn)
+	printRefs(out, "requires", r.Requires)
+	printRefs(out, "restartOn", r.RestartOn)
+	printRefs(out, "reloadOn", r.ReloadOn)
 
 	if len(r.Used) > 0 {
-		fmt.Println("\nsubstitutions")
-		w = tabwriter.NewWriter(os.Stdout, 0, 0, 2, ' ', 0)
+		fmt.Fprintln(out, "\nsubstitutions")
+		w = tabwriter.NewWriter(out, 0, 0, 2, ' ', 0)
 		for _, used := range r.Used {
 			fmt.Fprintf(w, "  %s\t%s\n", used.Placeholder, used.Value)
 		}
@@ -151,12 +150,12 @@ func joinPath(prefix, key string) string {
 	return prefix + "." + key
 }
 
-func printRefs(name string, refs []document.Reference) {
+func printRefs(out io.Writer, name string, refs []document.Reference) {
 	if len(refs) == 0 {
 		return
 	}
-	fmt.Printf("\n%s\n", name)
+	fmt.Fprintf(out, "\n%s\n", name)
 	for _, ref := range refs {
-		fmt.Printf("  %s\n", ref)
+		fmt.Fprintf(out, "  %s\n", ref)
 	}
 }

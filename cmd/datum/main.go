@@ -5,6 +5,7 @@ package main
 import (
 	"flag"
 	"fmt"
+	"io"
 	"os"
 	"sort"
 )
@@ -17,10 +18,24 @@ const (
 	exitLockHeld = 3
 )
 
+// env is where a command writes, so a test can run one and read the output.
+type env struct {
+	out io.Writer
+	err io.Writer
+}
+
+func (e *env) printf(format string, args ...any) {
+	fmt.Fprintf(e.out, format, args...)
+}
+
+func (e *env) errorf(format string, args ...any) {
+	fmt.Fprintf(e.err, format, args...)
+}
+
 type command struct {
 	name    string
 	summary string
-	run     func(args []string) int
+	run     func(e *env, args []string) int
 }
 
 var commands []command
@@ -30,31 +45,39 @@ func register(c command) {
 }
 
 func main() {
-	os.Exit(run(os.Args[1:]))
+	e := &env{out: os.Stdout, err: os.Stderr}
+	os.Exit(run(e, os.Args[1:]))
 }
 
-func run(args []string) int {
+func run(e *env, args []string) int {
 	if len(args) == 0 {
-		usage(os.Stdout)
+		usage(e.out)
 		return exitOK
 	}
 
 	name := args[0]
 	switch name {
 	case "-h", "--help", "help":
-		usage(os.Stdout)
+		usage(e.out)
 		return exitOK
 	}
 
 	for _, c := range commands {
 		if c.name == name {
-			return c.run(args[1:])
+			return c.run(e, args[1:])
 		}
 	}
 
-	fmt.Fprintf(os.Stderr, "datum: unknown command %q\n\n", name)
-	usage(os.Stderr)
+	e.errorf("datum: unknown command %q\n\n", name)
+	usage(e.err)
 	return exitError
+}
+
+// newFlagSet reports problems through the command's own writer.
+func newFlagSet(e *env, name string) *flag.FlagSet {
+	fs := flag.NewFlagSet(name, flag.ContinueOnError)
+	fs.SetOutput(e.err)
+	return fs
 }
 
 // parseFlags handles flags before or after positional arguments, which flag.Parse will
@@ -75,12 +98,8 @@ func parseFlags(fs *flag.FlagSet, args []string) ([]string, error) {
 	}
 }
 
-func usage(out *os.File) {
+func usage(out io.Writer) {
 	fmt.Fprint(out, "usage: datum <command> [flags]\n\n")
-	if len(commands) == 0 {
-		fmt.Fprint(out, "No commands are wired up yet.\n")
-		return
-	}
 	sorted := append([]command(nil), commands...)
 	sort.Slice(sorted, func(i, j int) bool { return sorted[i].name < sorted[j].name })
 
