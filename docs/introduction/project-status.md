@@ -1,14 +1,28 @@
 # Project status
 
-Datum is in the design phase. There is no agent, no CLI, no provider and no
-reconciler. The repository contains this documentation, the tooling needed to
-build it, and nothing else.
+Datum is being built, specification first. Everything that runs without touching a
+host now exists, and nothing that changes a machine does.
 
-The specification comes first because the decisions that are expensive to change
-later are the ones being made now. The shape of a resource, the way identity
-works, where the provider boundary sits and how composition resolves are all
-choices that an implementation would otherwise make incidentally, and would then
-be stuck with.
+| Part | State |
+| ---- | ----- |
+| Document parsing and discovery | Implemented |
+| Matchers, composition and precedence | Implemented |
+| Substitution of declared label values | Implemented |
+| Effective manifests and their digests | Implemented |
+| The resource graph, cycles and duplicate targets | Implemented |
+| `datum render`, `datum explain`, `datum validate` | Implemented |
+| Observation, diffing, planning, applying, verifying | Not started |
+| Providers for any resource type | Not started |
+| The agent as a resident process, scheduling, locking | Not started |
+| Secret resolution and reboot handling | Not started |
+
+The order follows from where a mistake costs least. Resolution is [a pure function of the
+repository](../concepts/desired-state.md#resolution-does-not-read-the-host), so it can be built and
+tested without a machine to break, and it is the half of the system every other part depends on. The
+specification came first because the decisions that are expensive to change later are the ones made
+early. The shape of a resource, the way identity works, where the provider boundary sits and how
+composition resolves are all choices that an implementation would otherwise make incidentally, and
+would then be stuck with.
 
 ## What the documentation is for
 
@@ -42,7 +56,7 @@ reaches a stable version.
 
 ## What is settled so far
 
-Twelve decisions are accepted, each with a record explaining what it was weighed against
+Thirteen decisions are accepted, each with a record explaining what it was weighed against
 and what it costs.
 
 | Decision | Record |
@@ -59,6 +73,7 @@ and what it costs.
 | Desired state never causes a command to run | [ADR-0011](../adr/0011-no-command-execution-from-desired-state.md) |
 | Only declared label values are substituted into desired state | [ADR-0012](../adr/0012-substitution-from-declared-labels.md) |
 | Secrets are referenced in the repository and resolved on the host | [ADR-0013](../adr/0013-secret-references-resolved-on-the-host.md) |
+| The implementation is written in Go | [ADR-0014](../adr/0014-go-as-the-implementation-language.md) |
 
 The reconciliation model itself is settled. Desired state comes from Git, observed state
 comes from the host, the two produce a plan, and the plan is applied and verified. The

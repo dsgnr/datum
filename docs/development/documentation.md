@@ -6,10 +6,10 @@ The site is built with [Zensical](https://zensical.org/) and configured through
 ## Building and previewing
 
 ```bash
-make install    # create .venv and install the pinned toolchain
-make serve      # preview at http://localhost:8000 with live reload
-make build      # build into ./site
-make check      # build with --strict, which is what CI runs
+make docs-install    # create .venv and install the pinned toolchain
+make docs-serve      # preview the site locally with live reload
+make docs-build      # build into ./site
+make docs-check      # build with --strict, which is what CI runs
 ```
 
 The `Makefile` targets wrap the toolchain and add nothing to it. Running Zensical directly works the
@@ -119,8 +119,8 @@ they diff readably.
 
 ## Before committing
 
-Run `make check`. Read the rendered page and not only the source, because tables and admonitions are
-easy to get subtly wrong in Markdown and obvious in the browser.
+Run `make docs-check`. Read the rendered page and not only the source, because tables and
+admonitions are easy to get subtly wrong in Markdown and obvious in the browser.
 
 Keep commits small and coherent, one improvement each, with a one-line [Conventional
 Commits](https://www.conventionalcommits.org/) subject.
