@@ -25,6 +25,8 @@ nav = [
     "concepts/drift.md",
     "concepts/plan.md",
     "concepts/reconciliation.md",
+    "concepts/reconciliation-modes.md",
+    "concepts/state.md",
   ] },
   { "Fleet" = [
     "fleet/index.md",
@@ -37,6 +39,7 @@ nav = [
   { "Resources" = [
     "resources/index.md",
     "resources/lifecycle.md",
+    "resources/ownership.md",
     "resources/identity.md",
     "resources/dependencies.md",
     "resources/conflicts.md",
@@ -54,8 +57,13 @@ nav = [
   { "Providers" = [
     "providers/index.md",
     "providers/selection.md",
+    "providers/capabilities.md",
     "providers/multi-distribution.md",
     "providers/support-matrix.md",
+  ] },
+  { "Reconciliation" = [
+    "reconciliation/index.md",
+    "reconciliation/last-known-good.md",
   ] },
   { "Architecture" = [
     "architecture/index.md",
@@ -64,6 +72,7 @@ nav = [
     "architecture/dependency-graph.md",
     "architecture/host-identity.md",
     "architecture/deployment-models.md",
+    "architecture/self-management.md",
   ] },
   { "Security" = [
     "security/index.md",
@@ -71,11 +80,14 @@ nav = [
     "security/repository-trust.md",
     "security/provider-safety.md",
     "security/handshake.md",
+    "security/time.md",
   ] },
   { "Reference" = [
     "reference/index.md",
     "reference/manifest-format.md",
     "reference/cli.md",
+    "reference/status.md",
+    "reference/stability.md",
     "reference/glossary.md",
   ] },
   { "Development" = [

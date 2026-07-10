@@ -106,3 +106,7 @@ not care whether that manifest arrived from a local checkout or over a network.
 [Deployment](deployment-models.md)
 :   How the agent gets the repository, what that arrangement costs, and where resolution
     stops and reconciliation begins.
+
+[Managing Datum with Datum](self-management.md)
+:   The boundary between the agent as a reconciler and the agent as a resource it manages,
+    and why the running reconciler does not replace its own binary.

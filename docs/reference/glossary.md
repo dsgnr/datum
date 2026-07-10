@@ -15,6 +15,19 @@ Apply
 :   The phase that carries out the actions in a plan. Performed by providers, one action
     at a time, in plan order.
 
+Assertive resource
+:   A resource that claims one target and holds no opinion about others of the same type.
+    Every resource type is assertive. See [ownership](../resources/ownership.md).
+
+Authoritative set
+:   A proposed resource declaring the complete membership of a category, so that anything
+    on the host in that category but not in the set is drift. See
+    [ownership](../resources/ownership.md#authoritative-sets).
+
+Capability set
+:   The mapping from resource types to the providers that satisfy them on a host. What a
+    distribution reduces to once identified. See [capabilities](../providers/capabilities.md).
+
 Classification
 :   What a host is for, expressed as labels in its `Host` document. Decided by the
     repository, never by the host. See [host identity](../architecture/host-identity.md).
@@ -23,6 +36,11 @@ Convergence
 :   The condition of a host whose observed state satisfies its desired state for every
     resource in its effective manifest. Established by observation, not asserted.
     See [reconciliation](../concepts/reconciliation.md#convergence).
+
+Declarative
+:   The property that desired state is fully described by the repository at a revision.
+    Distinct from reproducible. See [last known
+    good](../reconciliation/last-known-good.md#declarative-is-not-reproducible).
 
 Desired state
 :   The resources a repository says should apply to one host, resolved at one repository
@@ -71,6 +89,15 @@ Identity
 Label
 :   A string key and string value classifying a host. Written in the `Host` document. See
     [labels and matchers](../fleet/labels-and-matchers.md).
+
+Last known good
+:   The most recent revision that resolved and validated cleanly, reconciled when a newer
+    revision fails to resolve. A revision identifier, not stored system state. See [last
+    known good](../reconciliation/last-known-good.md).
+
+Mode
+:   Whether an agent applies changes or only reports drift, being `enforce` or `observe`.
+    Set on the host. See [reconciliation modes](../concepts/reconciliation-modes.md).
 
 Layer
 :   A set of configuration with a matcher saying which hosts it applies to and a
@@ -125,6 +152,12 @@ Reconciler
 Reconciliation
 :   One complete pass for one host. See
     [reconciliation](../concepts/reconciliation.md).
+
+Reproducible
+:   The property that the same revision produces the same result on the same host at any
+    time. Distinct from declarative, and only as strong as the pinning of the inputs a
+    revision refers to. See [last known
+    good](../reconciliation/last-known-good.md#declarative-is-not-reproducible).
 
 Repository revision
 :   The exact commit that desired state was resolved from. See [desired
