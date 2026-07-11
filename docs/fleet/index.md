@@ -30,12 +30,11 @@ between revisions.
 ## The parts of the model
 
 [Repository layout](repository-layout.md)
-:   The four document kinds, how resources are associated with layers, and why the
-    directory names carry no meaning.
+:   The four document types, how resources attach to layers, and why directory names carry
+    no meaning.
 
 [Labels and matchers](labels-and-matchers.md)
-:   How hosts are classified, what a matcher can express, and why labels come from
-    the repository rather than from the machine.
+:   How hosts are classified, what a matcher can express, and where labels come from.
 
 [Composition](composition.md)
 :   How matching layers are merged into one set of resources, field by field.

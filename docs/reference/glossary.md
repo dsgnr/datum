@@ -187,7 +187,7 @@ Resource graph
     host is read, and the only source of ordering.
 
 Resource reference
-:   How a resource is named inside Datum, written `Kind[name]`, unique within an effective
+:   How a resource is named inside Datum, written `Type[name]`, unique within an effective
     manifest. See [resource identity](../resources/identity.md).
 
 Resource type
