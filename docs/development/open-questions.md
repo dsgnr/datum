@@ -186,6 +186,21 @@ These affect the shape of code that would be written first.
     them is not settled. It becomes a [contract](../reference/stability.md) as soon as anything
     parses it.
 
+[Metrics exposure without a textfile collector](../observability/metrics.md#exposure)
+:   Metrics are written to a file for a [node_exporter](../observability/metrics.md#exposure) textfile
+    collector, which keeps the agent from opening a port on a host that may have no inbound network
+    access. Whether an HTTP endpoint should also exist, for fleets with no such collector, is a
+    security decision rather than a convenience one and is undecided.
+
+[Fleet expected revision](../observability/metrics.md#answering-is-this-host-up-to-date)
+:   Revision lag is computed from the maximum across reporting hosts, so a fleet where every host is
+    equally behind reports no lag. Closing that needs something that reads the repository on the
+    fleet's behalf, which Datum does not have.
+
+[Tracing](../observability/metrics.md#tracing)
+:   Whether Datum emits traces. A pass is short, local and single-process, so durations in metrics and
+    logs answer most of it.
+
 [Report retention](../reference/status.md)
 :   Where pass reports are kept, for how long, and whether they are readable through
     `datum status` or only as files on the host.
@@ -237,10 +252,12 @@ safely](../security/provider-safety.md). What remains is below.
     checks need no clock, and expiry checks do, and the fallback for a host with a wrong clock is
     undecided.
 
-[Detecting a host that has stopped reporting](../security/threat-model.md#an-attacker-with-root-on-one-managed-host)
-:   A compromised host can simply stop reconciling, and detection depends on noticing the absence
-    of reports rather than on receiving a bad one. Datum currently provides nothing for that, and
-    it is the monitoring half of the fact that reporting is not attestation.
+[Independent evidence that a host is in the state it claims](../observability/alerting.md#what-these-alerts-cannot-detect)
+:   A host that has stopped reconciling is now detectable through [staleness
+    alerting](../observability/alerting.md#staleness-is-the-alert-that-matters-most), which relies on
+    metrics being absolute timestamps. What remains unsolved is a host that has been compromised and
+    reports healthy, because every signal Datum emits is produced by the host about itself. Closing
+    that needs something a host cannot forge, which is a different problem from monitoring.
 
 ## Identity and delivery
 

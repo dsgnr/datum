@@ -140,3 +140,14 @@ for attestation.
 Status also says nothing about drift that happened after the last pass. A host reported `converged`
 at its last pass can have been edited by hand a minute later, and the report will not reflect that
 until the next pass observes it. Status is as fresh as the last pass and no fresher.
+
+## Relationship to metrics
+
+Status is the authoritative local record of a host's last pass, and
+[metrics](../observability/metrics.md) are a numeric projection of it shaped for aggregation across a
+fleet.
+
+The division is that status carries per-resource detail and metrics carry counts. A fleet of five
+hundred hosts with forty-seven resources each would need over twenty thousand metric series to expose
+what status already holds locally, which is why metrics aggregate by state and the detail is read from
+status on the one host that needs looking at.

@@ -65,7 +65,12 @@ model in the order it is easiest to learn: the
 [vocabulary](concepts/index.md), then the [fleet layout](fleet/index.md), then
 [resources](resources/index.md) and [providers](providers/index.md), then the
 [architecture](architecture/index.md) that connects them, then the
-[security model](security/index.md).
+[security model](security/index.md) and [observability](observability/index.md).
+
+If a worked example is more useful than a specification, the
+[journeys](journeys/index.md) follow five scenarios end to end, from a commit through to
+the next reconciliation, including a manual change being reverted and a bad commit
+reaching the tracked branch.
 
 [Reference](reference/index.md) holds the field and command lookups, and
 [decisions](adr/index.md) records what has been settled and why. Everything still
