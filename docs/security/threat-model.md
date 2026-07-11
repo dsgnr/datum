@@ -149,6 +149,23 @@ The control is [source confinement](provider-safety.md#confining-content-sources
 must be relative, resolves against its layer directory, and the result has to remain inside the
 fleet root with symbolic links resolved before that check and not after.
 
+## An attacker who can reach the metrics endpoint
+
+**Reconnaissance from host metrics.** The [metrics
+endpoint](../observability/metrics.md#binding-and-exposure) discloses the revision and manifest
+digest a host is running, its state, and its resource counts. An attacker reading it learns which
+hosts are behind on configuration, which is precisely the set an attacker wants, and learns the
+shape of the estate without touching anything.
+
+The control is that the endpoint binds to loopback by default, so exposing it is a decision and not
+something inherited, and that it carries no file content, field values or credentials. Whether it
+should support TLS and authentication when exposed is an open question.
+
+**Load induced through scraping.** A scrape returns values recorded by the last pass and never reads
+the host or the repository, so an attacker cannot turn a scrape storm into a fleet-wide read of
+every managed path. That follows from the endpoint being a projection of recorded state, not a live
+query.
+
 ## An attacker on the network
 
 **Interception between agent and Git remote.** Mitigated by transport authentication, which the

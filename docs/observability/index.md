@@ -35,7 +35,7 @@ Three kinds, with different jobs and different costs.
 
 | Signal | Answers | Shape |
 | ------ | ------- | ----- |
-| [Metrics](metrics.md) | Aggregate questions across a fleet | Numeric, low cardinality, scraped |
+| [Metrics](metrics.md) | Aggregate questions across a fleet | Numeric, low cardinality, scraped from the agent |
 | Logs | What happened on one pass on one host | Structured events, one per pass and per action |
 | [Status](../reference/status.md) | The current condition of one host | A local report, read on demand |
 
@@ -103,6 +103,6 @@ The distinction matters most in the case observability is otherwise best at catc
 host that has been compromised and is reporting healthy is indistinguishable from a healthy host
 using these signals alone.
 
-What observability does catch is a host that stops reporting, which is why [staleness
-detection](alerting.md#staleness-is-the-alert-that-matters-most) is the alert that matters most and
-the one most easily left out.
+What observability does catch is a host that stops reporting, which is why [detecting a host that
+stops reconciling](alerting.md#a-host-that-stops-reconciling-is-the-failure-to-catch) is the alert
+that matters most and the one most easily left out.

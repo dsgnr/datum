@@ -10,35 +10,47 @@ explicitly.
     [metrics](metrics.md) exist to support them, and a metric nobody can write a useful alert
     against is a metric that should not exist.
 
-## Staleness is the alert that matters most
+## A host that stops reconciling is the failure to catch
 
-A host that has stopped reconciling is the failure most likely to go unnoticed, because it produces
-no error and emits nothing. Every other alert on this page fires because something reported a
-problem, and this one fires because nothing reported anything.
+The other alerts here fire on a reported problem. This one fires on the absence of a report, which
+makes it the one most easily omitted.
+
+It has two distinct shapes, and a fleet needs both.
+
+**The agent has exited.** The [endpoint](metrics.md#exposure) stops answering and the scrape fails.
+
+```text
+up{job="datum"} == 0
+```
+
+Immediate, needs no threshold, and needs no assumption about the reconciliation interval. This is
+the main practical argument for serving metrics from the agent rather than writing a file, because a
+file left behind by a dead agent keeps scraping successfully.
+
+**The agent is alive and not converging.** The process is up, the endpoint answers, and passes are
+failing or wedged.
 
 ```text
 time() - datum_pass_last_success_timestamp_seconds > 3600
 ```
 
-The threshold is a multiple of the reconciliation interval rather than an absolute figure. Alerting
-at three or four missed passes tolerates a transient failure and a slow pass while still catching a
-host that has genuinely stopped, and alerting at one missed pass produces noise on any fleet large
-enough for coincidences.
+`up` does not cover this case, since the agent is running and answering scrapes. The threshold is a
+multiple of the reconciliation interval, not an absolute figure, and alerting at three or four
+missed passes tolerates a transient failure and a slow pass while still catching a genuine stall.
 
-This works when the agent has stopped, when its host is unreachable, and when the agent was removed,
-because all three stop the timestamp advancing. It relies on metrics being [absolute
-timestamps](metrics.md#emit-absolute-timestamps-never-elapsed-time) and not elapsed times, which is
-why that detail is worth being careful about.
+This relies on metrics being [absolute
+timestamps](metrics.md#emit-absolute-timestamps-never-elapsed-time) and not elapsed times, and it is
+the only staleness signal available to a fleet using the textfile mechanism instead of the endpoint.
 
-A host that is down entirely stops being scraped, so this alert needs pairing with whatever already
-detects an unreachable machine. Datum's staleness alert catches the case that is otherwise invisible,
-which is a host that is up and answering scrapes while its agent does nothing.
+Both alerts need pairing with whatever already detects an unreachable machine, since a host that is
+entirely down produces `up == 0` for every job on it and is not specifically a Datum problem.
 
 ## Alerts worth having
 
 | Condition | Query | Why |
 | --------- | ----- | --- |
-| Not reconciling | `time() - datum_pass_last_success_timestamp_seconds > 3600` | The host has stopped converging. |
+| Agent gone | `up{job="datum"} == 0` | The agent is not running or the host is unreachable. |
+| Not converging | `time() - datum_pass_last_success_timestamp_seconds > 3600` | The agent is running and passes are not succeeding. |
 | Failing | `datum_host_state{state="failed"} == 1` | A resource failed to apply or verify. |
 | Coverage gap | `datum_host_state{state="degraded"} == 1` | Part of the manifest cannot be reconciled here. |
 | Behind the fleet | `max(datum_revision_timestamp_seconds) - datum_revision_timestamp_seconds > 86400` | A host has not picked up changes others have. |

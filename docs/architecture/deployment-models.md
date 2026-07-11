@@ -44,9 +44,13 @@ cost is being paid deliberately.
 
 The agent clones or fetches the repository, resolves its own manifest, and reconciles.
 
-There is no server, no database and no inbound network access to the host. A machine
-behind NAT with outbound access to a Git remote is fully manageable, and Datum being
-unavailable somewhere central cannot stop a host from reconciling.
+There is no server, no database and nothing that has to reach the host. A machine behind
+NAT with outbound access to a Git remote is fully manageable, and Datum being unavailable
+somewhere central cannot stop a host from reconciling.
+
+Reconciliation itself needs no inbound access. The optional [metrics
+endpoint](../observability/metrics.md#exposure) is the one thing that listens, it binds to
+loopback by default, and a host that never exposes it reconciles exactly the same way.
 
 What it costs is that every managed host needs read access to the whole
 repository. Resolution requires every `Layer` and every `Host` document, so a
