@@ -114,9 +114,9 @@ the other.
     prematurely risks a generic trigger system that ends up being used to sequence
     arbitrary work, which is the direction this design is trying to avoid.
 
-    There is also no way to ask for a reload rather than a restart, which matters
-    for services where a restart drops connections. Whether that is a field on
-    `restartOn` or a property the provider decides has not been worked out.
+    Reloading rather than restarting is [decided](../resources/applications.md#reload-against-restart)
+    and is expressed as `reloadOn`, which orders and triggers exactly as `restartOn` does while
+    asking the provider for a reload.
 
 ## Where dependencies come from
 
