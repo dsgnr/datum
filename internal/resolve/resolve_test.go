@@ -36,7 +36,8 @@ func (b *builder) layer(name string, precedence int, m document.Matcher) *builde
 func (b *builder) resource(layer, typeName, name string, fields map[string]string) *builder {
 	desired := document.Value{Kind: document.KindMap, Map: map[string]document.Value{}}
 	for k, v := range fields {
-		desired.Map[k] = document.Scalar(v)
+		// mode is a quoted string in a document, and field validation checks that.
+		desired.Map[k] = document.Value{Kind: document.KindScalar, Scalar: v, Quoted: k == "mode"}
 	}
 	b.set.Resources = append(b.set.Resources, document.Resource{
 		Type:     typeName,
@@ -138,7 +139,7 @@ func TestEqualPrecedenceConflictIsAnError(t *testing.T) {
 		host("web-001", labelsOf("web")).
 		layer("roles/web", 30, matchRole("web")).
 		layer("roles/web-tls", 30, matchRole("web")).
-		resource("roles/web", "File", "nginx-config", map[string]string{"mode": "0640"}).
+		resource("roles/web", "File", "nginx-config", map[string]string{"path": "/etc/nginx/nginx.conf", "mode": "0640"}).
 		resource("roles/web-tls", "File", "nginx-config", map[string]string{"mode": "0600"})
 
 	_, err := Host(b.set, "web-001", "8b91f20")
@@ -157,7 +158,7 @@ func TestEqualPrecedenceSameValueIsNotAConflict(t *testing.T) {
 		host("web-001", labelsOf("web")).
 		layer("roles/web", 30, matchRole("web")).
 		layer("roles/web-tls", 30, matchRole("web")).
-		resource("roles/web", "File", "nginx-config", map[string]string{"mode": "0640"}).
+		resource("roles/web", "File", "nginx-config", map[string]string{"path": "/etc/nginx/nginx.conf", "mode": "0640"}).
 		resource("roles/web-tls", "File", "nginx-config", map[string]string{"mode": "0640"})
 
 	m := b.resolve(t, "web-001")
@@ -175,7 +176,7 @@ func TestEqualPrecedenceDifferentFieldsIsNotAConflict(t *testing.T) {
 		layer("base", 0, document.Matcher{}).
 		layer("roles/web", 30, matchRole("web")).
 		layer("roles/web-tls", 30, matchRole("web")).
-		resource("base", "File", "nginx-config", map[string]string{"mode": "0644"}).
+		resource("base", "File", "nginx-config", map[string]string{"path": "/etc/nginx/nginx.conf", "mode": "0644"}).
 		resource("roles/web", "File", "nginx-config", map[string]string{"owner": "root"}).
 		resource("roles/web-tls", "File", "nginx-config", map[string]string{"mode": "0600"})
 
@@ -201,16 +202,22 @@ func TestListsAreReplacedNotAppended(t *testing.T) {
 		}
 		return out
 	}
-	add := func(layer string, values document.Value) {
+	add := func(layer string, values document.Value, withRequired bool) {
+		desired := document.Value{Kind: document.KindMap, Map: map[string]document.Value{
+			"components": values,
+		}}
+		if withRequired {
+			desired.Map["id"] = document.Scalar("internal")
+			desired.Map["url"] = document.Scalar("https://packages.internal/debian")
+			desired.Map["unsigned"] = document.Scalar("true")
+		}
 		b.set.Resources = append(b.set.Resources, document.Resource{
 			Type: "Repository", Name: "internal", Layer: layer, LayerDir: layer,
-			Desired: document.Value{Kind: document.KindMap, Map: map[string]document.Value{
-				"components": values,
-			}},
+			Desired: desired,
 		})
 	}
-	add("base", list("main", "contrib"))
-	add("roles/web", list("main"))
+	add("base", list("main", "contrib"), true)
+	add("roles/web", list("main"), false)
 
 	m := b.resolve(t, "web-001")
 	components := field(t, m, "Repository[internal]", "components")
@@ -280,16 +287,16 @@ func TestSubstitutionUsesDeclaredLabels(t *testing.T) {
 		host("web-001", labelsOf("web")).
 		layer("roles/web", 30, matchRole("web")).
 		resource("roles/web", "File", "site", map[string]string{
-			"path": "/etc/app/{{ labels.site }}.conf",
-			"log":  "/var/log/{{ host }}.log",
+			"path":    "/etc/app/{{ labels.site }}.conf",
+			"content": "log /var/log/{{ host }}.log",
 		})
 
 	m := b.resolve(t, "web-001")
 	if got := field(t, m, "File[site]", "path").Scalar; got != "/etc/app/london.conf" {
 		t.Errorf("path = %q", got)
 	}
-	if got := field(t, m, "File[site]", "log").Scalar; got != "/var/log/web-001.log" {
-		t.Errorf("log = %q", got)
+	if got := field(t, m, "File[site]", "content").Scalar; got != "log /var/log/web-001.log" {
+		t.Errorf("content = %q", got)
 	}
 
 	used := m.Resources[0].Used
@@ -316,7 +323,10 @@ func TestSecretPlaceholdersAreLeftAlone(t *testing.T) {
 	b := (&builder{}).
 		host("web-001", labelsOf("web")).
 		layer("roles/web", 30, matchRole("web")).
-		resource("roles/web", "File", "app", map[string]string{"content": "password={{ secrets.db }}"})
+		resource("roles/web", "File", "app", map[string]string{
+			"path":    "/etc/app/app.conf",
+			"content": "password={{ secrets.db }}",
+		})
 
 	m := b.resolve(t, "web-001")
 	if got := field(t, m, "File[app]", "content").Scalar; got != "password={{ secrets.db }}" {
@@ -358,7 +368,9 @@ func TestDigestIsStableAndSensitiveToContent(t *testing.T) {
 		b := (&builder{}).
 			host("web-001", labelsOf("web")).
 			layer("roles/web", 30, matchRole("web")).
-			resource("roles/web", "File", "nginx-config", map[string]string{"mode": mode})
+			resource("roles/web", "File", "nginx-config", map[string]string{
+				"path": "/etc/nginx/nginx.conf", "mode": mode,
+			})
 		return b.resolve(t, "web-001")
 	}
 
@@ -400,7 +412,9 @@ func TestDigestIgnoresDependencyOrder(t *testing.T) {
 		b.set.Resources = append(b.set.Resources, document.Resource{
 			Type: "File", Name: "f", Layer: "base", LayerDir: "base",
 			Requires: refs,
-			Desired:  document.Value{Kind: document.KindMap, Map: map[string]document.Value{}},
+			Desired: document.Value{Kind: document.KindMap, Map: map[string]document.Value{
+				"path": document.Scalar("/etc/f"),
+			}},
 		})
 		return b.resolve(t, "web-001")
 	}
@@ -437,7 +451,10 @@ func TestRestartOnAndReloadOnCannotMergeTogether(t *testing.T) {
 		document.Resource{
 			Type: "Service", Name: "nginx", Layer: "base", LayerDir: "base",
 			RestartOn: []document.Reference{cfg},
-			Desired:   document.Value{Kind: document.KindMap, Map: map[string]document.Value{}},
+			Desired: document.Value{Kind: document.KindMap, Map: map[string]document.Value{
+				"state":   document.Scalar("running"),
+				"enabled": document.Scalar("true"),
+			}},
 		},
 		document.Resource{
 			Type: "Service", Name: "nginx", Layer: "roles/web", LayerDir: "roles/web",
