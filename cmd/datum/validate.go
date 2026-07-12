@@ -53,11 +53,17 @@ func runValidate(e *env, args []string) int {
 	for _, host := range result.Set.Hosts {
 		manifest, err := resolve.Host(result.Set, host.Name, revision)
 		if err != nil {
-			errs.add(err.Error(), host.Name)
+			// Split, so three mistakes count as three and each groups with the
+			// other hosts sharing it.
+			for _, message := range document.Split(err) {
+				errs.add(message, host.Name)
+			}
 			continue
 		}
 		if _, err := graph.Build(manifest); err != nil {
-			errs.add(err.Error(), host.Name)
+			for _, message := range document.Split(err) {
+				errs.add(message, host.Name)
+			}
 		}
 	}
 

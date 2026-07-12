@@ -3,6 +3,7 @@
 package document
 
 import (
+	"errors"
 	"fmt"
 	"sort"
 	"strings"
@@ -54,6 +55,20 @@ func (e *Errors) Err() error {
 		return nil
 	}
 	return e
+}
+
+// Split returns the problems inside an error separately, so grouping them across
+// hosts does not count several mistakes as one.
+func Split(err error) []string {
+	var collected *Errors
+	if errors.As(err, &collected) {
+		out := make([]string, 0, collected.Len())
+		for _, item := range collected.List() {
+			out = append(out, item.Error())
+		}
+		return out
+	}
+	return []string{err.Error()}
 }
 
 func (e *Errors) Error() string {
