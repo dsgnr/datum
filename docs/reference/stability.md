@@ -32,7 +32,9 @@ The interfaces do not all deserve the same stability, and ranking them now guide
 The document schema is the highest-value contract, because it is what every repository is written
 against, and a breaking change rewrites everyone's configuration. It is the last thing that should
 stabilise, precisely because it is the most expensive to get wrong, and `v1alpha1` exists to buy the
-freedom to change it while the model is still moving.
+freedom to change it while the model is still moving. The rules for which changes need a new version,
+and for what an agent does when it meets one it does not know, are set out under
+[schema versions](../repository/schema-versions.md).
 
 Exit codes are the cheapest contract to honour and the easiest to break by accident, so they are
 stabilised early. A [documented set](cli.md#exit-codes) of `0`, `1` and `2` is small enough to

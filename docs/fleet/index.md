@@ -46,6 +46,10 @@ between revisions.
 [Effective manifests](effective-manifests.md)
 :   The artefact composition produces, and its content address.
 
+Once the model itself makes sense, [creating a repository](../repository/index.md) covers
+what a working repository needs at minimum, how schema versions govern which agents can
+read it, and what a change can be checked for before it is merged.
+
 ## The question the model has to answer
 
 ```text
