@@ -132,6 +132,11 @@ These affect the shape of code that would be written first.
     moves a resource between layers changes the digest without changing behaviour. Excluding it
     weakens the claim that the digest identifies what Datum was told to do.
 
+[Reporting layers that match no host](../repository/index.md#keeping-a-repository-from-accumulating-unused-content)
+:   Whether `datum validate` should report a layer no host in the fleet matches. It catches the most
+    common matcher mistake and it is also legitimate during a rollout, where a layer is committed
+    before the hosts it targets exist.
+
 ## Providers
 
 [Provider selection overrides](../providers/selection.md#overriding-selection)
