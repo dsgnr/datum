@@ -7,6 +7,11 @@ Action
 :   What a plan intends to do to a single resource. One of `none`, `create`, `update`,
     `remove` or `skip`. See [plan](../concepts/plan.md#actions).
 
+Affected hosts
+:   The hosts whose effective manifest digest differs between two repository revisions,
+    which is the set a change actually reaches. See [validating
+    changes](../repository/validating-changes.md#which-hosts-a-change-would-affect).
+
 Agent
 :   The process that runs on a host and reconciles it. Reads desired state, observes,
     plans, applies and verifies.
@@ -193,6 +198,11 @@ Resource reference
 Resource type
 :   The `type` of a resource, such as `Package` or `File`. See [resource
     types](../resources/types/index.md).
+
+Schema version
+:   The version a single document declares in its `datum` field, deciding how that document
+    is interpreted. Declared per document, not per repository. See [schema
+    versions](../repository/schema-versions.md).
 
 Target identity
 :   What a resource manages on the host, such as an absolute path or a package name. Two
