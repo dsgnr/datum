@@ -13,7 +13,7 @@ Finding a case the model cannot express. The design is narrow, and whether it is
 open question behind most of the others. A concrete example of configuration that cannot be
 described, or a host that cannot be classified, is directly actionable.
 
-Answering an [open question](open-questions.md). There are more than fifty recorded, several of
+Answering an [open question](open-questions.md). There are more than sixty recorded, several of
 which need somebody with operational experience of a distribution rather than further design work.
 
 Finding an inconsistency. The examples across the site describe one fleet, and the terminology is
