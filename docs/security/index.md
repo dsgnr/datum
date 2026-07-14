@@ -106,3 +106,6 @@ values, temporary files and reports, and the local privilege escalations that ha
 
 [Time and ordering](time.md) :   How the security controls order events without depending on a host
 clock, using monotonic ordering where available.
+
+See [installation](../lifecycle/index.md) for the operational side, covering what an image may
+carry, how a repository credential reaches a machine and what leaving the fleet does to it.

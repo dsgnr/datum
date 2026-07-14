@@ -59,8 +59,8 @@ downgrade.
 
 ## Getting the repository credential onto a host
 
-A host with no credential cannot fetch, so something has to place one. The approaches below make
-different trade-offs.
+A host with no credential cannot fetch, so something has to place one. The four approaches below
+trade off differently, and [enrolment](../lifecycle/enrolment.md) covers the shape they share.
 
 **A credential baked into an image.** Simple and works offline. It cannot be per-host, it leaks
 to anyone who obtains the image, and revoking it means rebuilding every machine.
@@ -85,7 +85,8 @@ a certain fleet size.
     A credential baked into an image is documented as the weakest option rather than left out, since
     a fleet with no other route would otherwise have nothing to follow.
 
-Revocation means removing that credential on the Git server. Datum has no part in it.
+Revocation happens on the Git server, with
+[no Datum involvement](../lifecycle/decommissioning.md#revocation-stops-changes).
 
 !!! note "Important limitation"
 

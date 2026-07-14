@@ -75,6 +75,9 @@ An explicit file makes the claim deliberate. A machine whose identity file is mi
 a pass instead of guessing, and a machine claiming a name with no `Host` document in the repository
 fails with an error naming the identity it claimed.
 
+How the file comes to be written, and why it is one of the things a golden image may not
+carry, is covered under [enrolment](../lifecycle/enrolment.md).
+
 !!! note "Open question"
 
     Whether the hostname should be usable as a fallback when the file is absent is undecided. It
