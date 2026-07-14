@@ -52,6 +52,11 @@ Declarative
     Distinct from reproducible. See [last known
     good](../reconciliation/last-known-good.md#declarative-is-not-reproducible).
 
+Decommissioning
+:   Emptying a machine of the resources Datum applied to it, then unenrolling it. Distinct from
+    revocation and from unenrolment. See [leaving the
+    fleet](../lifecycle/decommissioning.md#decommissioning-a-machine).
+
 Desired state
 :   The resources a repository says should apply to one host, resolved at one repository
     revision. See [desired state](../concepts/desired-state.md).
@@ -71,7 +76,7 @@ Effective manifest
 
 Enrolment
 :   The step in which a machine with no identity acquires one the fleet recognises, along with any
-    credential that identity needs. See [enrolment](../security/handshake.md#getting-the-repository-credential-onto-a-host).
+    credential that identity needs. See [enrolment](../lifecycle/enrolment.md).
 
 Extension
 :   Code installed on a host supplying provider implementations for resource types Datum does not
@@ -199,6 +204,11 @@ Resource type
 :   The `type` of a resource, such as `Package` or `File`. See [resource
     types](../resources/types/index.md).
 
+Revocation
+:   Withdrawing a host's ability to obtain desired state, which takes effect when its current
+    credential expires. Stops future changes and undoes nothing. See [leaving the
+    fleet](../lifecycle/decommissioning.md#revocation-stops-changes).
+
 Schema version
 :   The version a single document declares in its `datum` field, deciding how that document
     is interpreted. Declared per document, not per repository. See [schema
@@ -208,6 +218,11 @@ Target identity
 :   What a resource manages on the host, such as an absolute path or a package name. Two
     resources sharing one is a conflict. See [resource
     identity](../resources/identity.md).
+
+Unenrolment
+:   Retiring a host's identity and removing its `Host` document, so the fleet stops describing the
+    machine. Never destructive. See [leaving the
+    fleet](../lifecycle/decommissioning.md#unenrolment-is-not-destructive).
 
 Verify
 :   The phase that re-reads affected resources after applying and confirms they hold the
