@@ -20,7 +20,7 @@ fleet/
 │   └── frankfurt/
 ├── roles/
 │   ├── web/
-│   ├── web-debian/
+│   ├── web-apt/
 │   ├── database/
 │   └── edge/
 └── hosts/
@@ -40,6 +40,7 @@ labels:
   environment: production
   site: london
   role: web
+  architecture: amd64
   os: ubuntu
 ```
 
@@ -51,7 +52,7 @@ Adding the five hundred and first host is one document. Nothing is copied, becau
 Each host resolves independently, and the layers that match differ.
 
 ```text
-web-001    base(0)  environments/production(10)  sites/london(20)  roles/web(30)  roles/web-debian(35)
+web-001    base(0)  environments/production(10)  sites/london(20)  roles/web(30)  roles/web-apt(35)
 db-001     base(0)  environments/production(10)  sites/london(20)  roles/database(30)
 edge-014   base(0)  environments/production(10)  sites/frankfurt(20)  roles/edge(30)
 ```
@@ -82,21 +83,26 @@ Three of the four capabilities are identical across all three distributions, and
 provider boundary contains most of it.
 
 What the boundary cannot contain is a package that is named differently. The web servers need a
-version-pinned nginx, and the Debian version string means nothing to `dnf`, so that pinning lives in a
-layer whose matcher narrows to one distribution.
+version-pinned nginx, and an apt version string means nothing to `dnf`, so that pinning lives in a
+layer whose matcher narrows to the apt-family hosts.
 
-```yaml title="fleet/roles/web-debian/layer.yaml"
+```yaml title="fleet/roles/web-apt/layer.yaml"
 datum: v1alpha1
 type: Layer
 
-name: role-web-debian
+name: role-web-apt
 
 precedence: 35
 match:
   labels:
     role: web
-    os: ubuntu
+  oneOf:
+    os: [debian, ubuntu]
 ```
+
+Matching two values with `oneOf` rather than writing one layer per distribution is what keeps the
+pinning in a single place, since Debian and Ubuntu take the same version string even though they are
+different distributions.
 
 The `os` label is an [ordinary declared
 label](../providers/multi-distribution.md#handling-a-genuine-difference) with no special meaning.
@@ -158,7 +164,7 @@ hosts behind newest  11
 ```
 
 The revision lag query works without anything knowing what the newest revision is, because
-`max(datum_revision_timestamp_seconds)` across the fleet supplies it. The
+`max(datum_revision_applied_timestamp_seconds)` across the fleet supplies it. The
 [limitation](../observability/metrics.md#answering-is-this-host-up-to-date) is that a fleet where every
 host is equally behind reports no lag at all.
 
@@ -167,5 +173,5 @@ host is equally behind reports no lag at all.
 Composition has to produce different manifests for different hosts from one repository without
 copying, which labels and matchers do. Distribution differences have to land either inside a
 provider or in a narrowly-matched layer, and never in a silently-varying field, which the capability
-model and the `web-debian` layer between them achieve. And a partially-supported distribution has to
-be visibly partial instead of quietly incomplete, which `degraded` and `skipped` provide.
+model and the `web-apt` layer between them achieve. And a partially-supported distribution has to be
+visibly partial instead of quietly incomplete, which `degraded` and `skipped` provide.

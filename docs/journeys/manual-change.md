@@ -6,7 +6,7 @@ which depends entirely on the host's [mode](../concepts/reconciliation-modes.md)
 
 ## The starting state
 
-`web-001` is converged on revision `7ab21f`, with `File[nginx-config]` managing that path with mode
+`web-001` is converged on revision `8b91f20`, with `File[nginx-config]` managing that path with mode
 `0600` and content from `files/nginx.conf`. Its last pass reported `converged`, and its metrics show a
 recent `datum_pass_last_success_timestamp_seconds`.
 
@@ -15,7 +15,7 @@ service are unaffected.
 
 ## The next pass, in enforce mode
 
-**Resolution.** Unchanged. The repository is still at `7ab21f`, so the fleet resolver produces the
+**Resolution.** Unchanged. The repository is still at `8b91f20`, so the fleet resolver produces the
 same effective manifest with the same digest, `sha256:3f2a9c4e`. Nothing about the edit is visible at
 this stage, because [resolution does not read the
 host](../concepts/desired-state.md#resolution-does-not-read-the-host).

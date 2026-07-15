@@ -82,14 +82,16 @@ not describe.
 When a resource needs to differ per distribution, the mechanism is a layer with a
 narrower matcher, which requires the hosts to be classified.
 
-```yaml title="fleet/hosts/web-001/host.yaml"
+```yaml title="fleet/hosts/web-042/host.yaml"
 datum: v1alpha1
 type: Host
 
-name: web-001
+name: web-042
 labels:
   environment: production
+  site: london
   role: web
+  architecture: amd64
   os: debian
 ```
 
