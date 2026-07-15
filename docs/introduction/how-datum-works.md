@@ -55,7 +55,7 @@ desired:
   owner: root
   group: root
   mode: "0640"
-  source: files/nginx/nginx.conf
+  source: files/nginx.conf
 ---
 datum: v1alpha1
 type: Service
@@ -171,7 +171,7 @@ update   Service[nginx]
 none     Package[nginx]      present, 1.24.0-2
 none     User[www-data]      present
 
-0 to create, 2 to update, 0 to remove, 12 unchanged
+0 to create, 2 to update, 0 to remove, 0 to skip, 12 unchanged
 ```
 
 !!! note "Proposed output format"
