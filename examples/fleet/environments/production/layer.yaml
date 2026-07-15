@@ -1,0 +1,9 @@
+datum: v1alpha1
+type: Layer
+
+name: environment-production
+
+precedence: 10
+match:
+  labels:
+    environment: production

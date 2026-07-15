@@ -1,0 +1,6 @@
+# Marks the root of the fleet. Everything below this directory is searched
+# for Host, Layer and resource documents.
+datum: v1alpha1
+type: Fleet
+
+name: example

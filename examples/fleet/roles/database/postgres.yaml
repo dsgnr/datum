@@ -1,0 +1,27 @@
+datum: v1alpha1
+type: Package
+
+name: postgresql
+
+desired:
+  state: present
+---
+datum: v1alpha1
+type: Sysctl
+
+name: vm.nr_hugepages
+
+desired:
+  value: "512"
+---
+datum: v1alpha1
+type: Service
+
+name: postgresql
+
+requires:
+  - Package[postgresql]
+
+desired:
+  state: running
+  enabled: true

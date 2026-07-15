@@ -1,0 +1,11 @@
+# A host override is an ordinary layer with a matcher for one host. There is no
+# special syntax for it.
+datum: v1alpha1
+type: Layer
+
+name: host-web-001
+
+precedence: 100
+match:
+  labels:
+    datum/host: web-001

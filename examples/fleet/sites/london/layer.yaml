@@ -1,0 +1,9 @@
+datum: v1alpha1
+type: Layer
+
+name: site-london
+
+precedence: 20
+match:
+  labels:
+    site: london

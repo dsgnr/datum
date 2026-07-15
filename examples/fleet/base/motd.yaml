@@ -1,0 +1,13 @@
+# The site label is substituted during resolution, so one document covers
+# every host and each gets its own text.
+datum: v1alpha1
+type: File
+
+name: motd
+
+desired:
+  path: /etc/motd
+  owner: root
+  group: root
+  mode: "0644"
+  content: "{{ host }} is managed by Datum. Site: {{ labels.site }}.\n"
