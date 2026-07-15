@@ -164,6 +164,8 @@ These affect the shape of code that would be written first.
 [Application-level configuration validation](../resources/validation.md#configurations-spanning-several-files)
 :   Validating a configuration spread across several files needs a way to express that those resources
     form one application configuration, which is the first genuine argument for a grouping concept the design has [avoided so far](../resources/applications.md#an-application-is-not-a-datum-concept).
+    The form that bites soonest is a configuration that is a whole directory, such as a `conf.d`, where
+    a stale fragment nobody declared changes the assembled result and is invisible to validation.
 
 [Recording a pending reload](../resources/validation.md#configurations-spanning-several-files)
 :   When multi-file validation fails after the files are written, the files match desired state so
