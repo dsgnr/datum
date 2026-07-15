@@ -34,10 +34,11 @@ machine exists yet, so there are no providers and no reconciler.
 
 | Works | Not yet |
 | ----- | ------- |
-| `datum render`, `datum explain`, `datum validate` | Observing, diffing, planning, applying, verifying |
+| `datum render`, `datum explain`, `datum validate`, `datum affected` | Observing, diffing, planning, applying, verifying |
 | Discovery, matchers, composition, precedence | Providers for any resource type |
 | Label substitution, manifest digests | The agent as a resident process |
 | The resource graph, cycles, duplicate targets | Secrets and reboots |
+| Per-type field validation | Signature verification and fetching |
 
 Configuration formats and command names will change before the first release. The `v1alpha1` marker
 on every document records the schema that document was written against.
@@ -59,6 +60,7 @@ Go 1.25 or newer, and no other dependency.
 datum validate --repo path/to/repository
 datum render --host web-001 --repo path/to/repository
 datum explain 'File[nginx-config]' --host web-001 --repo path/to/repository
+datum affected --from origin/main --to HEAD --repo path/to/repository
 ```
 
 None of those read or change a managed machine, which is why they are the part that exists.
