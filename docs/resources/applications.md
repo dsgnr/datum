@@ -91,6 +91,30 @@ reconcile no matter what syntax is offered.
 The last row is the honest one. Software that leaves no trace of having been initialised cannot be
 managed declaratively by anything, and Datum says so instead of offering a way to pretend.
 
+## Operations that are not safe to repeat
+
+An operation that must happen exactly once, and that damages something if it happens twice, is
+representable only where its completion can be read back from the host. Where that reading is possible
+the operation stops being non-idempotent as far as Datum is concerned, because the provider observes
+that it has already happened and plans no action.
+
+```text
+initialise a cluster        PG_VERSION exists           observable, so expressible
+apply a schema migration    the migration table row     observable, so expressible
+send a notification         nothing on the host         not observable, out of scope
+consume a one-time token    nothing on the host         not observable, out of scope
+```
+
+The two lower rows are out of scope and no syntax makes them otherwise. A resource whose completion
+leaves no trace has nothing for the next pass to observe, so every pass would attempt it again, and
+the only way to prevent that would be for Datum to record that it once acted. Recording that makes
+Datum the authority on what happened instead of the host, which is the assumption [observed
+state](../concepts/observed-state.md) exists to avoid and the reason drift detection works at all.
+
+The consequence is that Datum is not an orchestration tool. A one-off sequence with no observable
+end state is a job for whatever runs jobs, and attempting it here would mean the first resource
+whose state Datum has to remember rather than read.
+
 ## Partial initialisation
 
 An initialisation that fails halfway is the case that makes command-based tools unsafe, and the
