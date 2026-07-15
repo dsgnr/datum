@@ -99,7 +99,8 @@ fields.
 | Field | Orders | Triggers an update |
 | ----- | ------ | ------------------ |
 | `requires` | Yes | No |
-| `restartOn` | Yes | Yes |
+| `restartOn` | Yes | Yes, as a restart |
+| `reloadOn` | Yes | Yes, as a reload |
 
 Reaction implies order because a service that restarts when its configuration changes
 always wants the configuration written first. A rule requiring both fields to name the
@@ -108,15 +109,11 @@ the other.
 
 !!! note "Open question"
 
-    Reacting to change is currently specific to `Service`, which is the only type
-    with an obvious reaction. Whether a general mechanism is needed, and what it
-    would mean for a type whose reaction is not "restart", is undecided. Adding one
-    prematurely risks a generic trigger system that ends up being used to sequence
-    arbitrary work, which is the direction this design is trying to avoid.
-
-    Reloading rather than restarting is [decided](../resources/applications.md#reload-against-restart)
-    and is expressed as `reloadOn`, which orders and triggers exactly as `restartOn` does while
-    asking the provider for a reload.
+    Reacting to change is specific to `Service`, which has both `restartOn` and
+    [`reloadOn`](applications.md#reload-against-restart). Whether a general mechanism is
+    needed for a type whose reaction is neither is undecided. Adding one prematurely risks a
+    generic trigger system that ends up being used to sequence arbitrary work, which is the
+    direction this design is trying to avoid.
 
 ## Where dependencies come from
 

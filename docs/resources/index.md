@@ -30,9 +30,9 @@ Every document shares the same three opening keys, and only `desired` varies by 
 | `datum` | Schema version, currently `v1alpha1`. |
 | `type` | The resource type. |
 | `name` | Combined with `type`, forms the resource reference. |
-| `labels` | Optional labels on the resource itself. |
 | `requires` | Resource references processed before this one. |
-| `restartOn` | Resource references processed before this one, whose change also updates it. |
+| `restartOn` | Resource references processed before this one, whose change also restarts it. |
+| `reloadOn` | Resource references processed before this one, whose change also reloads it. |
 | `desired` | Type-specific desired state. |
 
 The envelope is flat on purpose. A Datum document is a configuration file, not an object submitted

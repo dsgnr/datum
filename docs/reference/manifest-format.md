@@ -150,14 +150,19 @@ desired:
 
 | Key | Type | Required | Meaning |
 | --- | ---- | -------- | ------- |
-| `labels` | map of string to string | No | Resource labels. Not used for matching. |
 | `requires` | list of resource references | No | Processed before this resource. |
-| `restartOn` | list of resource references | No | Processed before this resource, and a change to any of them updates it. Currently only meaningful on `Service`. |
+| `restartOn` | list of resource references | No | Processed before this resource, and a change to any of them restarts it. Only meaningful on `Service`. |
+| `reloadOn` | list of resource references | No | Processed before this resource, and a change to any of them reloads it. Only meaningful on `Service`. |
 | `desired` | map | Yes | Type-specific desired state. |
 
-`requires` and `restartOn` sit outside `desired` because both produce edges in the resource graph,
-which is behaviour common to every type rather than desired state. Per-type `desired` fields are on
-the [resource type](../resources/types/index.md) pages.
+`requires`, `restartOn` and `reloadOn` sit outside `desired` because all three produce edges in the
+resource graph, which is behaviour common to every type rather than desired state. Per-type
+`desired` fields are on the [resource type](../resources/types/index.md) pages.
+
+Declaring `restartOn` and `reloadOn` on the same resource is an error, because the two express
+different intents for the same event and choosing one silently is the kind of resolution the
+design refuses elsewhere. The reasoning is under
+[reload against restart](../resources/applications.md#reload-against-restart).
 
 ### Resource references
 
@@ -183,6 +188,7 @@ How two layers contributing the same resource reference are combined.
 | List | Replaced entirely. |
 | `requires` | Combined as a set. |
 | `Service.restartOn` | Combined as a set. |
+| `Service.reloadOn` | Combined as a set. |
 
 Two layers of equal precedence setting the same field to different values is an error
 and no manifest is produced. Setting it to the same value is not a conflict.
@@ -206,12 +212,13 @@ Errors raised before the host is read, in the order they are detected.
 | Resource document with no `Layer` above it | Discovery |
 | `Host` setting a `datum/` label | Discovery |
 | Unrecognised form inside a `match` block | Discovery |
-| `restartOn` on a type that does not support it | Discovery |
+| `restartOn` or `reloadOn` on a type that does not support it | Discovery |
+| `restartOn` and `reloadOn` both declared on one resource | Discovery |
 | Control character, whitespace or shell metacharacter in a name or key | Discovery |
 | Path that is not absolute, or contains `..` or an empty component | Discovery |
 | `source` that is absolute, or resolves outside the fleet root | Discovery |
 | Resource targeting one of Datum's own trust anchors | Fleet resolver |
 | Equal-precedence field conflict between layers | Fleet resolver |
-| Unresolved resource reference in `requires` or `restartOn` | Graph builder |
+| Unresolved resource reference in `requires`, `restartOn` or `reloadOn` | Graph builder |
 | Dependency cycle | Graph builder |
 | Two resources sharing a target identity | Graph builder |
