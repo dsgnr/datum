@@ -3,22 +3,40 @@ PYTHON   := $(VENV)/bin/python
 ZENSICAL := $(VENV)/bin/zensical
 STAMP    := $(VENV)/.installed
 
-.PHONY: help build test fmt vet lint clean docs-install docs-serve docs-build docs-check
+# Datum runs on Linux, so a build on any other machine is for development only.
+# CGO is off because the agent has to run on a host with nothing installed on it.
+GO_BUILD := CGO_ENABLED=0 go build
+
+.PHONY: help build build-linux dist test fmt vet lint shell clean \
+	docs-install docs-serve docs-build docs-check
 
 help:
-	@echo "build         Build the datum binary into ./bin"
+	@echo "build         Build ./bin/datum for this machine"
+	@echo "build-linux   Cross-compile for linux/amd64 and linux/arm64"
+	@echo "dist          Build every supported target into ./bin"
 	@echo "test          Run the Go tests"
 	@echo "fmt           Format the Go sources"
 	@echo "vet           Run go vet"
 	@echo "lint          fmt check, vet and tests, which is what CI runs"
+	@echo "shell         Open a Linux container with datum and the example on it"
 	@echo "docs-install  Create $(VENV) and install the documentation toolchain"
-	@echo "docs-serve    Preview the documentation at http://localhost:8000"
+	@echo "docs-serve    Preview the documentation locally"
 	@echo "docs-build    Build the site into ./site"
 	@echo "docs-check    Build the site with --strict"
 	@echo "clean         Remove build output and caches"
 
 build:
-	go build -o bin/datum ./cmd/datum
+	$(GO_BUILD) -o bin/datum ./cmd/datum
+
+build-linux: bin/datum-linux-amd64 bin/datum-linux-arm64
+
+bin/datum-linux-amd64:
+	GOOS=linux GOARCH=amd64 $(GO_BUILD) -o $@ ./cmd/datum
+
+bin/datum-linux-arm64:
+	GOOS=linux GOARCH=arm64 $(GO_BUILD) -o $@ ./cmd/datum
+
+dist: build build-linux
 
 test:
 	go test ./...
@@ -38,6 +56,18 @@ lint:
 	fi
 	go vet ./...
 	go test ./...
+
+# A Linux shell with the right binary already on it, because the agent's target is
+# Linux and most development machines are not. The architecture is taken from
+# Docker so this works on both Apple Silicon and x86.
+shell:
+	@arch=$$(docker version --format '{{.Server.Arch}}'); \
+	echo "building for linux/$$arch"; \
+	GOOS=linux GOARCH=$$arch $(GO_BUILD) -o bin/datum-linux-$$arch ./cmd/datum; \
+	docker run --rm -it \
+		-v "$(CURDIR)/bin/datum-linux-$$arch:/usr/local/bin/datum:ro" \
+		-v "$(CURDIR)/examples:/examples:ro" \
+		-w / ubuntu:24.04 bash
 
 $(STAMP): requirements-docs.txt
 	python3 -m venv $(VENV)
