@@ -110,7 +110,7 @@ served by giving the hosts a label describing what they have in common.
 
 ## The empty matcher
 
-A layer with no `matcher` matches every host in the fleet.
+A layer with no `match` block matches every host in the fleet.
 
 ```yaml
 datum: v1alpha1

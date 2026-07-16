@@ -34,6 +34,7 @@ different names and the same path are a conflict.
 | `group` | string | No | Owning group name. |
 | `mode` | string | No | Permission bits, quoted. |
 | `sensitive` | boolean | No, defaults to `false` | Suppresses rendering of the content anywhere. |
+| `validate` | string | No | Names a [validator](../validation.md) run against the staged content before it goes live. |
 
 `content` and `source` are mutually exclusive, and a resource setting both is
 rejected. Setting neither manages metadata only, which is how ownership or

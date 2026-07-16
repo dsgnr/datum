@@ -122,7 +122,7 @@ here.
 
     This is the one place where the declared-only ownership model is known to be
     insufficient, and it is the strongest argument for some form of reclaim
-    behaviour. A `spec.purge` field limited to a single directory level, not
+    behaviour. A `desired.purge` field limited to a single directory level, not
     recursive, and listing what it removed in the plan, is the shape a solution
     would probably take. It has not been designed, and it reintroduces the risk that
     the empty-directory restriction above exists to avoid.
