@@ -13,6 +13,16 @@ var targetIdentityField = map[string]string{
 	"Repository": "id",
 }
 
+// TargetIdentityField returns the field a type takes its target identity from, and
+// false for the types that use their name.
+//
+// Diffing skips that field, because a File at a different path is a different resource,
+// not a drifted one.
+func TargetIdentityField(typeName string) (string, bool) {
+	field, ok := targetIdentityField[typeName]
+	return field, ok
+}
+
 // TargetIdentity returns what a resource manages on the host.
 func TargetIdentity(typeName, name string, desired Value) (string, error) {
 	field, fromDesired := targetIdentityField[typeName]
