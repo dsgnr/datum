@@ -47,8 +47,14 @@ blast radius of a deliberate change.
 
 ## The last-known-good revision
 
-An agent keeps the last revision that resolved and validated cleanly. When a newer revision fails
-to resolve, the agent reports the failure and keeps reconciling the last-known-good revision.
+An agent keeps the newest revision it has accepted, meaning one that verified, resolved and passed
+validation. When a newer revision fails to resolve, the agent reports the failure and keeps
+reconciling that accepted revision.
+
+It is the same stored value that [downgrade
+protection](../security/repository-trust.md#verifying-that-a-revision-is-current) compares against,
+and not a second pointer kept alongside it, and it advances on a successful resolve and validate
+regardless of what the apply that followed did.
 
 ```text
 new revision
@@ -76,8 +82,10 @@ That distinction matters, because Datum [keeps no record of what it previously
 applied](../concepts/desired-state.md#desired-state-is-not-a-record-of-what-datum-did) and has [no
 rollback](../concepts/reconciliation.md#there-is-no-rollback). Last known good does not reintroduce
 either. The agent still resolves desired state from Git, still reads the host fresh on every pass,
-and still holds no observed state between passes. All it retains is which commit to resolve, and
-when the newest one is unusable it resolves an earlier one that is known to be usable.
+and still holds no observed state between passes. All it retains is which commit to resolve, which
+is [the one thing carried between
+passes](../architecture/reconciliation-flow.md#what-is-written-down), and when the newest one is
+unusable it resolves an earlier one that is known to be usable.
 
 The earlier revision is reconciled exactly as the newest one would be. There is no reverting of
 applied changes and no attempt to restore a prior host state, only a choice of which desired state

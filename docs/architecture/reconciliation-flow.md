@@ -98,18 +98,29 @@ attempted.
 
 ## What is written down
 
-Datum produces no state it later depends on. The result of a pass is a report,
-and the next pass does not read it.
+Datum keeps no observed state between passes. Nothing about the host as it was last
+seen is carried forward, so every pass resolves desired state from the repository and
+measures the machine again.
 
-That report covers the revision and manifest digest, the plan that was built, what
-each action did, what verification found, and the outcome. It exists so that
-somebody can find out what happened, and removing it would cost visibility rather
-than correctness.
+The result of a pass is a report, covering the revision and manifest digest, the plan
+that was built, what each action did, what verification found, and the outcome. The
+next pass does not read it. It exists so that somebody can find out what happened, and
+a corrupted or missing report produces no wrong behaviour on the following pass.
 
-The distinction matters because it keeps the failure modes simple. A corrupted or
-missing report produces no wrong behaviour on the following pass, since the
-following pass resolves desired state from the repository and measures the host
-again regardless.
+There is one exception. The agent records the newest revision it has accepted,
+which the next pass does read.
+
+```text
+carried between passes      the accepted revision pointer
+not carried between passes  observed state, plans, reports, provider results
+```
+
+That pointer is what [downgrade protection](../security/repository-trust.md#verifying-that-a-revision-is-current)
+compares against and what [last known good](../reconciliation/last-known-good.md) falls back to, so
+losing it is not harmless the way losing a report is. A host with no pointer reopens the
+[first-contact](../security/repository-trust.md#first-contact) window, which is why
+[ADR-0010](../adr/0010-no-self-managed-trust-anchors.md) protects the state directory from
+Datum's own resources.
 
 !!! note "Proposed behaviour"
 

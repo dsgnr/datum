@@ -68,13 +68,25 @@ dates in a tag are metadata the tagger sets. Ancestry is a property of the histo
 A signed old revision is still validly signed, so signature verification does not stop a
 downgrade. `trust.requireDescendant` closes that.
 
-The agent records the revision it last applied in its state directory. On the next pass, the
+The agent records the newest revision it has accepted in its state directory. On the next pass, the
 candidate revision has to be a descendant of that recorded revision, which Git can answer
 directly, and anything else is refused.
 
-Git supplies the ordering, so nothing has to be stored beyond one revision identifier, and a
-legitimate revert becomes a new commit rather than a rewritten branch. That is the workflow
-worth encouraging anyway.
+Accepted means the revision carried a valid signature, satisfied the descendant requirement,
+resolved into an effective manifest and passed manifest validation. A pass that failed to apply
+still counts as accepted, so the pointer advances. Holding the pointer back would pin a host with
+one persistently failing resource at an old revision, and the commit that fixes that resource could
+not reach it.
+
+```text
+signature valid, descendant, resolved, validated   pointer advances
+apply failed, verification failed                  pointer still advances
+signature invalid, not a descendant, unresolvable  pointer unchanged
+```
+
+One value is stored and Git supplies the ordering, so the same pointer serves both this control and
+[last known good](../reconciliation/last-known-good.md). A revert is expressed as a new commit, and
+the branch is not rewritten.
 
 ### The cases this makes awkward
 
