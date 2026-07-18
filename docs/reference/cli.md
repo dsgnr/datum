@@ -2,13 +2,13 @@
 
 !!! warning "Most of these commands do not exist yet"
 
-    `datum render`, `datum explain`, `datum validate` and `datum affected` are
-    implemented. Everything else on this page describes intended behaviour so that the
-    command surface can be argued about before it is built, and the output shown for an
-    unimplemented command is illustrative.
+    Everything except `datum reconcile` and `datum status` is implemented. Those two
+    are the ones that change a machine or report on a pass that changed one, and the
+    output shown for them is illustrative.
 
-    The four that exist are the ones that never read a host, which is why they came
-    first.
+    `File`, `Directory` and `Symlink` have a provider. The other types resolve and plan
+    and are reported as skipped, which makes a host with any of them
+    [degraded](../concepts/state.md#host-state-across-passes) rather than converged.
 
 The commands map onto the pipeline, so each one stops at a different point and prints
 what it produced.

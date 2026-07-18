@@ -12,18 +12,29 @@ host now exists, and nothing that changes a machine does.
 | The resource graph, cycles and duplicate targets | Implemented |
 | Per-type field validation | Implemented |
 | `datum render`, `datum explain`, `datum validate`, `datum affected` | Implemented |
-| Observation, diffing, planning, applying, verifying | Not started |
-| Providers for any resource type | Not started |
+| Observation, diffing and planning | Implemented |
+| `datum observe`, `datum diff`, `datum plan` | Implemented |
+| The `File`, `Directory` and `Symlink` provider | Implemented |
+| Providers for the other six types | Not started |
+| Applying and verifying | Not started |
 | The agent as a resident process, scheduling, locking | Not started |
 | Secret resolution and reboot handling | Not started |
 
 The order follows from where a mistake costs least. Resolution is [a pure function of the
 repository](../concepts/desired-state.md#resolution-does-not-read-the-host), so it can be built and
-tested without a machine to break, and it is the half of the system every other part depends on. The
-specification came first because the decisions that are expensive to change later are the ones made
-early. The shape of a resource, the way identity works, where the provider boundary sits and how
-composition resolves are all choices that an implementation would otherwise make incidentally, and
-would then be stuck with.
+tested without a machine to break, and it is the half of the system every other part depends on.
+Reading a host comes next, since it changes nothing, which leaves applying as the last part to
+build.
+
+Everything above the [provider boundary](../providers/index.md) is portable, so
+the observer, the differ and the planner are tested without a host at all. A
+provider is the only part that touches an operating system, which is the
+separation [ADR-0002](../adr/0002-separate-resources-from-providers.md) records.
+
+The specification came first because the decisions that are expensive to change
+later are the ones made early. The shape of a resource, the way identity works,
+where the provider boundary sits and how composition resolves are all choices that
+an implementation would otherwise make incidentally, and would then be stuck with.
 
 ## What the documentation is for
 
