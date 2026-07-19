@@ -80,8 +80,9 @@ reclassify itself into a more privileged part of the fleet.
 
 All of this runs on the host being reconciled. There is no component that has to
 reach out to a machine, and reconciliation works on a host with no inbound network
-access. The [metrics endpoint](../observability/metrics.md#exposure) listens where it
-is configured to, and it takes no part in reconciliation.
+access. The [metrics endpoint](../observability/metrics.md#binding-and-exposure)
+listens on loopback by default, can be turned off, and takes no part in
+reconciliation.
 
 A larger installation may eventually resolve manifests centrally and deliver them
 to agents, which changes where the fleet resolver runs without changing anything

@@ -18,6 +18,7 @@ section states what is trusted, what is defended and what is not defended.
 | Local root on a host | Controls the agent, its configuration and its credentials. |
 | Local unprivileged user on a host | Can create and manipulate filesystem entries in directories it owns. |
 | Network position | Sits between an agent and the Git remote. |
+| Metrics reader | Can connect to an agent's metrics listener. Every local user on a multi-user host qualifies, because loopback is not a privilege boundary. |
 
 ## Assets
 
