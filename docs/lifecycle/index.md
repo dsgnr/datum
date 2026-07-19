@@ -34,11 +34,14 @@ departure        revocation, unenrolment or decommissioning
 These three get used interchangeably and they have different effects, different actors and
 different reversibility.
 
-| Operation | Performed by | Effect | Reversible |
-| --------- | ------------ | ------ | ---------- |
-| Revocation | An operator, on the Git server | The host can no longer obtain desired state | Yes, by issuing a new credential |
-| Unenrolment | An operator, in a commit | The `Host` document is removed | Partly, by provisioning again |
-| Decommissioning | An operator, over time | The machine is emptied and then switched off | No |
+| Operation | Performed by | Reversible |
+| --------- | ------------ | ---------- |
+| Revocation | An operator, on the Git server | Yes, by issuing a new credential |
+| Unenrolment | A commit, plus revocation on the Git server | Partly, by provisioning again |
+| Decommissioning | An operator, over several passes | No |
+
+There is [no central authority](../architecture/deployment-models.md), so every operation below is
+either something done on the Git server or a commit.
 
 Revocation is a security operation that cuts off future changes, and
 [it is not containment](../security/handshake.md#getting-the-repository-credential-onto-a-host), because a

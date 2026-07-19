@@ -215,8 +215,8 @@ These affect the shape of code that would be written first.
 
 [Detecting repeated correction](../concepts/drift.md#where-drift-comes-from)
 :   A resource corrected on consecutive passes suggests something else on the machine manages the
-    same target. Detecting it needs history across passes, which sits awkwardly against Datum
-    keeping no state it later depends on.
+    same target. Detecting it needs history across passes, and the accepted revision pointer is
+    currently the only thing an agent carries forward.
 
 [Machine-readable plan format](../concepts/plan.md)
 :   The contents of a plan are settled and the serialised form is not. Something structured is
