@@ -177,6 +177,17 @@ Service[nginx]
 A reference that does not resolve within the manifest is an error raised before the host
 is read.
 
+## Substitution
+
+A string field inside `desired` may contain `{{ labels.NAME }}` or `{{ host }}`, which resolve to
+values declared in the host's `Host` document. Substitution happens during resolution, before the
+manifest digest is computed, and covers only declared labels.
+
+Matchers, layer names, resource names and `precedence` are never substituted. Nothing outside a
+declared label can be referenced, and there are no expressions, conditionals or loops. The full rules
+are under [substituting label values](../fleet/substitution.md) and the reasoning is
+[ADR-0012](../adr/0012-substitution-from-declared-labels.md).
+
 ## Merge rules
 
 How two layers contributing the same resource reference are combined.
@@ -216,7 +227,9 @@ Errors raised before the host is read, in the order they are detected.
 | `restartOn` and `reloadOn` both declared on one resource | Discovery |
 | Control character, whitespace or shell metacharacter in a name or key | Discovery |
 | Path that is not absolute, or contains `..` or an empty component | Discovery |
-| `source` that is absolute, or resolves outside the fleet root | Discovery |
+| `source` or `template` that is absolute, or resolves outside the fleet root | Discovery |
+| More than one of `content`, `source` and `template` on one `File` | Discovery |
+| Substitution referencing a label the host does not declare | Fleet resolver |
 | Resource targeting one of Datum's own trust anchors | Fleet resolver |
 | Equal-precedence field conflict between layers | Fleet resolver |
 | Unresolved resource reference in `requires`, `restartOn` or `reloadOn` | Graph builder |

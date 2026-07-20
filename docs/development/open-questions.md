@@ -86,9 +86,10 @@ These affect the shape of code that would be written first.
     immediately reports success for a service that dies a second later, and waiting introduces a
     timeout nobody can choose correctly.
 
-[File templating and symlinks](../resources/types/file.md#open-questions)
-:   Templating is absent, and rendering content from host facts would reintroduce a dependency on
-    observed state during resolution. Symbolic links have no representation at all.
+[Rendering content from observed facts](../fleet/substitution.md#what-is-not-substituted)
+:   Substituting declared label values is [decided](../adr/0012-substitution-from-declared-labels.md).
+    Rendering from facts read off the machine would reintroduce a dependency on observed state during
+    resolution, and it is the same question as whether a matcher may read them.
 
 [Numeric owner and group ids](../resources/types/file.md#open-questions)
 :   Whether `owner` and `group` should accept numeric ids alongside names. Names are clearer and
