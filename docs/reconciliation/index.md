@@ -17,6 +17,10 @@ This section covers behaviour that spans passes rather than happening within one
 :   What the agent does after a failed pass, why upstream and local failures are timed differently,
     and what bounds a pass that does not finish.
 
+[Staged rollout](staged-rollout.md)
+:   How a fleet gets a change to five hosts before five hundred, using ring branches and nothing
+    central.
+
 [Last known good](last-known-good.md)
 :   What an agent reconciles when the newest revision fails to resolve, how the same mechanism keeps
     offline hosts working, and why declarative is not the same as reproducible.
