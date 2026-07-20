@@ -112,10 +112,10 @@ These affect the shape of code that would be written first.
 :   Units with instances, such as `getty@tty1`, are not addressed. The name would work as a
     target identity, and whether anything else about them needs modelling is unexplored.
 
-[Passwords and authentication](../resources/types/user.md#open-questions)
-:   `User` models no authentication at all. Password hashes are secret material, which Datum has
-    no mechanism for, and authorised keys are a `File` resource with the same problem. This is
-    the largest gap in the type.
+[Detecting that a secret's value changed](../resources/secrets.md#what-is-deliberately-not-solved)
+:   Whether a resource can state that a resolved secret differs from the one applied last time, so that
+    a `restartOn` edge fires when a certificate is renewed. Detecting it means storing a fingerprint of
+    secret material between passes, which is a worse thing to keep than it first appears.
 
 [Locking an account without removing it](../resources/types/user.md#open-questions)
 :   Whether `state` needs a `locked` value alongside `absent`, which is probably the more common

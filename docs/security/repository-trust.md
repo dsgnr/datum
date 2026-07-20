@@ -154,7 +154,10 @@ and the control it protects.
 | `/etc/datum/agent.yaml` | Host identity, source, and the trust settings themselves |
 | `/etc/datum/allowed-signers` | The set of keys that can authorise desired state |
 | `/etc/datum/credentials/` | Repository credentials |
-| `/var/lib/datum/` | The recorded revision used for downgrade protection |
+| `/etc/datum/secrets/` | Locally held [secret material](../resources/secrets.md#where-the-value-comes-from) |
+| `/var/lib/datum/` | The recorded revision, the pass lock and pass reports |
+| `/usr/bin/datum` | The agent binary itself |
+| The agent's package and service unit | The process that enforces everything above |
 
 This is recorded as [ADR-0010](../adr/0010-no-self-managed-trust-anchors.md).
 

@@ -69,6 +69,9 @@ badly is expensive because every type added afterwards inherits the answer.
 :   What happens when two resources manage the same thing, and why none of the
     available automatic resolutions is acceptable.
 
+[Secret references](secrets.md)
+:   How desired state names a credential without containing one, and where the value comes from.
+
 [Resource types](types/index.md)
 :   The seven proposed types, their fields, and the provider differences each one
     cannot hide.

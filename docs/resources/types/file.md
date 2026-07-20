@@ -31,14 +31,15 @@ different names and the same path are a conflict.
 | `content` | string | No | Literal content, held in the resource. |
 | `source` | path | No | Content taken from a file in the repository, verbatim. |
 | `template` | path | No | Content taken from a file in the repository and [rendered](../../fleet/substitution.md#substituting-into-file-content). |
+| `secretRef` | string | No | The whole content is a [secret](../secrets.md) resolved on the host. |
 | `owner` | string | No | Owning user name. |
 | `group` | string | No | Owning group name. |
 | `mode` | string | No | Permission bits, quoted. |
 | `sensitive` | boolean | No, defaults to `false` | Suppresses rendering of the content anywhere. |
 | `validate` | string | No | Names a [validator](../validation.md) run against the staged content before it goes live. |
 
-`content`, `source` and `template` are mutually exclusive, and a resource setting more
-than one is rejected. Setting none of them manages metadata only, which is how ownership
+`content`, `source`, `template` and `secretRef` are mutually exclusive, and a resource
+setting more than one is rejected. Setting none of them manages metadata only, which is how ownership
 or permissions on a file created by a package are corrected without taking over what is
 in it.
 
