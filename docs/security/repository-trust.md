@@ -55,13 +55,42 @@ every report, so an unverified fleet is visible.
 
 With `signed-tag` there can be several candidates, and picking the wrong one is a downgrade.
 
-The agent considers tags matching `tagPattern` that are reachable from `source.branch` and
-carry a valid signature, then selects the unique candidate that is a descendant of every other
-candidate. If no such candidate exists, because two signed tags sit on diverged histories, the
-agent refuses and reports the ambiguity rather than choosing.
+A candidate is a tag meeting all four of the following, and anything else is ignored and not treated
+as an error.
+
+| Requirement | Reason |
+| ----------- | ------ |
+| An annotated tag object | A lightweight tag is a bare reference with nothing to sign, so it cannot carry a signature. |
+| Signed by a key in `trust.signers` | The signature is checked on the tag object itself, not on the commit it points at. |
+| Name matches `tagPattern` | The pattern is what separates release tags from every other tag in the repository. |
+| Reachable from `source.branch` | A tag on a branch nobody deploys is not a deployment candidate. |
+| A descendant of the recorded revision | This bounds the search, and a tag older than the baseline could never be applied anyway. |
+
+From that set the agent selects the unique candidate that is a descendant of every other candidate.
+Two tags pointing at the same commit count as one candidate, because neither is a strict descendant
+of the other and refusing that case would make a repository unable to tag a release twice.
+
+If no unique candidate exists, because two signed tags sit on genuinely diverged histories, the
+agent refuses and reports both instead of choosing.
+
+```text
+error: ambiguous signed tag
+  release-2026.02.03   a41c9d3   signed by D065FC86
+  release-2026.02.04   7b2e918   signed by D065FC86
+  neither descends from the other
+
+  the host remains on 8b91f20
+```
+
+Bounding candidates by the recorded revision keeps selection cheap on a long-lived repository.
+Considering every signed tag in history would make the cost of selection grow with the age of the
+fleet, and an old release tag that is never deleted would stay in the candidate set.
 
 Selecting by tag name or by date was rejected. Name ordering depends on the collation applied, and
 dates in a tag are metadata the tagger sets. Ancestry is a property of the history.
+
+Every one of these checks depends on the local clone holding complete history and all tags, which is
+why [obtaining the repository](repository-fetch.md) specifies that it does.
 
 ## Verifying that a revision is current
 

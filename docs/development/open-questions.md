@@ -28,9 +28,17 @@ These affect the shape of code that would be written first.
     field that cannot then be verified is a change Datum cannot confirm, which conflicts with the
     requirement that a pass reports whether the result was verified.
 
-[Reconciliation interval](../concepts/reconciliation.md#retry)
-:   How often a pass runs, whether the interval is configurable per host, and whether a failed
-    pass should shorten the wait before the next one.
+## Runtime
+
+[Triggering a pass from outside](../reconciliation/scheduling.md#what-the-agent-does-between-passes)
+:   Whether the agent should support being prodded into a pass by a signal or a local socket. It
+    would let a pipeline reconcile immediately after a merge instead of waiting for the interval, and
+    it is a second inbound control surface on a root process.
+
+[Surviving the consecutive-failure count](../reconciliation/failure-handling.md#consecutive-failures-are-counted)
+:   Whether the count of consecutive failures persists across a restart of the agent. Keeping it adds
+    cross-pass state for something diagnostic, and losing it means a regularly restarted host never
+    shows a high count however badly it is failing.
 
 ## Resource model
 

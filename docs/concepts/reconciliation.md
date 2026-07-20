@@ -14,9 +14,12 @@ graph LR
   apply --> verify[Verify]
 ```
 
+## One pass at a time
+
 Only one pass runs against a host at a time. Two concurrent passes would observe
-the same state, build overlapping plans, and apply them against each other, so the
-agent serialises them rather than attempting to reconcile the result.
+the same state, build overlapping plans, and apply them against each other, so
+every process that reconciles takes [an exclusive lock](../reconciliation/locking.md)
+covering observation through verification.
 
 ## Convergence
 
@@ -130,13 +133,12 @@ there is no partially-applied plan being resumed, and no question about whether
 the state a retry assumed still holds. The cost is latency, since a transient
 failure waits for the next pass rather than being retried immediately.
 
-!!! note "Open question"
-
-    How often a pass runs, whether the interval is configurable per host, and
-    whether a failed pass should shorten the interval before the next one are all
-    undecided. Continuous reconciliation implies an interval short enough that
-    drift does not persist and long enough that a fleet does not overwhelm a Git
-    remote, and nothing has been chosen.
+How often a pass runs, how a fleet avoids reconciling in lockstep, and what a failed
+pass does to the timing of the next one are covered under
+[scheduling](../reconciliation/scheduling.md) and
+[failure handling](../reconciliation/failure-handling.md). The short answer is a
+thirty-minute interval spread deterministically per host, with back-off on failures
+that involve the Git remote and no change in timing for failures that do not.
 
 ## Ordering revisions
 
