@@ -21,9 +21,19 @@ func requireFlock(t *testing.T) {
 	}
 }
 
+// t.TempDir hands out 0755, which Acquire refuses.
+func stateDir(t *testing.T) string {
+	t.Helper()
+	dir := t.TempDir()
+	if err := os.Chmod(dir, 0o700); err != nil {
+		t.Fatal(err)
+	}
+	return dir
+}
+
 func TestAcquireAndRelease(t *testing.T) {
 	requireFlock(t)
-	dir := t.TempDir()
+	dir := stateDir(t)
 
 	held, err := Acquire(dir, false)
 	if err != nil {
@@ -43,7 +53,7 @@ func TestAcquireAndRelease(t *testing.T) {
 
 func TestAcquireCreatesTheStateDirectory(t *testing.T) {
 	requireFlock(t)
-	dir := filepath.Join(t.TempDir(), "state")
+	dir := filepath.Join(stateDir(t), "state")
 
 	held, err := Acquire(dir, false)
 	if err != nil {
@@ -64,7 +74,7 @@ func TestAcquireCreatesTheStateDirectory(t *testing.T) {
 // command that blocks silently is indistinguishable from one that has hung.
 func TestSecondAcquireFailsFast(t *testing.T) {
 	requireFlock(t)
-	dir := t.TempDir()
+	dir := stateDir(t)
 
 	first, err := Acquire(dir, false)
 	if err != nil {
@@ -85,7 +95,7 @@ func TestSecondAcquireFailsFast(t *testing.T) {
 
 func TestHeldNamesTheHolder(t *testing.T) {
 	requireFlock(t)
-	dir := t.TempDir()
+	dir := stateDir(t)
 
 	first, err := Acquire(dir, false)
 	if err != nil {
@@ -109,7 +119,7 @@ func TestErrHeldIsMatchable(t *testing.T) {
 // With wait set, the second caller blocks until the first lets go.
 func TestWaitBlocksUntilReleased(t *testing.T) {
 	requireFlock(t)
-	dir := t.TempDir()
+	dir := stateDir(t)
 
 	first, err := Acquire(dir, false)
 	if err != nil {
@@ -150,7 +160,7 @@ func TestReleaseOnNilIsSafe(t *testing.T) {
 // nothing to clean up.
 func TestLockIsReleasedWhenTheHolderExits(t *testing.T) {
 	requireFlock(t)
-	dir := t.TempDir()
+	dir := stateDir(t)
 
 	out := runHelper(t, dir, "nowait")
 	if out.code != 0 {
