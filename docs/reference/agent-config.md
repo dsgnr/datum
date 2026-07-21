@@ -156,6 +156,9 @@ protection](../security/threat-model.md#an-attacker-with-root-on-one-managed-hos
 /var/lib/datum/reports/               the result of recent passes
 ```
 
+Reports are named after the time the pass finished and the twenty most recent are retained, which is
+enough history to tell a new failure from a recurring one. The count is fixed and not configurable.
+
 ## What is deliberately not configurable here
 
 Resource types, providers and desired state of any kind. This file says how the agent reaches its
