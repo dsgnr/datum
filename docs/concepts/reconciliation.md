@@ -50,9 +50,15 @@ not converged the host.
 | `converged` | The plan was empty. Nothing was applied. |
 | `changed` | Actions were applied and every affected resource verified. |
 | `failed` | One or more actions failed, or verification did not confirm the intended state. |
+| `drifted` | The plan had actions in it and the host is in [observe mode](reconciliation-modes.md), so nothing was applied. |
 
 A failed pass usually leaves the host partially changed, which is expected and
 not a defect. Actions that succeeded before the failure are not undone.
+
+`drifted` exists because an observe-mode pass that found work to do fits none of
+the other three. The pass neither converged the host nor failed, and reporting
+the drift is the requested behaviour. Folding it into `converged` would let a
+host with known drift report the same outcome as one with none.
 
 ## There is no rollback
 

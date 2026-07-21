@@ -30,6 +30,8 @@ type Provider struct {
 	name    string
 	types   []string
 	targets map[string]Target
+	// inert targets accept an apply and do not change.
+	inert map[string]bool
 
 	// ObserveErr and ApplyErr force a failure for one target.
 	ObserveErr map[string]error
@@ -50,6 +52,7 @@ func New(name string, types ...string) *Provider {
 		name:       name,
 		types:      types,
 		targets:    map[string]Target{},
+		inert:      map[string]bool{},
 		ObserveErr: map[string]error{},
 		ApplyErr:   map[string]error{},
 	}
@@ -70,6 +73,14 @@ func (p *Provider) Set(typeName, target string, t Target) {
 // SetFields is the common case of a target that exists, with field values.
 func (p *Provider) SetFields(typeName, target string, fields map[string]string) {
 	p.Set(typeName, target, Target{Exists: true, Fields: fields})
+}
+
+// Unchanging makes Apply report success and leave the target alone, which is the
+// provider bug verification exists to catch.
+func (p *Provider) Unchanging(typeName, target string) {
+	p.mu.Lock()
+	defer p.mu.Unlock()
+	p.inert[key(typeName, target)] = true
 }
 
 // Get reads a target back, to check that Apply did something.
@@ -116,6 +127,9 @@ func (p *Provider) Apply(ctx context.Context, req provider.Request, action state
 		return err
 	}
 	p.Applied = append(p.Applied, Call{Ref: req.Ref, Action: action})
+	if p.inert[k] {
+		return nil
+	}
 
 	switch action {
 	case state.Remove:
