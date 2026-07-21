@@ -61,6 +61,8 @@ nav = [
       "resources/types/user.md",
       "resources/types/group.md",
       "resources/types/sysctl.md",
+      "resources/types/repository.md",
+      "resources/types/symlink.md",
     ] },
   ] },
   { "Providers" = [
@@ -75,6 +77,7 @@ nav = [
     "reconciliation/scheduling.md",
     "reconciliation/locking.md",
     "reconciliation/failure-handling.md",
+    "reconciliation/staged-rollout.md",
     "reconciliation/last-known-good.md",
   ] },
   { "Architecture" = [

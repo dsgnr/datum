@@ -20,8 +20,12 @@ and work-in-progress branches do not qualify.
 | `User` | built in | Not implemented |
 | `Group` | built in | Not implemented |
 | `Sysctl` | built in | Not implemented |
+| `Symlink` | built in | Not implemented |
+| `Repository` | `apt` | Not implemented |
+| `Repository` | `dnf` | Not implemented |
+| `Repository` | `apk` | Not implemented |
 
-`File`, `Directory`, `User`, `Group` and `Sysctl` are marked as built in because their
+`File`, `Directory`, `Symlink`, `User`, `Group` and `Sysctl` are marked as built in because their
 operations are kernel and libc interfaces rather than distribution tooling. That does
 not make them distribution independent, since user and group management differs in
 which utilities exist and in default id ranges, and it does mean they are unlikely to

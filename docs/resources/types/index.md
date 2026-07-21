@@ -55,8 +55,5 @@ current set. Mounts exist in two places like `Sysctl` does, being the running mo
 table and `/etc/fstab`, and firewall rules have ordering semantics inside a single
 resource that nothing else in the model has.
 
-`Repository`, for package sources, is the type most likely to be needed soonest,
-because installing anything outside a distribution's default repositories currently
-requires a `File` resource writing a sources list in a format that differs per package
-manager. That pushes a distribution difference up into the fleet configuration, which
-is where the design says it should not be.
+`Hostname` and `Timezone` are each a single value with an obvious target
+identity, and both are held back only by being uninteresting, not difficult.
