@@ -39,9 +39,10 @@ reconciliation:
   interval: 30m
 ```
 
-Thirty minutes by default. That is short enough that drift is corrected within an hour of appearing,
-and long enough that five hundred hosts fetching from one Git remote is a modest load, not a
-sustained one.
+Thirty minutes by default. Every key in that block is documented in the [agent configuration
+reference](../reference/agent-config.md#reconciliation). At that interval drift is corrected within
+an hour of appearing, and five hundred hosts fetch from one Git remote roughly seventeen times a
+minute.
 
 The appropriate value depends on the fleet. A fleet where drift is rare can reconcile hourly, and
 one adopting Datum on machines several people have shell access to will want a shorter interval.

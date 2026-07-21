@@ -13,7 +13,8 @@ commit pushed from a compromised account on the Git server arrives over a valid 
 ## Agent configuration
 
 Everything on this page is configured locally, outside the repository, for the reason given in
-[trust anchors](#trust-anchors-are-never-managed-by-datum).
+[trust anchors](#trust-anchors-are-never-managed-by-datum). The keys below are the ones this page
+explains, and the [agent configuration reference](../reference/agent-config.md) is the complete file.
 
 ```yaml title="/etc/datum/agent.yaml"
 host: web-001
