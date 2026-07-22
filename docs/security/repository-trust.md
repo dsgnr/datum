@@ -162,6 +162,60 @@ and the control it protects.
 
 This is recorded as [ADR-0010](../adr/0010-no-self-managed-trust-anchors.md).
 
+### How a protected target is matched
+
+The check operates on resolved target identity. Matching a resource's declared path against the list
+above would be defeated by each of the following.
+
+| Route | What the check has to do |
+| ----- | ------------------------ |
+| `/etc/datum/../datum/agent.yaml` | Canonicalise before comparing. |
+| A `Symlink` at `/etc/datum/agent.yaml` pointing elsewhere | Refuse a link whose path is protected, whatever it targets. |
+| A `Symlink` elsewhere pointing into `/etc/datum/` | Refuse by the resolved target, not the declared path. |
+| A hard link into a protected file | Compare device and inode, not names. |
+| A `Directory` resource for `/etc/datum` or `/etc` | Refuse an ancestor of a protected path. |
+| A `File` at `/etc/datum/secrets/app-password` | Refuse anything beneath a protected directory. |
+
+Paths are canonicalised and compared as device and inode where the target exists, and by containment
+against the protected prefixes where it does not. An ancestor of a protected path is refused as well
+as a descendant, since a resource managing `/etc` covers everything the list names.
+
+### Routes other than the filesystem
+
+The list above covers the filesystem. Three resource types reach the same outcome without touching
+any of those paths.
+
+```text
+Package[datum]        state: absent      removes the agent
+Service[datum]        state: stopped     stops it reconciling
+User[root]            shell: /bin/false  breaks the host in a way nothing recovers from
+```
+
+A `Package` or `Service` resource whose target identity is the agent's own package or unit is
+refused by the same mechanism, which is why both appear in the table above as things rather than
+paths. The [self-management
+boundary](../architecture/self-management.md#what-the-design-commits-to-now) follows from the same
+refusal. A resource that targets the agent is either refused, or handled outside the running
+reconciler, and it is never applied inline.
+
+Root's own account is outside the list. Datum manages users, root is a user, and a fleet has
+legitimate reasons to set root's shell. Covering it would extend the list to every route to root,
+which is most of `/etc`, leaving a general exclusion and placing the whole of the control on [review
+of the diff](threat-model.md#an-attacker-who-can-merge-to-the-repository).
+
+!!! note "Important limitation"
+
+    There is no complete enumeration of paths that grant root. A `File` writing `/etc/sudoers.d/`,
+    `/etc/pam.d/`, a systemd unit, a cron entry or root's `authorized_keys` grants root and is
+    permitted, since each is something a configuration system manages. The list here keeps desired
+    state from disabling Datum's own controls. It offers the host no protection against a repository
+    that is trusted to configure it.
+
+    Three things narrow it. [Privileged modes are
+    refused](provider-safety.md#modes-that-grant-privilege), a [package
+    source](../resources/types/repository.md) has to state the grant, and the plan flags writes to
+    paths that grant privilege so review has a signal.
+
 The cost is that rotating a signer key or moving a fleet to a new remote falls to whatever builds
 machines. That cost is accepted in exchange for a control that desired state cannot disable.
 
