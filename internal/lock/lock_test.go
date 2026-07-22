@@ -72,6 +72,9 @@ func TestAcquireCreatesTheStateDirectory(t *testing.T) {
 
 // The second caller fails immediately rather than waiting, because an interactive
 // command that blocks silently is indistinguishable from one that has hung.
+//
+// A second Acquire in the same process contends properly, since an flock belongs to
+// the open file description rather than to the process.
 func TestSecondAcquireFailsFast(t *testing.T) {
 	requireFlock(t)
 	dir := stateDir(t)
@@ -82,14 +85,13 @@ func TestSecondAcquireFailsFast(t *testing.T) {
 	}
 	defer first.Release()
 
-	// A separate process, because flock is per open file description and two
-	// Acquire calls in one process would not contend.
-	out := runHelper(t, dir, "nowait")
-	if out.code == 0 {
-		t.Fatalf("the second caller should have failed, output: %s", out.text)
+	second, err := Acquire(dir, false)
+	if err == nil {
+		second.Release()
+		t.Fatal("the second caller should have been refused")
 	}
-	if !strings.Contains(out.text, "another pass is running") {
-		t.Errorf("output = %q", out.text)
+	if !errors.Is(err, ErrHeld) {
+		t.Errorf("err = %v, want ErrHeld", err)
 	}
 }
 
@@ -103,9 +105,12 @@ func TestHeldNamesTheHolder(t *testing.T) {
 	}
 	defer first.Release()
 
-	out := runHelper(t, dir, "nowait")
-	if !strings.Contains(out.text, "pid ") {
-		t.Errorf("the error should name the holder, got %q", out.text)
+	_, err = Acquire(dir, false)
+	if err == nil {
+		t.Fatal("the second caller should have been refused")
+	}
+	if !strings.Contains(err.Error(), fmt.Sprintf("pid %d", os.Getpid())) {
+		t.Errorf("the error should name the holder, got %q", err)
 	}
 }
 
@@ -126,23 +131,29 @@ func TestWaitBlocksUntilReleased(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	done := make(chan result, 1)
-	go func() { done <- runHelper(t, dir, "wait") }()
+	done := make(chan error, 1)
+	go func() {
+		second, err := Acquire(dir, true)
+		if second != nil {
+			second.Release()
+		}
+		done <- err
+	}()
 
-	// Long enough that the helper is certainly blocked on the lock.
+	// Long enough that the waiter is certainly blocked on the lock.
 	time.Sleep(200 * time.Millisecond)
 	select {
-	case out := <-done:
-		t.Fatalf("the waiting caller returned early: %s", out.text)
+	case err := <-done:
+		t.Fatalf("the waiting caller returned early: %v", err)
 	default:
 	}
 
 	first.Release()
 
 	select {
-	case out := <-done:
-		if out.code != 0 {
-			t.Errorf("the waiting caller should have succeeded, got %s", out.text)
+	case err := <-done:
+		if err != nil {
+			t.Errorf("the waiting caller should have succeeded, got %v", err)
 		}
 	case <-time.After(5 * time.Second):
 		t.Fatal("the waiting caller never acquired the lock")
@@ -157,14 +168,13 @@ func TestReleaseOnNilIsSafe(t *testing.T) {
 }
 
 // A lock is dropped by the kernel when the holder exits, so a killed pass leaves
-// nothing to clean up.
+// nothing to clean up. This one needs a real process, because the holder has to die.
 func TestLockIsReleasedWhenTheHolderExits(t *testing.T) {
 	requireFlock(t)
 	dir := stateDir(t)
 
-	out := runHelper(t, dir, "nowait")
-	if out.code != 0 {
-		t.Fatalf("the helper should have taken the lock: %s", out.text)
+	if out, code := runHolder(t, dir); code != 0 {
+		t.Fatalf("the holder should have taken the lock: %s", out)
 	}
 
 	held, err := Acquire(dir, false)
@@ -174,53 +184,38 @@ func TestLockIsReleasedWhenTheHolderExits(t *testing.T) {
 	held.Release()
 }
 
-// The helper runs as a child process. flock is per open file description, so two
-// Acquire calls inside one process would not contend and the tests would pass for
-// the wrong reason.
+// The helper re-runs this test binary with an environment variable set, which is the
+// cheapest way to get a process that takes the lock and then dies.
 const (
 	helperEnv = "DATUM_LOCK_HELPER"
 	dirEnv    = "DATUM_LOCK_DIR"
 )
 
-type result struct {
-	code int
-	text string
-}
-
 func TestMain(m *testing.M) {
-	mode := os.Getenv(helperEnv)
-	if mode == "" {
+	if os.Getenv(helperEnv) == "" {
 		os.Exit(m.Run())
 	}
-	os.Exit(helperMain(mode, os.Getenv(dirEnv)))
-}
-
-func helperMain(mode, dir string) int {
-	held, err := Acquire(dir, mode == "wait")
-	if err != nil {
+	if _, err := Acquire(os.Getenv(dirEnv), false); err != nil {
 		fmt.Fprintln(os.Stderr, err)
-		return 1
+		os.Exit(1)
 	}
-	// Left for the parent to release by exiting, in the nowait case.
-	if mode == "wait" {
-		held.Release()
-	}
-	return 0
+	// Exiting without releasing is the point.
+	os.Exit(0)
 }
 
-func runHelper(t *testing.T, dir, mode string) result {
+func runHolder(t *testing.T, dir string) (string, int) {
 	t.Helper()
 
 	cmd := exec.Command(os.Args[0])
-	cmd.Env = append(os.Environ(), helperEnv+"="+mode, dirEnv+"="+dir)
+	cmd.Env = append(os.Environ(), helperEnv+"=1", dirEnv+"="+dir)
 	out, err := cmd.CombinedOutput()
 
-	code := 0
 	var exit *exec.ExitError
 	if errors.As(err, &exit) {
-		code = exit.ExitCode()
-	} else if err != nil {
-		t.Fatalf("running the helper: %v", err)
+		return string(out), exit.ExitCode()
 	}
-	return result{code: code, text: string(out)}
+	if err != nil {
+		t.Fatalf("running the holder: %v", err)
+	}
+	return string(out), 0
 }
