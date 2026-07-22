@@ -468,3 +468,64 @@ func TestRestartOnAndReloadOnCannotMergeTogether(t *testing.T) {
 		t.Fatalf("err = %v", err)
 	}
 }
+
+// A relative source belongs to the layer that declared it. A host layer tightening
+// a mode must not move the path it resolves against, which would look for the file
+// in a directory that never had it.
+func TestSourceResolvesAgainstTheLayerThatDeclaredIt(t *testing.T) {
+	b := &builder{}
+	b.host("web-001", labelsOf("web"))
+	b.layer("role-web", 30, matchRole("web"))
+	b.layer("host-web-001", 100, document.Matcher{
+		Labels: map[string]string{document.HostLabel: "web-001"},
+	})
+	b.resource("role-web", "File", "nginx-config", map[string]string{
+		"path":   "/etc/nginx/nginx.conf",
+		"source": "files/nginx.conf",
+		"mode":   "0644",
+	})
+	b.resource("host-web-001", "File", "nginx-config", map[string]string{
+		"mode": "0600",
+	})
+
+	m := b.resolve(t, "web-001")
+	for _, resource := range m.Resources {
+		if resource.Ref.String() != "File[nginx-config]" {
+			continue
+		}
+		if resource.LayerDir != "role-web" {
+			t.Errorf("LayerDir = %q, want role-web", resource.LayerDir)
+		}
+		return
+	}
+	t.Fatal("File[nginx-config] is not in the manifest")
+}
+
+// A layer that does override the source takes the path with it.
+func TestOverridingTheSourceMovesTheLayerDir(t *testing.T) {
+	b := &builder{}
+	b.host("web-001", labelsOf("web"))
+	b.layer("role-web", 30, matchRole("web"))
+	b.layer("host-web-001", 100, document.Matcher{
+		Labels: map[string]string{document.HostLabel: "web-001"},
+	})
+	b.resource("role-web", "File", "nginx-config", map[string]string{
+		"path":   "/etc/nginx/nginx.conf",
+		"source": "files/nginx.conf",
+	})
+	b.resource("host-web-001", "File", "nginx-config", map[string]string{
+		"source": "files/nginx-tuned.conf",
+	})
+
+	m := b.resolve(t, "web-001")
+	for _, resource := range m.Resources {
+		if resource.Ref.String() != "File[nginx-config]" {
+			continue
+		}
+		if resource.LayerDir != "host-web-001" {
+			t.Errorf("LayerDir = %q, want host-web-001", resource.LayerDir)
+		}
+		return
+	}
+	t.Fatal("File[nginx-config] is not in the manifest")
+}
