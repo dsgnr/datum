@@ -1,7 +1,8 @@
 # Project status
 
-Datum is being built, specification first. Everything that runs without touching a
-host now exists, and nothing that changes a machine does.
+Datum is being built, specification first. A complete pass runs end to end for three
+resource types, and the remaining types resolve and plan without a provider to apply
+them.
 
 | Part | State |
 | ---- | ----- |
@@ -15,16 +16,20 @@ host now exists, and nothing that changes a machine does.
 | Observation, diffing and planning | Implemented |
 | `datum observe`, `datum diff`, `datum plan` | Implemented |
 | The `File`, `Directory` and `Symlink` provider | Implemented |
+| Applying, verification and failure propagation | Implemented |
+| The pass lock and pass reports | Implemented |
+| `datum reconcile`, `datum status` | Implemented |
 | Providers for the other six types | Not started |
-| Applying and verifying | Not started |
-| The agent as a resident process, scheduling, locking | Not started |
+| The agent as a resident process, scheduling, fetching from a remote | Not started |
 | Secret resolution and reboot handling | Not started |
+
+Applying is Linux-only. Reading a host works anywhere, since the safety rules
+the writing path depends on have no portable equivalent.
 
 The order follows from where a mistake costs least. Resolution is [a pure function of the
 repository](../concepts/desired-state.md#resolution-does-not-read-the-host), so it can be built and
 tested without a machine to break, and it is the half of the system every other part depends on.
-Reading a host comes next, since it changes nothing, which leaves applying as the last part to
-build.
+Reading a host came next, since it changes nothing, which left applying as the last part to build.
 
 Everything above the [provider boundary](../providers/index.md) is portable, so
 the observer, the differ and the planner are tested without a host at all. A
@@ -56,10 +61,11 @@ fills in an answer nobody has thought through reads as settled when it is not.
 | **Planned** | Accepted in principle but not specified. It needs to exist and how it behaves has not been worked out. |
 | **Open question** | A known gap with no resolution yet. Stated so that it is visible rather than discovered during implementation. |
 
-Nothing on this site is labelled implemented, because nothing is. Once code
-exists there will be a support matrix recording what actually works, per resource
-type and per distribution, and entries will only appear in it after the behaviour
-exists and is tested.
+A label describes how settled a design is, not whether it is built. The table at the top
+of this page and the [support matrix](../providers/support-matrix.md) record what actually
+works, and an entry appears there only once the behaviour exists and is tested. A page can
+be labelled proposed and implemented at the same time, which is the normal state of an
+alpha schema.
 
 Most configuration examples are proposed. The `datum: v1alpha1` marker at the top of
 every document says the same thing more formally, because the alpha suffix means field
@@ -106,18 +112,17 @@ More than sixty questions are recorded as unresolved, and they are collected in 
 questions](../development/open-questions.md). Several of them would otherwise be answered
 by accident during implementation, which is the main reason the list exists.
 
-## What has to be true before implementation starts
+## What the specification is held to
 
-The documentation phase is finished when an engineer who has never seen Datum can
-read this site and come away knowing what a resource is, how identity and
-dependencies work, how one repository produces per-host desired state, what an
-effective manifest contains, where the provider boundary sits, how drift is
-detected, how planning differs from applying, what the
-[security model](../security/index.md) trusts and does not defend, and which parts
-of the design are still open.
+A code change that makes a statement on this site false is not finished until
+the statement is fixed. The documentation is the specification and not a
+description written afterwards, so the two moving apart is a defect in both.
 
-Until that holds, improving the specification is more valuable than starting on
-the agent.
+That cuts the other way as well. Where the implementation found a gap the specification had not
+thought through, the answer goes into the documentation as a decision instead of staying in the code
+as an accident. The fourth [pass outcome](../concepts/reconciliation.md#pass-outcomes) arrived that
+way, because an observe-mode pass that found work to do fitted none of the three that had been
+written down.
 
 ## Versioning
 

@@ -1,6 +1,8 @@
 # Support matrix
 
-Nothing is supported. There is no implementation, so there is nothing to record.
+Nothing is supported yet. Three types are reconciled end to end and none of them has been
+through the checks below against a real image of a named distribution, which is what an
+entry in this matrix has to mean.
 
 An entry appears here when the behaviour exists, is tested against that
 distribution, and matches the resource type documentation. Intent, partial work

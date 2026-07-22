@@ -28,22 +28,27 @@ works on the distributions those contracts already cover and leaves the operatin
 
 Datum is being built specification first.
 
-Everything that reads works. A repository can be parsed, a host resolved into an effective
-manifest, and that manifest compared against what is actually on a machine to produce an ordered
-plan. Nothing applies a plan yet.
+A complete pass runs end to end. A repository can be parsed, a host resolved into an effective
+manifest, that manifest compared against what is actually on a machine, and the resulting plan
+applied and verified. The three resource types that have a provider are `File`, `Directory` and
+`Symlink`, and the rest are reported as skipped.
 
 Everything above the provider boundary is portable, so most of it is developed and tested without a
-host. A provider is the only part that touches an operating system, and the one that exists covers
-`File`, `Directory` and `Symlink`.
+host. A provider is the only part that touches an operating system. Reading a host works anywhere.
+Applying is Linux-only, since the safety rules the writing path depends on have no portable
+equivalent.
 
 | Works | Not yet |
 | ----- | ------- |
-| `render`, `explain`, `validate`, `affected` | `reconcile` and `status` |
-| `observe`, `diff`, `plan` | Applying and verifying |
-| Discovery, matchers, composition, precedence | Providers for the other six resource types |
-| Label substitution, manifest digests | The agent as a resident process |
-| The resource graph, cycles, duplicate targets | Secrets and reboots |
-| Per-type field validation | Signature verification and fetching |
+| `render`, `explain`, `validate`, `affected` | Providers for the other six resource types |
+| `observe`, `diff`, `plan` | The agent as a resident process |
+| `reconcile`, `status` | Fetching from a remote, signature verification |
+| Discovery, matchers, composition, precedence | Secrets and reboots |
+| Label substitution, manifest digests | `init` and `migrate` |
+| The resource graph, cycles, duplicate targets | |
+| Per-type field validation | |
+| Applying, verification, failure propagation | |
+| The pass lock and pass reports | |
 | A provider for `File`, `Directory` and `Symlink` | |
 
 Configuration formats and command names will change before the first release. The `v1alpha1` marker
@@ -92,11 +97,23 @@ Those four read repository content only. The next three read a machine and chang
 `diff` and `plan` exit 2 when something differs, so either works as a drift check in a scheduled
 job without parsing the output.
 
+Every command above reads and changes nothing, so any of them is safe to run on a host in the middle
+of an incident.
+
+`reconcile` is the one that writes, and it needs Linux and enough privilege to change the targets
+the manifest names.
+
+```bash
+./bin/datum reconcile --host web-001 --repo examples/fleet --state /var/lib/datum
+./bin/datum status --state /var/lib/datum
+```
+
+`--mode observe` runs the same observation and the same diff and applies none of it, which produces
+a drift report. The state directory has to be mode 0700. A pass refuses to run otherwise and does
+not correct the mode, since a widened directory discloses the plans already written there.
+
 `examples/fleet` is a three-host repository to try the commands against, described in
 [examples/README.md](examples/README.md).
-
-Nothing above changes a machine, so any of those commands is safe to run on a host in the middle of
-an incident.
 
 ## Previewing the documentation
 
@@ -132,8 +149,8 @@ defended.
 See [CONTRIBUTING.md](CONTRIBUTING.md). The most useful contributions at this stage are arguments
 against a decision, cases the model cannot express, and answers to open questions.
 
-Code that changes a host is still premature. That includes providers, the reconciler and anything
-central, for the reasons in `docs/development/index.md`.
+A change that makes a statement in `docs/` false is not finished until the statement is fixed. The
+documentation is the specification, so the two drifting apart is a defect in both.
 
 ## Licence
 
