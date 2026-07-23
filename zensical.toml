@@ -145,6 +145,8 @@ nav = [
     "adr/0009-declared-only-ownership.md",
     "adr/0010-no-self-managed-trust-anchors.md",
     "adr/0011-no-command-execution-from-desired-state.md",
+    "adr/0012-substitution-from-declared-labels.md",
+    "adr/0013-secret-references-resolved-on-the-host.md",
   ] },
 ]
 

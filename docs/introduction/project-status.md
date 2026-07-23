@@ -42,7 +42,7 @@ reaches a stable version.
 
 ## What is settled so far
 
-Nine decisions are accepted, each with a record explaining what it was weighed against
+Twelve decisions are accepted, each with a record explaining what it was weighed against
 and what it costs.
 
 | Decision | Record |

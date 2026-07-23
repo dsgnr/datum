@@ -3,7 +3,7 @@
 Every unresolved question recorded on this site, collected in one place. Each entry links to
 the section that states it in full.
 
-The list exists because open questions scattered across ninety pages are easy to lose, and
+The list exists because open questions scattered across a hundred pages are easy to lose, and
 because the count is a reasonable measure of how ready the design is. Resolving one means
 deciding, updating the page, and removing the entry here.
 
