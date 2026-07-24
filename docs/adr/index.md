@@ -18,6 +18,7 @@ Each one records why a decision was needed, what was decided, and what the decis
 | [0011](0011-no-command-execution-from-desired-state.md) | No command execution from desired state | Accepted |
 | [0012](0012-substitution-from-declared-labels.md) | Substitute declared label values, and nothing else | Accepted |
 | [0013](0013-secret-references-resolved-on-the-host.md) | Secret references, resolved on the host | Accepted |
+| [0014](0014-go-as-the-implementation-language.md) | Go as the implementation language | Accepted |
 
 ## What gets an ADR
 
