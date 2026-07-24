@@ -179,7 +179,7 @@ func Host(set document.Set, name, revision string) (Manifest, error) {
 	}
 
 	for _, c := range m.conflicts {
-		errs.Add(document.Position{}, "conflicting values for %s\n  %-10s %-24s precedence %d\n  %-10s %-24s precedence %d",
+		errs.Add(document.Position{}, "conflicting values for %s\n  %-6s %-22s precedence %d\n  %-6s %-22s precedence %d",
 			c.Field,
 			c.AText, c.A.layer, c.A.precedence,
 			c.BText, c.B.layer, c.B.precedence)
