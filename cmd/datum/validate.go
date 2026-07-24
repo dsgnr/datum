@@ -3,9 +3,7 @@
 package main
 
 import (
-	"flag"
 	"fmt"
-	"os"
 	"sort"
 
 	"github.com/dsgnr/datum/internal/document"
@@ -22,24 +20,24 @@ func init() {
 	})
 }
 
-func runValidate(args []string) int {
-	fs := flag.NewFlagSet("validate", flag.ContinueOnError)
+func runValidate(e *env, args []string) int {
+	fs := newFlagSet(e, "validate")
 	repo := fs.String("repo", ".", "use a local checkout")
-	if err := fs.Parse(args); err != nil {
+	if _, err := parseFlags(fs, args); err != nil {
 		return exitError
 	}
 
 	result, revision, err := loadRepo(*repo)
 	if err != nil {
 		// Nothing resolves until the documents parse.
-		fmt.Fprintf(os.Stderr, "%v\n", err)
+		e.errorf("%v\n", err)
 		return exitError
 	}
 
-	fmt.Printf("fleet      %s\n", result.Set.Fleet.Name)
-	fmt.Printf("revision   %s\n", revision)
-	fmt.Printf("hosts      %d\n", len(result.Set.Hosts))
-	fmt.Printf("layers     %d\n\n", len(result.Set.Layers))
+	e.printf("fleet      %s\n", result.Set.Fleet.Name)
+	e.printf("revision   %s\n", revision)
+	e.printf("hosts      %d\n", len(result.Set.Hosts))
+	e.printf("layers     %d\n\n", len(result.Set.Layers))
 
 	var errs errorGroups
 	for _, layer := range result.Set.Layers {
@@ -64,18 +62,18 @@ func runValidate(args []string) int {
 	}
 
 	if errs.len() == 0 {
-		fmt.Printf("resolved %d hosts, 0 errors\n", len(result.Set.Hosts))
+		e.printf("resolved %d hosts, 0 errors\n", len(result.Set.Hosts))
 		return exitOK
 	}
 
 	for _, group := range errs.sorted() {
-		fmt.Fprintf(os.Stderr, "error: %s\n", group.message)
+		e.errorf("error: %s\n", group.message)
 		if group.count > 0 {
-			fmt.Fprintf(os.Stderr, "  affects %s, first: %s\n", plural(group.count, "host"), group.first)
+			e.errorf("  affects %s, first: %s\n", plural(group.count, "host"), group.first)
 		}
-		fmt.Fprintln(os.Stderr)
+		e.errorf("\n")
 	}
-	fmt.Printf("resolved %d hosts, %s\n", len(result.Set.Hosts), plural(errs.len(), "error"))
+	e.printf("resolved %d hosts, %s\n", len(result.Set.Hosts), plural(errs.len(), "error"))
 	return exitError
 }
 
