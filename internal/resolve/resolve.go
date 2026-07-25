@@ -15,6 +15,7 @@ import (
 
 	"github.com/dsgnr/datum/internal/document"
 	"github.com/dsgnr/datum/internal/match"
+	"github.com/dsgnr/datum/internal/schema"
 )
 
 // Manifest is the resolved desired state for one host at one revision.
@@ -191,6 +192,13 @@ func Host(set document.Set, name, revision string) (Manifest, error) {
 			errs.Add(resource.Position, "%s ends up with both restartOn and reloadOn after merging layers %s",
 				ref, strings.Join(resource.Layers, ", "))
 		}
+		// Checked after merging, because two layers can each be valid alone and
+		// produce something that is not.
+		schema.Validate(schema.Resource{
+			Ref:      resource.Ref,
+			Desired:  resource.Desired,
+			Position: resource.Position,
+		}, &errs)
 		manifest.Resources = append(manifest.Resources, *resource)
 	}
 	sort.Slice(manifest.Resources, func(i, j int) bool {
