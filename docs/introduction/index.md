@@ -14,13 +14,14 @@ desired:
   state: present
 ```
 
-There are seven [resource types](../resources/types/index.md) proposed for the first
-implementation: `Package`, `File`, `Directory`, `Service`, `User`, `Group` and `Sysctl`.
-The set is small because the behaviour every resource shares has to be settled first. How
-a resource is identified, how its state is read back from the host, how it orders itself
-against other resources and how a change is verified are all decisions that every type
-added later inherits, so getting those right matters more than accumulating types. The
-[resources](../resources/index.md) section specifies that shared behaviour.
+Nine [resource types](../resources/types/index.md) are proposed for the first
+implementation. They are `Package`, `File`, `Directory`, `Symlink`, `Service`,
+`User`, `Group`, `Sysctl` and `Repository`.
+
+The set is small because the shared behaviour has to be settled first. Identity, how state
+is read back, how resources order themselves against each other and how a change is
+verified are all inherited by every type added later. The
+[resources](../resources/index.md) section specifies that behaviour.
 
 ## Providers
 
@@ -105,10 +106,12 @@ independently, so an instruction to take a machine out of a load balancer before
 upgrading it cannot be expressed. Provisioning machines and building images sit
 outside Datum as well.
 
-Secret material is a gap rather than a decision. Configuration files frequently
-need credentials in them, and there is no answer yet for how they get there. Every host reads the
-whole repository, so anything committed there is readable by every managed machine, which is why a
-mechanism cannot simply be added.
+Secret material never sits in the repository. A document holds a
+[reference](../resources/secrets.md) that the host resolves at apply time, which is
+[ADR-0013](../adr/0013-secret-references-resolved-on-the-host.md). The reason it works that
+way is that every host reads the whole repository, so anything
+committed there is readable by every managed machine. Datum does not store secrets or serve
+them, and the store a reference resolves against is somebody else's.
 
 ## Security
 
