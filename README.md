@@ -2,6 +2,8 @@
 
 Datum continuously reconciles Linux systems against their desired state in Git.
 
+**[Documentation](https://getdatum.sh/)**
+
 A repository describes the state each machine should be in, covering packages, file contents and
 permissions, services, users, groups and kernel parameters. Datum reads that description, inspects
 the machine, and changes only what differs. Reconciliation repeats, so a file edited by hand or

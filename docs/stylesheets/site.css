@@ -1,0 +1,147 @@
+/* Site-wide tweaks, loaded on every page. The landing page styles live in
+ * landing.css. */
+
+/* The landing page has its own search entry point, so the header one is noise
+ * there. Instant navigation does not re-render the header partial or re-run
+ * inline scripts when swapping pages, so the landing page is detected from the
+ * swapped-in content, which is replaced. */
+body:has(.md-content--landing) .md-header label[for="__search"],
+body:has(.md-content--landing) .md-header [data-md-component="search"],
+body:has(.md-content--landing) .md-header .md-search {
+  display: none;
+}
+
+/* Mirror image of the above. The landing-only Docs link stays in the header DOM
+ * after navigating away, so it is hidden whenever the content is not the
+ * landing page. */
+body:not(:has(.md-content--landing)) .md-header .dt-header-docs {
+  display: none;
+}
+
+/* Keep the site title visible rather than letting Material's alternate
+ * page-title layer fade in over it. */
+.md-header__title {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.md-header__ellipsis,
+.md-header__topic,
+.md-header__title .md-ellipsis,
+.md-header__topic .md-ellipsis {
+  opacity: 1 !important;
+  transform: none !important;
+}
+
+.md-header__title .md-ellipsis,
+.md-header__topic .md-ellipsis {
+  font-weight: 600;
+}
+
+.dt-header-title-link,
+.dt-header-title-link:visited {
+  color: inherit;
+  text-decoration: none;
+}
+
+.dt-header-docs,
+.dt-header-docs:visited {
+  display: inline-flex;
+  align-items: center;
+  min-height: 1.6rem;
+  margin: 0 0.55rem 0 0.35rem;
+  padding: 0 0.58rem;
+  border: 1px solid var(--md-default-fg-color--lightest);
+  border-radius: 8px;
+  color: var(--md-default-fg-color);
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.dt-header-docs:hover {
+  color: var(--md-accent-fg-color);
+  border-color: currentColor;
+}
+
+/* Footer */
+.dt-site-footer {
+  background: var(--md-default-bg-color);
+  border-top: 1px solid var(--md-default-fg-color--lightest);
+  color: var(--md-default-fg-color--light);
+}
+
+.dt-site-footer__inner {
+  min-height: 3.8rem;
+  padding: 0.85rem 1.5rem;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  gap: 1rem;
+  align-items: center;
+}
+
+.dt-site-footer__brand,
+.dt-site-footer__brand:visited {
+  min-width: 0;
+  color: var(--md-default-fg-color);
+  text-decoration: none;
+}
+
+.dt-site-footer__name {
+  display: block;
+  font-size: 0.74rem;
+  font-weight: 800;
+  line-height: 1.2;
+}
+
+.dt-site-footer__tagline {
+  display: block;
+  margin-top: 0.12rem;
+  color: var(--md-default-fg-color--light);
+  font-size: 0.6rem;
+  line-height: 1.35;
+}
+
+.dt-site-footer__nav {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: center;
+  justify-content: center;
+}
+
+.dt-site-footer__nav a,
+.dt-site-footer__nav a:visited,
+.dt-site-footer__credit a,
+.dt-site-footer__credit a:visited {
+  color: var(--md-default-fg-color);
+  text-decoration: none;
+}
+
+.dt-site-footer__nav a {
+  font-size: 0.62rem;
+  font-weight: 700;
+}
+
+.dt-site-footer__nav a:hover,
+.dt-site-footer__credit a:hover {
+  color: var(--md-accent-fg-color);
+}
+
+.dt-site-footer__credit {
+  color: var(--md-default-fg-color--light);
+  font-size: 0.58rem;
+  white-space: nowrap;
+}
+
+@media screen and (max-width: 44.984375em) {
+  .dt-site-footer__inner {
+    grid-template-columns: 1fr;
+    gap: 0.6rem;
+    text-align: center;
+  }
+
+  .dt-site-footer__credit {
+    white-space: normal;
+  }
+}

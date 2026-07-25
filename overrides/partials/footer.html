@@ -1,0 +1,20 @@
+<footer class="md-footer dt-site-footer">
+  <div class="dt-site-footer__inner md-grid">
+    <a class="dt-site-footer__brand" href="{{ config.extra.homepage | d(nav.homepage.url, true) | url }}">
+      <span class="dt-site-footer__name">{{ config.site_name }}</span>
+      <span class="dt-site-footer__tagline">Continuous reconciliation for Linux, driven by Git</span>
+    </a>
+    <nav class="dt-site-footer__nav" aria-label="Footer">
+      <a href="{{ 'introduction/' | url }}">Docs</a>
+      <a href="{{ 'reference/cli/' | url }}">Commands</a>
+      <a href="{{ 'adr/' | url }}">Decisions</a>
+      {% if config.repo_url %}
+        <a href="{{ config.repo_url }}">GitHub</a>
+      {% endif %}
+    </nav>
+    <div class="md-copyright dt-site-footer__credit">
+      {{ config.copyright }} &middot; Built with
+      <a href="https://zensical.org/" target="_blank" rel="noopener">Zensical</a>
+    </div>
+  </div>
+</footer>

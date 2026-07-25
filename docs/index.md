@@ -1,78 +1,121 @@
-# Datum
+---
+title: Datum
+description: Datum reconciles Linux hosts against desired state held in a Git repository.
+template: landing.html
+hide:
+  - navigation
+  - toc
+---
 
-Datum continuously reconciles Linux systems against their desired state in Git.
+<div class="dt-landing">
 
-A machine is described as a set of resources covering the packages installed on
-it, the contents and permissions of its configuration files, the services that
-run at boot, the users and groups that exist, and the values of kernel
-parameters. Datum's job on each pass is to resolve the resources that apply to
-the machine, read the machine to establish what is currently true, and change
-only what differs.
+<section class="dt-hero" id="__skip">
+  <div class="dt-hero__inner">
+    <div class="dt-hero__copy">
+      <p class="dt-hero__eyebrow">Continuous reconciliation for Linux</p>
+      <h1 class="dt-hero__title">Linux hosts, reconciled against a Git repository.</h1>
+      <p class="dt-hero__lede">
+        Datum keeps Linux hosts matching the desired state held in a Git repository. Every
+        pass reads the machine, compares it against the repository, and corrects what
+        differs.
+      </p>
+      <div class="dt-hero__ctas">
+        <a class="dt-cta dt-cta--primary" href="introduction/">Documentation</a>
+        <a class="dt-cta dt-cta--secondary" href="#install">Install</a>
+      </div>
+      <div class="dt-hero__meta">
+        <span>Alpha</span>
+      </div>
+    </div>
+    <div class="dt-panel">
+      <div class="dt-panel__bar">
+        <span class="dt-panel__dots"><i></i><i></i><i></i></span>
+        <span class="dt-panel__name">fleet/roles/web/nginx.yaml</span>
+      </div>
+      <pre><code><span class="dt-k">datum</span><span class="dt-p">:</span> v1alpha1
+<span class="dt-k">type</span><span class="dt-p">:</span> <span class="dt-t">File</span>
 
-The pass repeats rather than running once, because configuration drifts.
-Upgrades replace files, people edit them under pressure, and a machine that was
-correct last month is not necessarily correct today. Running the same pass again
-finds the difference and corrects it.
+<span class="dt-k">name</span><span class="dt-p">:</span> nginx-config
 
-One repository can describe a single machine or several thousand of them,
-running more than one Linux distribution.
+<span class="dt-k">requires</span><span class="dt-p">:</span>
+  <span class="dt-p">-</span> Package&#91;nginx&#93;
 
-!!! warning "Datum is in the design phase"
+<span class="dt-k">desired</span><span class="dt-p">:</span>
+  <span class="dt-k">path</span><span class="dt-p">:</span> /etc/nginx/nginx.conf
+  <span class="dt-k">owner</span><span class="dt-p">:</span> root
+  <span class="dt-k">group</span><span class="dt-p">:</span> root
+  <span class="dt-k">mode</span><span class="dt-p">:</span> <span class="dt-s">"0640"</span>
+  <span class="dt-k">source</span><span class="dt-p">:</span> files/nginx.conf
+  <span class="dt-k">validate</span><span class="dt-p">:</span> nginx</code></pre>
+    </div>
+  </div>
+</section>
 
-    Nothing on this site is implemented. The documentation is the
-    specification: it records the intended architecture and behaviour so that
-    implementation has something concrete to build against. Configuration
-    formats and command names will change before the first release.
+<section class="dt-section dt-section--features">
+  <div class="dt-section__inner">
+    <div class="dt-grid">
+      <div class="dt-card">
+        <span class="dt-card__mark" aria-hidden="true"></span>
+        <h2 class="dt-card__title">Git is the only input</h2>
+        <p class="dt-card__body">
+          Desired state comes from a repository at a known revision and nothing else feeds
+          in.
+        </p>
+      </div>
+      <div class="dt-card">
+        <span class="dt-card__mark" aria-hidden="true"></span>
+        <h2 class="dt-card__title">Reading is separate from writing</h2>
+        <p class="dt-card__body">
+          <code>observe</code>, <code>diff</code> and <code>plan</code> stop before
+          anything on the host changes.
+        </p>
+      </div>
+      <div class="dt-card">
+        <span class="dt-card__mark" aria-hidden="true"></span>
+        <h2 class="dt-card__title">The same document on Debian and Fedora</h2>
+        <p class="dt-card__body">
+          A resource describes package state rather than <code>apt</code>. Which provider
+          realises it is read from the host.
+        </p>
+      </div>
+    </div>
+  </div>
+</section>
 
-## The reconciliation cycle
+<section class="dt-section dt-section--install" id="install">
+  <div class="dt-section__inner dt-install">
+    <div class="dt-install__copy">
+      <p class="dt-section__eyebrow">Install</p>
+      <h2 class="dt-section__title">Build from source</h2>
+      <p class="dt-section__lede">
+        There are no releases yet. Go 1.25 or newer is the only requirement, and the source
+        tree includes an example fleet to run the read-only commands against.
+      </p>
+      <div class="dt-hero__ctas">
+        <a class="dt-cta dt-cta--primary" href="lifecycle/installation/">Installation</a>
+        <a class="dt-cta dt-cta--secondary" href="https://github.com/dsgnr/datum">Source</a>
+      </div>
+    </div>
+    <div class="dt-install__media">
+      <div class="dt-panel">
+        <div class="dt-panel__bar">
+          <span class="dt-panel__dots"><i></i><i></i><i></i></span>
+          <span class="dt-panel__name">shell</span>
+        </div>
+        <pre><code>git clone https://github.com/dsgnr/datum.git
+<span class="dt-k">cd</span> datum
+make build
 
-Every pass starts by reading the host, because there is no assumption that the
-previous pass completed or that nothing else has changed the machine since.
+<span class="dt-c"># Read the repository and the host, change nothing</span>
+./bin/datum plan --host web-001 --repo examples/fleet
 
-```mermaid
-graph TD
-  git[Git] --> desired[Resolve desired state]
-  desired --> observe[Observe host]
-  observe --> drift[Calculate drift]
-  drift --> plan[Build plan]
-  plan --> apply[Apply]
-  apply --> verify[Verify]
-  verify --> observe
-```
+<span class="dt-c"># Reconcile, then report on the pass</span>
+./bin/datum reconcile --host web-001 --repo examples/fleet
+./bin/datum status</code></pre>
+      </div>
+    </div>
+  </div>
+</section>
 
-Desired state is resolved from the repository at a known revision, and observed
-state is read from the host at the start of the pass. The difference between
-them is the plan: the set of changes that would bring the machine to the state
-the repository asks for, ordered according to the dependencies declared between
-resources. Applying that plan and re-reading the resources it touched completes
-the pass.
 
-```text
-desired state + observed state -> plan -> reconciliation
-```
-
-Where a machine already matches the repository the plan is empty and nothing is
-applied, which is what most passes over a settled fleet are expected to look
-like.
-
-## Reading this site
-
-The documentation is the specification for Datum, so it reads as much like a
-design document as a user guide. Start with the
-[introduction](introduction/index.md), which covers what Datum manages and how
-one repository maps onto many machines. The sections after it work through the
-model in the order it is easiest to learn: the
-[vocabulary](concepts/index.md), then the [fleet layout](fleet/index.md), then
-[resources](resources/index.md) and [providers](providers/index.md), then the
-[architecture](architecture/index.md) that connects them, then the
-[security model](security/index.md) and [observability](observability/index.md).
-
-If a worked example is more useful than a specification, the
-[journeys](journeys/index.md) follow five scenarios end to end, from a commit through to
-the next reconciliation, including a manual change being reverted and a bad commit
-reaching the tracked branch.
-
-[Reference](reference/index.md) holds the field and command lookups, and
-[decisions](adr/index.md) records what has been settled and why. Everything still
-unresolved is listed in [open
-questions](development/open-questions.md).
+</div>
