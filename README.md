@@ -26,29 +26,55 @@ works on the distributions those contracts already cover and leaves the operatin
 
 ## Status
 
-Datum is in the design phase.
+Datum is being built specification first.
 
-There is no agent, no CLI, no providers and no reconciler. This repository contains the
-documentation that specifies the intended architecture and behaviour, along with the tooling
-needed to build it. Configuration formats and command names will change before the first release.
+Everything that resolves desired state works. A repository can be parsed, a host can be resolved
+into an effective manifest, and the result can be validated and explained. Nothing that changes a
+machine exists yet, so there are no providers and no reconciler.
+
+| Works | Not yet |
+| ----- | ------- |
+| `datum render`, `datum explain`, `datum validate` | Observing, diffing, planning, applying, verifying |
+| Discovery, matchers, composition, precedence | Providers for any resource type |
+| Label substitution, manifest digests | The agent as a resident process |
+| The resource graph, cycles, duplicate targets | Secrets and reboots |
+
+Configuration formats and command names will change before the first release. The `v1alpha1` marker
+on every document records the schema that document was written against.
 
 The documentation serves as both a user guide and an engineering specification. Where behaviour is
 undecided, it says so instead of describing a guess.
 
+## Building
+
+```bash
+make build      # build ./bin/datum
+make test       # run the Go tests
+make lint       # formatting, vet and tests, which is what CI runs
+```
+
+Go 1.25 or newer, and no other dependency.
+
+```bash
+datum validate --repo path/to/repository
+datum render --host web-001 --repo path/to/repository
+datum explain 'File[nginx-config]' --host web-001 --repo path/to/repository
+```
+
+None of those read or change a managed machine, which is why they are the part that exists.
+
 ## Previewing the documentation
 
 ```bash
-make install
-make serve
+make docs-install
+make docs-serve
 ```
 
-The site is then at `http://localhost:8000`.
-
-## Building the documentation
+The site is then served locally on port 8000.
 
 ```bash
-make build      # build into ./site
-make check      # build with --strict, which is what CI runs
+make docs-build      # build into ./site
+make docs-check      # build with --strict, which is what CI runs
 ```
 
 Strict mode fails on broken internal links and unknown heading anchors, so a merged change cannot
@@ -71,8 +97,8 @@ defended.
 See [CONTRIBUTING.md](CONTRIBUTING.md). The most useful contributions at this stage are arguments
 against a decision, cases the model cannot express, and answers to open questions.
 
-Product code is premature. That includes the agent, the CLI, providers and the reconciler,
-for the reasons in `docs/development/index.md`.
+Code that changes a host is still premature. That includes providers, the reconciler and anything
+central, for the reasons in `docs/development/index.md`.
 
 ## Licence
 

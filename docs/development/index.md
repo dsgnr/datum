@@ -1,7 +1,10 @@
 # Development
 
-Datum is in the design phase, so the work is on the specification rather than on code. The most
-useful contributions right now are the ones that find a problem in the design before anything is
+Datum is being built specification first. The parts that resolve desired state exist, the parts that
+change a machine do not, and [project status](../introduction/project-status.md) tracks which is
+which.
+
+The most useful contributions are still the ones that find a problem in the design before anything is
 built around it.
 
 ## What is useful
@@ -23,12 +26,15 @@ Improving an explanation. A page that is technically correct and hard to follow 
 
 ## What is premature
 
-No product code. That means no agent, no CLI, no providers, no reconciler, no
-APIs and no database.
+Anything that changes a host. That means providers, the reconciler, the agent's scheduling and
+locking.
 
-The decisions being made now are the ones that are expensive to reverse. An implementation started
-before they are settled would settle them as a side effect. Scripts used to build or validate the
-documentation are fine.
+Resolution is implemented because it reads nothing and breaks nothing. Applying state is where a
+mistake is expensive, so the rules it has to follow are written down before the code that follows
+them.
+
+A decision made incidentally by an implementation is a decision nobody argued about, and the ones
+remaining are the expensive kind.
 
 ## How the design changes
 

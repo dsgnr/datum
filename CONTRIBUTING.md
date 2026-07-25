@@ -33,12 +33,16 @@ documentation are fine.
 ## Making a change
 
 ```bash
-make install    # create .venv and install the pinned toolchain
-make serve      # preview at http://localhost:8000
-make check      # build with --strict, which is what CI runs
+make docs-install    # create .venv and install the pinned toolchain
+make docs-serve      # preview the site locally
+make docs-check      # build with --strict, which is what CI runs
+
+make build           # build ./bin/datum
+make test            # run the Go tests
+make lint            # formatting, vet and tests, which is what CI runs
 ```
 
-`make check` must pass before a change is ready. Strict mode fails on broken internal links and
+`make docs-check` must pass before a documentation change is ready. Strict mode fails on broken internal links and
 unknown heading anchors.
 
 Read the rendered page rather than only the source. Tables and admonitions are easy to get subtly
@@ -95,7 +99,8 @@ fix(docs): correct matcher precedence example
 refactor(docs): simplify fleet terminology
 ```
 
-Before each commit, inspect the diff, drop unrelated changes, and run `make check`. The repository
+Before each commit, inspect the diff, drop unrelated changes, and run `make docs-check` for
+documentation or `make lint` for code. The repository
 should build at every commit.
 
 ## Licence
