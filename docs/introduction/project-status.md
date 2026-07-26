@@ -1,8 +1,7 @@
 # Project status
 
-Datum is being built, specification first. A complete pass runs end to end for three
-resource types, and the remaining types resolve and plan without a provider to apply
-them.
+Datum is being built, specification first. A complete pass runs end to end for four
+resource types, and the remaining five resolve and plan without a provider to apply them.
 
 | Part | State |
 | ---- | ----- |
@@ -16,10 +15,12 @@ them.
 | Observation, diffing and planning | Implemented |
 | `datum observe`, `datum diff`, `datum plan` | Implemented |
 | The `File`, `Directory` and `Symlink` provider | Implemented |
+| The program runner providers execute through | Implemented |
+| `Package` through `apt`, tested against Debian | Implemented |
 | Applying, verification and failure propagation | Implemented |
 | The pass lock and pass reports | Implemented |
 | `datum reconcile`, `datum status` | Implemented |
-| Providers for the other six types | Not started |
+| Providers for the other five types | Not started |
 | The agent as a resident process, scheduling, fetching from a remote | Not started |
 | Secret resolution and reboot handling | Not started |
 
