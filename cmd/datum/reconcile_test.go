@@ -180,8 +180,8 @@ func TestStatusReadsTheLastPass(t *testing.T) {
 	invoke("reconcile", "-host", "web-001", "-repo", dir, "-state", state, "-mode", "observe")
 
 	got := invoke("status", "-state", state)
-	// This fleet declares a Package, which nothing here supports, so the host is
-	// degraded. A coverage gap outranks drift in the host state.
+	// This fleet declares a Service, which nothing here supports yet, so the host
+	// is degraded. A coverage gap outranks drift in the host state.
 	if got.code != exitOK {
 		t.Fatalf("code = %d, want %d. output:\n%s", got.code, exitOK, got.all())
 	}

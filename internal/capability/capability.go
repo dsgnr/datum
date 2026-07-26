@@ -7,13 +7,21 @@ package capability
 
 import (
 	"github.com/dsgnr/datum/internal/provider"
+	"github.com/dsgnr/datum/internal/provider/apt"
 	"github.com/dsgnr/datum/internal/provider/posix"
 )
 
 // Detect returns the capability set for this host.
 //
-// Providers for the types needing a package manager, an init system or a user
-// database are not written yet, so those types are absent and get skipped.
+// Selection is by what is installed rather than by what /etc/os-release claims, so
+// a derivative nobody has heard of works without being listed anywhere.
+//
+// Providers for the types needing an init system or a user database are not written
+// yet, so those types are absent and get skipped.
 func Detect() provider.Set {
-	return provider.NewSet(posix.New())
+	providers := []provider.Provider{posix.New()}
+	if apt.Detect() {
+		providers = append(providers, apt.New())
+	}
+	return provider.NewSet(providers...)
 }
