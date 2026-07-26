@@ -15,6 +15,30 @@ import (
 	"github.com/dsgnr/datum/internal/state"
 )
 
+// Trigger is the operation a dependency's change asks for.
+//
+// restartOn and reloadOn differ only in which Trigger the provider receives. A provider
+// whose target cannot reload fails the action and does not substitute a restart.
+type Trigger int
+
+const (
+	// NoTrigger means nothing downstream asked for anything.
+	NoTrigger Trigger = iota
+	Restart
+	Reload
+)
+
+func (t Trigger) String() string {
+	switch t {
+	case Restart:
+		return "restart"
+	case Reload:
+		return "reload"
+	default:
+		return "none"
+	}
+}
+
 // Request is one resource handed to a provider, and all it gets. No view of the
 // manifest, no fleet configuration and no layer provenance, because none of that should
 // change what it does to a target.
@@ -28,6 +52,9 @@ type Request struct {
 	LayerDir string
 	// RepoRoot is the checkout, needed to read a content source.
 	RepoRoot string
+	// Trigger is set when a dependency changed in this pass and this resource
+	// reacts to it. Observe never sees one.
+	Trigger Trigger
 }
 
 // Field reads a scalar from the desired state.
