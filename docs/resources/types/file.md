@@ -37,6 +37,7 @@ different names and the same path are a conflict.
 | `mode` | string | No | Permission bits, quoted. |
 | `sensitive` | boolean | No, defaults to `false` | Suppresses rendering of the content anywhere. |
 | `validate` | string | No | Names a [validator](../validation.md) run against the staged content before it goes live. |
+| `allowPrivileged` | boolean | No, defaults to `false` | Permits a [mode that grants privilege](../../security/provider-safety.md#modes-that-grant-privilege). |
 
 `content`, `source`, `template` and `secretRef` are mutually exclusive, and a resource
 setting more than one is rejected. Setting none of them manages metadata only, which is how ownership

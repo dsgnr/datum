@@ -27,6 +27,7 @@ directory's contents.
 | `owner` | string | No | Owning user name. |
 | `group` | string | No | Owning group name. |
 | `mode` | string | No | Permission bits, quoted. |
+| `allowPrivileged` | boolean | No, defaults to `false` | Permits a [mode that grants privilege](../../security/provider-safety.md#modes-that-grant-privilege). |
 
 ## Observation
 
