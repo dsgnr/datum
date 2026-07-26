@@ -405,3 +405,37 @@ desired:
 		t.Errorf("output should name the missing label, got:\n%s", got.all())
 	}
 }
+
+// Several mistakes on one host have to count as several, or a repository with four
+// problems looks like it has one.
+func TestValidateCountsEachProblemSeparately(t *testing.T) {
+	files := worked()
+	files["fleet/roles/web/bad.yaml"] = `datum: v1alpha1
+type: File
+name: helper
+desired:
+  path: /usr/local/bin/helper
+  mode: "4755"
+---
+datum: v1alpha1
+type: File
+name: typo
+desired:
+  path: /etc/app.conf
+  contnet: hello
+`
+	dir := fleet(t, files)
+	got := invoke("validate", "-repo", dir)
+
+	if got.code != exitError {
+		t.Fatalf("code = %d, want a failure. output:\n%s", got.code, got.all())
+	}
+	if !strings.Contains(got.out, "2 errors") {
+		t.Errorf("want 2 errors reported, got:\n%s", got.all())
+	}
+	for _, want := range []string{"allowPrivileged", "no field desired.contnet"} {
+		if !strings.Contains(got.all(), want) {
+			t.Errorf("output should mention %q, got:\n%s", want, got.all())
+		}
+	}
+}
