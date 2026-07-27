@@ -6,8 +6,9 @@
     `affected` are implemented. `init` and `migrate` are not, and the output shown for
     those two is illustrative.
 
-    `File`, `Directory` and `Symlink` have a provider, and so does `Package` where
-    `apt` is installed. The other types resolve and plan and are reported as skipped,
+    `File`, `Directory` and `Symlink` have a provider, `Package` has one where `apt` is
+    installed, and `Service` has one where systemd is the init system. The other types
+    resolve and plan and are reported as skipped,
     which makes a host with any of them
     [degraded](../concepts/state.md#host-state-across-passes) rather than converged.
 

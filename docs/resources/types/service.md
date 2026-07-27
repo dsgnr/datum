@@ -72,6 +72,26 @@ Reporting `running` from the unit being active rather than from a process
 existing matters, because a unit can be active while its main process is
 restarting, and a process can exist while the unit has failed.
 
+## Units that cannot be enabled
+
+A unit with no `[Install]` section cannot be enabled or disabled, which systemd reports
+as a unit file state of `static`. `systemctl enable` on one changes nothing and still
+exits zero. A masked unit is the same question from the other direction.
+
+For those, `enabled` is reported as unobservable, not as `false`, so it is left out of the
+comparison. Reporting it as `false` would mean a host declaring `enabled: true` for a static unit
+drifted on every pass and never converged, and the action that was supposed to fix it did nothing. A
+[difference that cannot be measured is not drift](../../concepts/drift.md), and this is one of them.
+
+The unit file state is reported as its own observed field, so `datum observe`
+says `static` instead of leaving somebody to wonder why `enabled` is absent.
+
+!!! note "Implementation status"
+
+    `Service` is implemented by the `systemd` provider and [tested against a booted
+    systemd](../../providers/support-matrix.md). Verification checks immediately after acting, which
+    is the first half of the open question below and not an answer to it.
+
 ## restartOn
 
 When a resource listed in `restartOn` has a non-`none` action in the same plan, the
