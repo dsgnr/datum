@@ -57,13 +57,17 @@ make lint       # formatting, vet and tests, which is what CI runs
 Go 1.25 or newer, and no other dependency.
 
 ```bash
-datum validate --repo path/to/repository
-datum render --host web-001 --repo path/to/repository
-datum explain 'File[nginx-config]' --host web-001 --repo path/to/repository
-datum affected --from origin/main --to HEAD --repo path/to/repository
+./bin/datum validate --repo examples/fleet
+./bin/datum render --host web-001 --repo examples/fleet
+./bin/datum explain 'File[nginx-config]' --host web-001 --repo examples/fleet
+./bin/datum affected --from HEAD~1 --to HEAD --repo examples/fleet
 ```
 
-None of those read or change a managed machine, which is why they are the part that exists.
+`examples/fleet` is a three-host repository to try the commands against, described in
+[examples/README.md](examples/README.md).
+
+None of those commands read or change a managed machine, which is why they are the part that
+exists.
 
 ## Previewing the documentation
 
