@@ -49,12 +49,24 @@ undecided, it says so instead of describing a guess.
 ## Building
 
 ```bash
-make build      # build ./bin/datum
+make build      # build ./bin/datum for this machine
 make test       # run the Go tests
 make lint       # formatting, vet and tests, which is what CI runs
 ```
 
 Go 1.25 or newer, and no other dependency.
+
+Datum runs on Linux, so a build on macOS or Windows is for development only. The binary is
+statically linked with cgo disabled, so cross-compiling needs no toolchain beyond Go.
+
+```bash
+make build-linux    # linux/amd64 and linux/arm64 into ./bin
+make dist           # those two and this machine's
+```
+
+`make shell` builds for whatever architecture Docker reports and opens an Ubuntu container with
+the binary and the example fleet already mounted, which is the quickest way to run it on Linux
+from a machine that is not.
 
 ```bash
 ./bin/datum validate --repo examples/fleet

@@ -11,6 +11,17 @@ make build
 ./bin/datum explain 'File[nginx-config]' --host web-001 --repo examples/fleet
 ```
 
+## Running it on Linux
+
+Datum targets Linux, so a binary built on macOS will not run in a container. `make shell` builds
+for whatever architecture Docker reports and opens a container with the binary and this directory
+already mounted.
+
+```bash
+make shell
+datum validate --repo /examples/fleet
+```
+
 ## What is in it
 
 | Host | Labels | Gets |
