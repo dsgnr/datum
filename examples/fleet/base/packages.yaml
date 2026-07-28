@@ -1,0 +1,15 @@
+datum: v1alpha1
+type: Package
+
+name: curl
+
+desired:
+  state: present
+---
+datum: v1alpha1
+type: Package
+
+name: ca-certificates
+
+desired:
+  state: present

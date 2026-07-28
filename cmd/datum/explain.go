@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 
@@ -135,9 +136,9 @@ func printFields(w *tabwriter.Writer, prefix string, v document.Value) {
 			v.Canonical(&b)
 			text = b.String()
 		}
-		line := fmt.Sprintf("  %s\t%s\t%s", prefix, text, v.From)
+		line := fmt.Sprintf("  %s\t%s\t%s", prefix, oneLine(text), v.From)
 		if len(v.Displaced) > 0 {
-			line += fmt.Sprintf("\toverrides %s from %s", v.Displaced[0].Scalar, v.Displaced[0].Layer)
+			line += fmt.Sprintf("\toverrides %s from %s", oneLine(v.Displaced[0].Scalar), v.Displaced[0].Layer)
 		}
 		fmt.Fprintln(w, line)
 	}
@@ -148,6 +149,23 @@ func joinPath(prefix, key string) string {
 		return key
 	}
 	return prefix + "." + key
+}
+
+// maxFieldWidth cuts a value short. File content is a field like any other and can
+// be a whole configuration file.
+const maxFieldWidth = 60
+
+// oneLine makes a value safe to print in a column. A newline in the middle of a
+// field would break the alignment of everything after it, so anything not
+// printable on one line is quoted instead.
+func oneLine(text string) string {
+	if strings.ContainsAny(text, "\n\t\r") {
+		text = strconv.Quote(text)
+	}
+	if len(text) > maxFieldWidth {
+		return text[:maxFieldWidth-3] + "..."
+	}
+	return text
 }
 
 func printRefs(out io.Writer, name string, refs []document.Reference) {

@@ -1,0 +1,9 @@
+# Tightens the mode role-web set, because this host serves something that
+# should not be world readable.
+datum: v1alpha1
+type: File
+
+name: nginx-config
+
+desired:
+  mode: "0600"

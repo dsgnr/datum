@@ -1,0 +1,10 @@
+datum: v1alpha1
+type: Host
+
+name: db-001
+
+labels:
+  environment: production
+  site: london
+  role: database
+  architecture: arm64

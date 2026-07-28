@@ -1,0 +1,10 @@
+datum: v1alpha1
+type: Host
+
+name: web-001
+
+labels:
+  environment: production
+  site: london
+  role: web
+  architecture: amd64

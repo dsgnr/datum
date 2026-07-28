@@ -1,0 +1,7 @@
+datum: v1alpha1
+type: Sysctl
+
+name: net.ipv4.ip_forward
+
+desired:
+  value: "0"

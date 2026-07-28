@@ -1,0 +1,9 @@
+datum: v1alpha1
+type: Layer
+
+name: role-web
+
+precedence: 30
+match:
+  labels:
+    role: web

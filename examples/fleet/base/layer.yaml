@@ -1,0 +1,7 @@
+# A layer with no matcher applies to every host in the fleet.
+datum: v1alpha1
+type: Layer
+
+name: base
+
+precedence: 0

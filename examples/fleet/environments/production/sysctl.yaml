@@ -1,0 +1,16 @@
+# Overrides the value base sets, because this layer has higher precedence.
+datum: v1alpha1
+type: Sysctl
+
+name: net.ipv4.ip_forward
+
+desired:
+  value: "1"
+---
+datum: v1alpha1
+type: Sysctl
+
+name: vm.swappiness
+
+desired:
+  value: "10"

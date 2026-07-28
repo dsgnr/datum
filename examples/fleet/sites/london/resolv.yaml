@@ -1,0 +1,11 @@
+datum: v1alpha1
+type: File
+
+name: resolv-conf
+
+desired:
+  path: /etc/resolv.conf
+  owner: root
+  group: root
+  mode: "0644"
+  source: files/resolv.conf

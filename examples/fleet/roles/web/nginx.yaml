@@ -1,0 +1,117 @@
+datum: v1alpha1
+type: Repository
+
+name: nginx-upstream
+
+desired:
+  id: nginx-upstream
+  url: https://nginx.org/packages/debian
+  suite: bookworm
+  components: [nginx]
+  signingKey: files/nginx-signing.asc
+---
+datum: v1alpha1
+type: Group
+
+name: www-data
+
+desired:
+  state: present
+---
+datum: v1alpha1
+type: User
+
+name: www-data
+
+requires:
+  - Group[www-data]
+
+desired:
+  state: present
+  primaryGroup: www-data
+  shell: /usr/sbin/nologin
+  system: true
+---
+datum: v1alpha1
+type: Package
+
+name: nginx
+
+requires:
+  - Repository[nginx-upstream]
+
+desired:
+  state: present
+---
+datum: v1alpha1
+type: Directory
+
+name: nginx-conf-d
+
+requires:
+  - Package[nginx]
+
+desired:
+  path: /etc/nginx/conf.d
+  owner: root
+  group: root
+  mode: "0755"
+---
+datum: v1alpha1
+type: File
+
+name: nginx-config
+
+requires:
+  - Package[nginx]
+
+desired:
+  path: /etc/nginx/nginx.conf
+  owner: root
+  group: root
+  mode: "0640"
+  source: files/nginx.conf
+  validate: nginx
+---
+datum: v1alpha1
+type: File
+
+name: nginx-site
+
+requires:
+  - Directory[nginx-conf-d]
+
+desired:
+  path: /etc/nginx/conf.d/site.conf
+  owner: root
+  group: root
+  mode: "0640"
+  template: files/site.conf.tmpl
+---
+datum: v1alpha1
+type: Symlink
+
+name: nginx-default-off
+
+requires:
+  - Package[nginx]
+
+desired:
+  path: /etc/nginx/sites-enabled/default
+  state: absent
+---
+datum: v1alpha1
+type: Service
+
+name: nginx
+
+requires:
+  - Package[nginx]
+  - User[www-data]
+reloadOn:
+  - File[nginx-config]
+  - File[nginx-site]
+
+desired:
+  state: running
+  enabled: true
