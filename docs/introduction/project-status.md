@@ -10,7 +10,8 @@ host now exists, and nothing that changes a machine does.
 | Substitution of declared label values | Implemented |
 | Effective manifests and their digests | Implemented |
 | The resource graph, cycles and duplicate targets | Implemented |
-| `datum render`, `datum explain`, `datum validate` | Implemented |
+| Per-type field validation | Implemented |
+| `datum render`, `datum explain`, `datum validate`, `datum affected` | Implemented |
 | Observation, diffing, planning, applying, verifying | Not started |
 | Providers for any resource type | Not started |
 | The agent as a resident process, scheduling, locking | Not started |

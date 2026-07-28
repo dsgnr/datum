@@ -2,12 +2,12 @@
 
 !!! warning "Most of these commands do not exist yet"
 
-    `datum render`, `datum explain` and `datum validate` are implemented. Everything
-    else on this page describes intended behaviour so that the command surface can be
-    argued about before it is built, and the output shown for an unimplemented command
-    is illustrative.
+    `datum render`, `datum explain`, `datum validate` and `datum affected` are
+    implemented. Everything else on this page describes intended behaviour so that the
+    command surface can be argued about before it is built, and the output shown for an
+    unimplemented command is illustrative.
 
-    The three that exist are the ones that never read a host, which is why they came
+    The four that exist are the ones that never read a host, which is why they came
     first.
 
 The commands map onto the pipeline, so each one stops at a different point and prints
