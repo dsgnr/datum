@@ -66,6 +66,19 @@ type Observation struct {
 	// Unobservable fields are not compared. A difference that cannot be measured is
 	// not drift.
 	Unobservable []string
+
+	// Desired is the provider's own view, for values that cannot be compared as
+	// declared. A File's content is a repository path on one side and bytes on the
+	// other, so the provider digests both. Empty when fields compare directly.
+	Desired document.Value
+}
+
+// DesiredOr returns the provider's normalised desired state, or what was declared.
+func (o Observation) DesiredOr(declared document.Value) document.Value {
+	if o.Desired.Kind == document.KindMap && len(o.Desired.Map) > 0 {
+		return o.Desired
+	}
+	return declared
 }
 
 // Value reads one observed field.

@@ -91,6 +91,8 @@ var notComparable = map[string]bool{
 	"validate":        true,
 	"allowPrivileged": true,
 	"system":          true,
+	"unsigned":        true,
+	"suite":           true,
 }
 
 func comparable(field string) bool {
@@ -123,7 +125,9 @@ func diffAll(observed observe.State, desired map[document.Reference]document.Val
 		if result.Skipped || result.Err != nil {
 			continue
 		}
-		out[result.Ref] = compare(result.Ref, desired[result.Ref], result.Observation)
+		// A provider may normalise first, which is how content becomes a digest.
+		want := result.Observation.DesiredOr(desired[result.Ref])
+		out[result.Ref] = compare(result.Ref, want, result.Observation)
 	}
 	return out
 }
