@@ -28,17 +28,23 @@ works on the distributions those contracts already cover and leaves the operatin
 
 Datum is being built specification first.
 
-Everything that resolves desired state works. A repository can be parsed, a host can be resolved
-into an effective manifest, and the result can be validated and explained. Nothing that changes a
-machine exists yet, so there are no providers and no reconciler.
+Everything that reads works. A repository can be parsed, a host resolved into an effective
+manifest, and that manifest compared against what is actually on a machine to produce an ordered
+plan. Nothing applies a plan yet.
+
+Everything above the provider boundary is portable, so most of it is developed and tested without a
+host. A provider is the only part that touches an operating system, and the one that exists covers
+`File`, `Directory` and `Symlink`.
 
 | Works | Not yet |
 | ----- | ------- |
-| `datum render`, `datum explain`, `datum validate`, `datum affected` | Observing, diffing, planning, applying, verifying |
-| Discovery, matchers, composition, precedence | Providers for any resource type |
+| `render`, `explain`, `validate`, `affected` | `reconcile` and `status` |
+| `observe`, `diff`, `plan` | Applying and verifying |
+| Discovery, matchers, composition, precedence | Providers for the other six resource types |
 | Label substitution, manifest digests | The agent as a resident process |
 | The resource graph, cycles, duplicate targets | Secrets and reboots |
 | Per-type field validation | Signature verification and fetching |
+| A provider for `File`, `Directory` and `Symlink` | |
 
 Configuration formats and command names will change before the first release. The `v1alpha1` marker
 on every document records the schema that document was written against.
@@ -75,11 +81,22 @@ from a machine that is not.
 ./bin/datum affected --from HEAD~1 --to HEAD --repo examples/fleet
 ```
 
+Those four read repository content only. The next three read a machine and change nothing on it.
+
+```bash
+./bin/datum observe --host web-001 --repo examples/fleet
+./bin/datum diff    --host web-001 --repo examples/fleet
+./bin/datum plan    --host web-001 --repo examples/fleet
+```
+
+`diff` and `plan` exit 2 when something differs, so either works as a drift check in a scheduled
+job without parsing the output.
+
 `examples/fleet` is a three-host repository to try the commands against, described in
 [examples/README.md](examples/README.md).
 
-None of those commands read or change a managed machine, which is why they are the part that
-exists.
+Nothing above changes a machine, so any of those commands is safe to run on a host in the middle of
+an incident.
 
 ## Previewing the documentation
 
