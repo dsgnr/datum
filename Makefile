@@ -7,7 +7,7 @@ STAMP    := $(VENV)/.installed
 # CGO is off because the agent has to run on a host with nothing installed on it.
 GO_BUILD := CGO_ENABLED=0 go build
 
-.PHONY: help build build-linux dist test fmt vet lint shell clean \
+.PHONY: help build build-linux dist test test-linux fmt vet lint shell clean \
 	docs-install docs-serve docs-build docs-check
 
 help:
@@ -15,6 +15,7 @@ help:
 	@echo "build-linux   Cross-compile for linux/amd64 and linux/arm64"
 	@echo "dist          Build every supported target into ./bin"
 	@echo "test          Run the Go tests"
+	@echo "test-linux    Run the Go tests in a Linux container"
 	@echo "fmt           Format the Go sources"
 	@echo "vet           Run go vet"
 	@echo "lint          fmt check, vet and tests, which is what CI runs"
@@ -40,6 +41,11 @@ dist: build build-linux
 
 test:
 	go test ./...
+
+# Applying state is implemented on Linux only, so those tests skip everywhere else.
+# This runs the whole suite where all of it is reachable.
+test-linux:
+	docker run --rm -v "$(CURDIR):/src" -w /src golang:1.25 go test ./...
 
 fmt:
 	gofmt -w .
