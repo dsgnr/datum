@@ -155,10 +155,19 @@ func joinPath(prefix, key string) string {
 // be a whole configuration file.
 const maxFieldWidth = 60
 
-// oneLine makes a value safe to print in a column. A newline in the middle of a
-// field would break the alignment of everything after it, so anything not
-// printable on one line is quoted instead.
+// digestPrefix is how a content digest is written.
+const digestPrefix = "sha256:"
+
+// shortDigestLength matches what the manifest digest prints.
+const shortDigestLength = 8
+
+// oneLine makes a value safe to print in a column. A newline mid-field would break the
+// alignment of everything after it. A digest is abbreviated rather than cut, because a
+// half hash looks like corruption.
 func oneLine(text string) string {
+	if hex, ok := strings.CutPrefix(text, digestPrefix); ok && len(hex) > shortDigestLength {
+		return digestPrefix + hex[:shortDigestLength]
+	}
 	if strings.ContainsAny(text, "\n\t\r") {
 		text = strconv.Quote(text)
 	}
