@@ -8,6 +8,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/dsgnr/datum/internal/statedir"
 )
 
 // ErrHeld means another process is mid-pass.
@@ -33,12 +35,12 @@ type Lock struct {
 // else holds it, which is what an interactive command wants, because waiting silently
 // is indistinguishable from hanging.
 func Acquire(dir string, wait bool) (*Lock, error) {
-	if err := os.MkdirAll(dir, 0o700); err != nil {
+	if err := statedir.Ensure(dir); err != nil {
 		return nil, err
 	}
 	path := filepath.Join(dir, "pass.lock")
 
-	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, 0o600)
+	file, err := os.OpenFile(path, os.O_CREATE|os.O_RDWR, statedir.FileMode)
 	if err != nil {
 		return nil, err
 	}
