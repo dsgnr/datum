@@ -71,7 +71,12 @@ func runPass(e *env, f hostFlags) (pass, int) {
 		return pass{}, exitError
 	}
 
-	providers := capability.Detect()
+	providers, err := capability.Detect()
+	if err != nil {
+		e.errorf("%v\n", err)
+		return pass{}, exitError
+	}
+
 	observed, err := observe.Host(context.Background(), g, providers, result.Root)
 	if err != nil {
 		e.errorf("%v\n", err)
@@ -121,7 +126,7 @@ func runObserve(e *env, args []string) int {
 		e.printf("%s\n", result.Ref)
 		switch {
 		case result.Skipped:
-			e.printf("  skipped  no provider for %s on this host\n", result.Ref.Type)
+			e.printf("  skipped  %s\n", result.Reason)
 		case result.Err != nil:
 			e.printf("  error    %v\n", result.Err)
 		default:

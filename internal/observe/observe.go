@@ -21,8 +21,9 @@ type Result struct {
 	Observation provider.Observation
 
 	// Skipped means no provider here satisfies the type, which is a coverage gap, not a
-	// failure.
+	// failure. Reason says why.
 	Skipped bool
+	Reason  string
 	// Err is set when a provider was asked and could not read.
 	Err error
 }
@@ -55,6 +56,15 @@ func (s State) Unsupported() []string {
 	return out
 }
 
+// skipReason names the host in the terms selection used, so the gap is actionable
+// rather than merely reported.
+func skipReason(typeName, host string) string {
+	if host == "" {
+		return "no " + typeName + " provider on this host"
+	}
+	return "no " + typeName + " provider supports " + host
+}
+
 // Host reads every resource in a graph.
 //
 // Only the declared targets are read. A host with ten thousand packages and three
@@ -74,6 +84,7 @@ func Host(ctx context.Context, g *graph.Graph, providers provider.Set, repoRoot 
 		p, supported := providers.For(ref.Type)
 		if !supported {
 			result.Skipped = true
+			result.Reason = skipReason(ref.Type, providers.Host)
 		} else {
 			result.Provider = p.Name()
 			observation, err := p.Observe(ctx, provider.Request{

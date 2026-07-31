@@ -143,6 +143,11 @@ type Provider interface {
 // Set maps resource types to the providers that satisfy them here. It is what a
 // distribution reduces to, so nothing downstream asks what the machine runs.
 type Set struct {
+	// Host describes the machine the set was built for, in the os-release terms
+	// selection used. A skipped resource reports it, because "no provider" is not
+	// an answer without it.
+	Host string
+
 	byType map[string]Provider
 }
 
