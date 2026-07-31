@@ -148,6 +148,12 @@ type Set struct {
 	// an answer without it.
 	Host string
 
+	// Unserved explains, per resource type, why nothing here serves it. A provider ruled
+	// out because the host lacks what it needs is a different problem from one that was
+	// never written for this distribution, and sending somebody to the wrong one wastes
+	// their afternoon.
+	Unserved map[string]string
+
 	byType map[string]Provider
 }
 

@@ -236,3 +236,88 @@ func TestRealCandidatesAreUnambiguous(t *testing.T) {
 		}
 	}
 }
+
+// A Fedora host selects dnf and a Debian host selects apt from the same candidate
+// list, which is the point of the second package provider existing.
+func TestRealCandidatesChoosePerDistribution(t *testing.T) {
+	for _, tc := range []struct {
+		release osrelease.Release
+		want    string
+	}{
+		{debian(), "apt"},
+		{ubuntu(), "apt"},
+		{osrelease.Release{ID: "fedora"}, "dnf"},
+		{osrelease.Release{ID: "rhel"}, "dnf"},
+		{rocky(), "dnf"},
+	} {
+		set, err := selectFrom(candidates(), tc.release)
+		if err != nil {
+			t.Fatalf("%s: %v", tc.release.ID, err)
+		}
+		if got := chosenFor(t, set, "Package"); got != tc.want {
+			t.Errorf("%s chose %s, want %s", tc.release.ID, got, tc.want)
+		}
+	}
+}
+
+// Nothing claims these, so Package is skipped instead of guessed at.
+func TestUnclaimedDistributionsSkipPackage(t *testing.T) {
+	for _, release := range []osrelease.Release{{ID: "alpine"}, {ID: "arch"}, unknown()} {
+		set, err := selectFrom(candidates(), release)
+		if err != nil {
+			t.Fatalf("%s: %v", release.ID, err)
+		}
+		if _, ok := set.For("Package"); ok {
+			t.Errorf("%s should have no Package provider yet", release.ID)
+		}
+	}
+}
+
+// A provider ruled out because the host lacks what it needs is a different gap from
+// one nobody wrote for this distribution. Reporting the wrong one sends somebody
+// looking in the wrong place.
+func TestUnservedTypeSaysWhatIsMissing(t *testing.T) {
+	no := func() bool { return false }
+
+	set, err := selectFrom([]candidate{
+		{provider: fake("systemd", "Service"), applicable: no, needs: "systemd as the init system"},
+	}, osrelease.Release{ID: "fedora"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	reason := set.Unserved["Service"]
+	if !strings.Contains(reason, "systemd needs systemd as the init system") {
+		t.Errorf("reason = %q", reason)
+	}
+}
+
+// Where nothing was ruled out, the distribution is the explanation and there is
+// nothing more specific to add.
+func TestUnservedTypeWithNoCandidateAtAll(t *testing.T) {
+	set, err := selectFrom([]candidate{
+		{provider: fake("apt", "Package"), distributions: []string{"debian"}},
+	}, unknown())
+	if err != nil {
+		t.Fatal(err)
+	}
+	if reason := set.Unserved["Package"]; reason != "" {
+		t.Errorf("reason = %q, want empty so the host description is used", reason)
+	}
+}
+
+// On Fedora without systemd booted, Service is unserved because systemd is not the
+// init system, not because of the distribution.
+func TestRealCandidatesExplainAMissingInitSystem(t *testing.T) {
+	// systemd.Detect is false wherever these tests run outside a booted container,
+	// so this only asserts when that is the case.
+	set, err := selectFrom(candidates(), osrelease.Release{ID: "fedora"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, served := set.For("Service"); served {
+		t.Skip("systemd is the init system here, so there is no gap to explain")
+	}
+	if reason := set.Unserved["Service"]; !strings.Contains(reason, "init system") {
+		t.Errorf("reason = %q, want it to name the init system", reason)
+	}
+}
