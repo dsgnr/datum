@@ -19,6 +19,8 @@ them.
 | The `File`, `Directory` and `Symlink` provider | Implemented |
 | The program runner providers execute through | Implemented |
 | `Package` through `apt`, tested against Debian | Implemented |
+| `Package` through `dnf`, tested against Fedora | Implemented |
+| Provider selection from `os-release` | Implemented |
 | `Service` through `systemd`, tested against a booted systemd | Implemented |
 | Applying, verification and failure propagation | Implemented |
 | The pass lock and pass reports | Implemented |

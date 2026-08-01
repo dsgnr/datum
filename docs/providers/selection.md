@@ -74,7 +74,8 @@ repository, which the provider boundary exists to keep out of it.
 
 !!! note "Proposed behaviour"
 
-    Selection is proposed and not accepted. The rule below is the current position.
+    Selection is proposed and not accepted. The rule below is the current position, and
+    it is the rule the implementation follows.
 
 Each provider declares which identifiers it supports.
 
@@ -94,9 +95,19 @@ Exactly one candidate has to remain. Zero candidates means the resource cannot
 be reconciled on that host. Two candidates at the same level of specificity is
 an error, and no preference order is applied to resolve it.
 
-Probing is used as a check, not as a matcher. A provider chosen from `ID` that
-then finds its package manager missing reports that as a failure, which is more
-useful than silently selecting a different one.
+Probing is applied as a check after selection rather than as a matcher. A Debian host selects `apt`
+whether or not `apt-get` is installed, and a provider that finds its package manager missing reports
+a failure when it runs.
+
+Some conditions are properties of the running machine rather than its identity. `systemd` serves any
+distribution where systemd is the init system. A provider declares such a condition and is excluded
+from the candidate list where it does not hold. The skip reason names the condition rather than the
+distribution.
+
+```text
+skip   Service[crond]
+       reason   no Service provider on this host: systemd needs systemd as the init system
+```
 
 ## When no provider matches
 
