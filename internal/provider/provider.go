@@ -94,6 +94,13 @@ type Observation struct {
 	// not drift.
 	Unobservable []string
 
+	// Uncorrectable fields are compared and reported and never acted on. A uid that does
+	// not match is the case this exists for, since changing it would leave every file
+	// owned by the old one belonging to nobody, and the manifest does not say which files
+	// to reassign. Reporting it and refusing to act is the only honest answer, and it is
+	// never silent.
+	Uncorrectable []string
+
 	// Desired is the provider's own view, for values that cannot be compared as
 	// declared. A File's content is a repository path on one side and bytes on the
 	// other, so the provider digests both. Empty when fields compare directly.
@@ -116,12 +123,21 @@ func (o Observation) Value(name string) (document.Value, bool) {
 
 // CanObserve reports whether a field was readable.
 func (o Observation) CanObserve(name string) bool {
-	for _, unobservable := range o.Unobservable {
-		if unobservable == name {
-			return false
+	return !contains(o.Unobservable, name)
+}
+
+// CanCorrect reports whether a difference in a field is something to act on.
+func (o Observation) CanCorrect(name string) bool {
+	return !contains(o.Uncorrectable, name)
+}
+
+func contains(names []string, want string) bool {
+	for _, name := range names {
+		if name == want {
+			return true
 		}
 	}
-	return true
+	return false
 }
 
 // Provider implements one or more resource types on one class of system.

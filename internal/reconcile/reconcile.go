@@ -116,8 +116,14 @@ func Apply(ctx context.Context, p plan.Plan, opts Options) (Result, error) {
 
 		default:
 			applied = true
-			r.State, r.Err = enforce(ctx, step, opts)
-			if r.State != state.Converged {
+			var reason string
+			r.State, reason, r.Err = enforce(ctx, step, opts)
+			if reason != "" {
+				r.Reason = reason
+			}
+			// Drift nothing can correct does not block what depends on this
+			// resource, because the resource is otherwise in the declared state.
+			if r.State != state.Converged && r.Err != nil {
 				block(opts.Graph, blocked, step.Ref, dependencyReason(step.Ref, r))
 			}
 		}
@@ -126,7 +132,7 @@ func Apply(ctx context.Context, p plan.Plan, opts Options) (Result, error) {
 	}
 
 	out.HostState = state.HostFrom(states(out.Resources))
-	out.Outcome = outcome(out.Resources, opts.Mode, applied)
+	out.Outcome = outcome(out.Resources, applied)
 	return out, nil
 }
 
@@ -135,16 +141,16 @@ func Apply(ctx context.Context, p plan.Plan, opts Options) (Result, error) {
 // Re-observe instead of trusting what the provider returned. An apply that reported
 // success and did not take is the failure to catch, and a provider cannot be the judge
 // of its own work.
-func enforce(ctx context.Context, step plan.Step, opts Options) (state.Resource, error) {
+func enforce(ctx context.Context, step plan.Step, opts Options) (state.Resource, string, error) {
 	p, ok := opts.Providers.For(step.Ref.Type)
 	if !ok {
 		// The plan marks unsupported types as skipped, so reaching here means the
 		// provider set changed underneath the pass.
-		return state.Failed, fmt.Errorf("no provider for %s", step.Ref.Type)
+		return state.Failed, "", fmt.Errorf("no provider for %s", step.Ref.Type)
 	}
 	node, ok := opts.Graph.Nodes[step.Ref]
 	if !ok {
-		return state.Failed, fmt.Errorf("%s is not in the graph", step.Ref)
+		return state.Failed, "", fmt.Errorf("%s is not in the graph", step.Ref)
 	}
 	req := provider.Request{
 		Ref:      step.Ref,
@@ -156,7 +162,7 @@ func enforce(ctx context.Context, step plan.Step, opts Options) (state.Resource,
 	}
 
 	if err := p.Apply(ctx, req, step.Action); err != nil {
-		return state.Failed, err
+		return state.Failed, "", err
 	}
 
 	// Verification observes without the trigger, because a restart is something the pass
@@ -165,26 +171,33 @@ func enforce(ctx context.Context, step plan.Step, opts Options) (state.Resource,
 	verifyReq.Trigger = provider.NoTrigger
 	observation, err := p.Observe(ctx, verifyReq)
 	if err != nil {
-		return state.Failed, fmt.Errorf("verifying %s: %w", step.Ref, err)
+		return state.Failed, "", fmt.Errorf("verifying %s: %w", step.Ref, err)
 	}
 	return verify(step, verifyReq, observation)
 }
 
 // verify decides whether the target now holds what was declared.
-func verify(step plan.Step, req provider.Request, observation provider.Observation) (state.Resource, error) {
+//
+// A difference the provider declares uncorrectable is not a failed apply. It is drift
+// that gets reported every pass and never acted on, which is the documented behaviour
+// for a uid that does not match.
+func verify(step plan.Step, req provider.Request, observation provider.Observation) (state.Resource, string, error) {
 	if req.Present() != observation.Exists {
-		return state.Drifted, verificationError(step, "the target is still "+existence(observation.Exists))
+		return state.Drifted, "", verificationError(step, "the target is still "+existence(observation.Exists))
 	}
 	if !observation.Exists {
 		// Declared absent and gone is as verified as it gets.
-		return state.Converged, nil
+		return state.Converged, "", nil
 	}
 
 	diff := plan.Compare(step.Ref, observation.DesiredOr(req.Desired), observation)
-	if diff.Differs() {
-		return state.Drifted, verificationError(step, "these fields did not take: "+list(fieldNames(diff.Fields)))
+	if failed := diff.Correctable(); len(failed) > 0 {
+		return state.Drifted, "", verificationError(step, "these fields did not take: "+list(fieldNames(failed)))
 	}
-	return state.Converged, nil
+	if left := diff.Uncorrectable(); len(left) > 0 {
+		return state.Drifted, list(fieldNames(left)) + " differs and is not corrected", nil
+	}
+	return state.Converged, "", nil
 }
 
 func verificationError(step plan.Step, detail string) error {
@@ -226,23 +239,26 @@ func dependencyReason(ref document.Reference, r Resource) string {
 }
 
 // outcome distinguishes a pass that had nothing to do from one that did something.
-// In enforce mode a drifted resource means an apply reported success and did not
-// take, which is a failure. In observe mode it is the expected result.
-func outcome(resources []Resource, mode Mode, applied bool) state.Outcome {
+//
+// Drift is reported instead of failed in two cases, an observe-mode pass that was asked
+// not to act and a difference the provider declares uncorrectable, which no number of
+// passes will change. Drift left after an apply that claimed success is a failure, and
+// that is the one carrying an error.
+func outcome(resources []Resource, applied bool) state.Outcome {
 	drifted := false
 	for _, r := range resources {
-		switch r.State {
-		case state.Failed, state.Blocked:
+		switch {
+		case r.State == state.Failed, r.State == state.Blocked:
 			return state.OutcomeFailed
-		case state.Drifted:
+		case r.State == state.Drifted && r.Err != nil:
+			return state.OutcomeFailed
+		case r.State == state.Drifted:
 			drifted = true
 		}
 	}
 	switch {
-	case drifted && mode == Observe:
-		return state.OutcomeDrifted
 	case drifted:
-		return state.OutcomeFailed
+		return state.OutcomeDrifted
 	case applied:
 		return state.OutcomeChanged
 	default:

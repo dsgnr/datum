@@ -18,13 +18,41 @@ type FieldDiff struct {
 	Observed string
 	// Missing reads better than an empty observed value.
 	Missing bool
+	// Uncorrectable means the difference is reported and left alone.
+	Uncorrectable bool
 }
 
 func (d FieldDiff) String() string {
+	out := d.Field + " " + d.Observed + " -> " + d.Desired
 	if d.Missing {
-		return d.Field + " not set, want " + d.Desired
+		out = d.Field + " not set, want " + d.Desired
 	}
-	return d.Field + " " + d.Observed + " -> " + d.Desired
+	if d.Uncorrectable {
+		return out + " (not corrected)"
+	}
+	return out
+}
+
+// Correctable returns the differences a pass will act on.
+func (d Diff) Correctable() []FieldDiff {
+	var out []FieldDiff
+	for _, field := range d.Fields {
+		if !field.Uncorrectable {
+			out = append(out, field)
+		}
+	}
+	return out
+}
+
+// Uncorrectable returns the differences a pass reports and leaves alone.
+func (d Diff) Uncorrectable() []FieldDiff {
+	var out []FieldDiff
+	for _, field := range d.Fields {
+		if field.Uncorrectable {
+			out = append(out, field)
+		}
+	}
+	return out
 }
 
 // Diff is the comparison of one resource's desired and observed state.
@@ -65,17 +93,19 @@ func Compare(ref document.Reference, desired document.Value, observation provide
 		got, present := observation.Value(field)
 		if !present {
 			out.Fields = append(out.Fields, FieldDiff{
-				Field:   field,
-				Desired: render(want),
-				Missing: true,
+				Field:         field,
+				Desired:       render(want),
+				Missing:       true,
+				Uncorrectable: !observation.CanCorrect(field),
 			})
 			continue
 		}
 		if render(want) != render(got) {
 			out.Fields = append(out.Fields, FieldDiff{
-				Field:    field,
-				Desired:  render(want),
-				Observed: render(got),
+				Field:         field,
+				Desired:       render(want),
+				Observed:      render(got),
+				Uncorrectable: !observation.CanCorrect(field),
 			})
 		}
 	}
