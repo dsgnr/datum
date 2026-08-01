@@ -47,7 +47,10 @@ type Resource struct {
 
 	// Layers contributed to this resource, lowest precedence first.
 	Layers []string
-	// LayerDir is where relative paths such as File.desired.source resolve from.
+	// LayerDir is where relative paths such as File.desired.source resolve from. It
+	// follows the layer that set the source, not the highest-precedence layer that touched
+	// the resource, so a host layer overriding a mode does not move a path out from under
+	// the layer that owns the file.
 	LayerDir string
 	// Used lists the placeholders substitution consumed.
 	Used []Used
@@ -122,6 +125,7 @@ func Host(set document.Set, name, revision string) (Manifest, error) {
 	var errs document.Errors
 
 	precedence := map[string]int{}
+	dirs := map[string]string{}
 	for _, layer := range set.Layers {
 		ok, reasons := match.Evaluate(layer.Match, labels)
 		if !ok {
@@ -134,6 +138,7 @@ func Host(set document.Set, name, revision string) (Manifest, error) {
 			Reasons:    reasons,
 		})
 		precedence[layer.Name] = layer.Precedence
+		dirs[layer.Name] = layer.Dir
 	}
 
 	// set.Layers is already in precedence then path order, so the fold is
@@ -174,7 +179,6 @@ func Host(set document.Set, name, revision string) (Manifest, error) {
 			existing.RestartOn = mergeRefs(existing.RestartOn, resource.RestartOn)
 			existing.ReloadOn = mergeRefs(existing.ReloadOn, resource.ReloadOn)
 			existing.Layers = append(existing.Layers, layer.Name)
-			existing.LayerDir = resource.LayerDir
 			existing.Used = mergeUsed(existing.Used, sub.Used())
 		}
 	}
@@ -188,6 +192,7 @@ func Host(set document.Set, name, revision string) (Manifest, error) {
 
 	for _, ref := range order {
 		resource := merged[ref]
+		resource.LayerDir = sourceLayerDir(resource.Desired, dirs, resource.LayerDir)
 		if len(resource.RestartOn) > 0 && len(resource.ReloadOn) > 0 {
 			errs.Add(resource.Position, "%s ends up with both restartOn and reloadOn after merging layers %s",
 				ref, strings.Join(resource.Layers, ", "))
@@ -209,6 +214,27 @@ func Host(set document.Set, name, revision string) (Manifest, error) {
 		return manifest, err
 	}
 	return manifest, nil
+}
+
+// pathFields hold a path relative to a layer directory.
+var pathFields = []string{"source", "template"}
+
+// sourceLayerDir returns the directory of the layer that set the content source.
+//
+// A resource can be assembled from several layers, and only one of them declared
+// the file. `roles/web/` naming `files/nginx.conf` means `roles/web/files/nginx.conf`
+// however many higher layers later adjust the mode.
+func sourceLayerDir(desired document.Value, dirs map[string]string, fallback string) string {
+	for _, field := range pathFields {
+		value, ok := desired.Lookup(field)
+		if !ok || value.From == "" {
+			continue
+		}
+		if dir, known := dirs[value.From]; known {
+			return dir
+		}
+	}
+	return fallback
 }
 
 func findHost(set document.Set, name string) (document.Host, bool) {
