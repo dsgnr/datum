@@ -111,6 +111,10 @@ const (
 	// OutcomeChanged means actions applied and every affected resource verified.
 	OutcomeChanged
 	OutcomeFailed
+	// OutcomeDrifted only happens in observe mode, where a plan with actions in it is
+	// reported rather than applied. Calling that converged would make the word useless,
+	// and calling it failed would blame the host for doing as it was told.
+	OutcomeDrifted
 )
 
 func (o Outcome) String() string {
@@ -119,6 +123,8 @@ func (o Outcome) String() string {
 		return "changed"
 	case OutcomeFailed:
 		return "failed"
+	case OutcomeDrifted:
+		return "drifted"
 	default:
 		return "converged"
 	}

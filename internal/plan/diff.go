@@ -41,11 +41,12 @@ func (d Diff) Differs() bool {
 	return len(d.Fields) > 0
 }
 
-// compare works out which declared fields do not match what was read back.
+// Compare works out which declared fields do not match what was read back. It is
+// also how a pass verifies an action, by re-observing and comparing again.
 //
 // Only declared fields are compared, so a resource setting mode alone is not
 // drifted by ownership however that looks on the host.
-func compare(ref document.Reference, desired document.Value, observation provider.Observation) Diff {
+func Compare(ref document.Reference, desired document.Value, observation provider.Observation) Diff {
 	out := Diff{Ref: ref, Exists: observation.Exists, Occupied: observation.Found}
 
 	// The target identity field identifies the thing, it does not describe it.
@@ -127,7 +128,7 @@ func diffAll(observed observe.State, desired map[document.Reference]document.Val
 		}
 		// A provider may normalise first, which is how content becomes a digest.
 		want := result.Observation.DesiredOr(desired[result.Ref])
-		out[result.Ref] = compare(result.Ref, want, result.Observation)
+		out[result.Ref] = Compare(result.Ref, want, result.Observation)
 	}
 	return out
 }
