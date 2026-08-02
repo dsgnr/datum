@@ -1,14 +1,17 @@
 # Command line interface
 
-!!! warning "Most of these commands do not exist yet"
+!!! warning "Some of these commands do not exist yet"
 
-    Everything except `datum reconcile` and `datum status` is implemented. Those two
-    are the ones that change a machine or report on a pass that changed one, and the
-    output shown for them is illustrative.
+    `render`, `explain`, `observe`, `diff`, `plan`, `reconcile`, `status`, `validate` and
+    `affected` are implemented. `init` and `migrate` are not, and the output shown for
+    those two is illustrative.
 
     `File`, `Directory` and `Symlink` have a provider. The other types resolve and plan
     and are reported as skipped, which makes a host with any of them
     [degraded](../concepts/state.md#host-state-across-passes) rather than converged.
+
+    Applying is Linux-only. Reading a host works anywhere, since the safety rules the writing path
+    depends on have no portable equivalent.
 
 The commands map onto the pipeline, so each one stops at a different point and prints
 what it produced.
@@ -48,6 +51,15 @@ datum migrate     rewrite documents to a schema    writes local files
 `--host` is what makes the read-only commands useful from a laptop. Resolution reads only
 repository content, so rendering another host's desired state needs no access to that
 machine.
+
+!!! note "Implementation status"
+
+    Of the four, `--host` and `--repo` are the two that work. `--host` is currently required,
+    because nothing yet works out which host the local machine is, and that is
+    [enrolment](../lifecycle/enrolment.md), not a missing default. `--revision` and `--json` are not
+    implemented, and neither is fetching from a configured remote, so `--repo` is the only source of
+    documents at the moment. `datum status` has its own `--output json` because it is the one
+    command whose structured form is already [designed](status.md#machine-readable-output).
 
 ## datum render
 
@@ -174,17 +186,51 @@ Builds a plan and applies it, then verifies the affected resources.
 ```text
 $ datum reconcile
 
-update   File[nginx-config]     ok
-update   Service[nginx]         ok
-verify   File[nginx-config]     ok
-verify   Service[nginx]         ok
+host       web-002
+revision   d47726f
+manifest   sha256:8448ab72
+mode       enforce
 
-changed: 2 updated, 12 unchanged
+converged  File[motd]           update content
+converged  File[nginx-config]   create /etc/nginx/nginx.conf
+skipped    Package[nginx]       no provider for Package on this host
+skipped    Service[nginx]       no provider for Service on this host
+
+outcome    changed
+host state degraded
+resources  14 total, 5 converged, 0 drifted, 0 failed, 0 blocked, 8 skipped
+duration   21ms
 ```
+
+Resources with nothing to do are left out, since they are the majority on a healthy host and listing
+them buries the ones that matter.
 
 A plan is always built fresh from a current observation. There is no flag to apply a plan
 saved earlier, because a stored plan encodes an observation that has since gone out of
 date.
+
+Each resource is verified by reading the target again, not by trusting what the provider returned.
+An action that reported success and did not take is exactly the failure to catch, and a provider
+cannot be the judge of its own work. A resource that fails blocks everything downstream of it,
+transitively, so a dependent is never attempted against a prerequisite that is not in place.
+Unrelated resources are still reconciled, because leaving the rest of a machine unmanaged turns one
+fault into many.
+
+The [pass lock](../reconciliation/locking.md) is taken before anything is read, so two passes cannot
+observe one host while one of them is partway through changing it. A second invocation exits `3`
+rather than waiting, because a command that blocks without saying so is indistinguishable from one
+that has hung. `--wait` asks for the other behaviour, which is what a scheduled job wants and not an
+operator at a terminal.
+
+| Flag | Meaning |
+| ---- | ------- |
+| `--mode MODE` | `enforce` applies the plan, `observe` reports what differs and changes nothing. |
+| `--state DIR` | Directory for the pass lock and reports. Defaults to `/var/lib/datum`. |
+| `--wait` | Wait for another pass to finish instead of exiting `3`. |
+
+`--mode observe` runs the same observation and the same diff as `enforce`, so the drift it
+reports is exactly the drift `enforce` would act on. A pass that found work to do in that
+mode ends with the outcome `drifted` and exits `2`.
 
 ## datum status
 
@@ -193,17 +239,49 @@ Reports the result of the last pass on this host.
 ```text
 $ datum status
 
-host       web-001
-revision   8b91f20
-manifest   sha256:3f2a9c4e
-outcome    changed
-finished   2 minutes ago
+host  web-002
 
-2 updated, 12 unchanged
+desired
+  revisionAttempted  d47726f
+  revisionApplied    d47726f
+  manifest           sha256:8448ab72
+
+state
+  condition  degraded
+  mode       enforce
+
+last pass
+  outcome   changed
+  finished  2026-02-08T09:14:22Z (2m14s ago)
+  duration  21ms
+
+resources
+  total      14
+  converged  5
+  drifted    0
+  failed     0
+  blocked    0
+  skipped    8
+
+skipped    Package[nginx]   no provider for Package on this host
+skipped    Service[nginx]   no provider for Service on this host
 ```
 
 Reads a local report, not the repository or the host, so it is cheap and says
 nothing about whether the host has drifted since.
+
+| Flag | Meaning |
+| ---- | ------- |
+| `--state DIR` | Directory the reports were written to. Defaults to `/var/lib/datum`. |
+| `--output FORMAT` | `text` or `json`. |
+| `--resources` | List every resource, including the converged ones. |
+
+The resources printed under the counts are the ones that are not converged, which is the
+part somebody reading status during an incident is looking for. `--resources` prints the whole list
+for the cases where the absence of an entry is itself the question.
+
+A host that has never run says so and exits `0`, because never having reported is not the
+same as having reported a problem.
 
 ## datum init
 
@@ -291,7 +369,7 @@ human, and no agent ever performs one. Both points are covered under
 | ---- | ------- |
 | `0` | Success, and no differences were found by a read-only command. |
 | `1` | Error. Resolution failed, validation failed, or an action failed. |
-| `2` | Differences found. Only from `diff` and `plan`. |
+| `2` | Differences found. From `diff`, `plan`, an observe-mode `reconcile`, and `status` on a drifted host. |
 | `3` | Could not acquire the [pass lock](../reconciliation/locking.md). Another pass is running. |
 
 Separating code 2 from code 0 is what makes `datum diff` usable as a drift check in

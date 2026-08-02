@@ -23,12 +23,15 @@ Improving an explanation. A page that is correct and hard to follow is not finis
 
 ## What is premature
 
-No product code. No agent, no CLI, no providers, no reconciler, no APIs, no
-database.
+Nothing central. No server, no APIs, no database.
 
-The decisions being made now are the ones that are expensive to reverse. An implementation started
-before they are settled would settle them as a side effect. Scripts used to build or validate the
-documentation are fine.
+Providers are welcome, and so is anything that keeps the engine portable. A provider that reaches
+around the [boundary](docs/providers/index.md) or writes without following the [safety
+rules](docs/security/provider-safety.md) is not. Those rules were written before the code, and a
+review holds a provider to them.
+
+A change that makes a statement in `docs/` false is not finished until the statement is fixed. The
+documentation is the specification, so the two drifting apart is a defect in both.
 
 ## Making a change
 

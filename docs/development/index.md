@@ -1,8 +1,8 @@
 # Development
 
-Datum is being built specification first. The parts that resolve desired state exist, the parts that
-change a machine do not, and [project status](../introduction/project-status.md) tracks which is
-which.
+Datum is being built specification first. A complete pass runs end to end for three resource types,
+the remaining six have no provider, and [project status](../introduction/project-status.md) tracks
+which is which.
 
 The most useful contributions are still the ones that find a problem in the design before anything is
 built around it.
@@ -26,12 +26,12 @@ Improving an explanation. A page that is technically correct and hard to follow 
 
 ## What is premature
 
-Anything that changes a host. That means providers, the reconciler, the agent's scheduling and
-locking.
+Anything central. Datum resolves on the host and has no server, so a change that assumes one is a
+different design, not an addition to this one.
 
-Resolution is implemented because it reads nothing and breaks nothing. Applying state is where a
-mistake is expensive, so the rules it has to follow are written down before the code that follows
-them.
+Applying state is where a mistake is expensive, so the rules it has to follow were written before
+the code that follows them. A provider that writes without following the [safety
+rules](../security/provider-safety.md) is not an early version of one that does.
 
 A decision made incidentally by an implementation is a decision nobody argued about, and the ones
 remaining are the expensive kind.
@@ -51,16 +51,17 @@ move, which is what the label is for.
 Recording a new open question means adding the admonition where the gap is and an entry in
 [open questions](open-questions.md), so the list stays complete.
 
-## Before implementation can start
-
-The documentation phase finishes when somebody who has never seen Datum can read this site and
-come away knowing what a resource is, how identity and dependencies work, how one repository
-produces per-host desired state, what an effective manifest contains, where the provider
-boundary sits, how drift is detected, how planning differs from applying, where the trust
-boundaries are, and which parts are settled rather than proposed.
+## How the documentation and the code stay together
 
 The questions marked as blocking in [open questions](open-questions.md) are the ones that would
-otherwise be answered by accident during implementation.
+otherwise be answered by accident during implementation. Several have since been answered on purpose
+instead, which is the arrangement working.
+
+Where the implementation finds a gap the specification had not thought through, the answer goes into
+the documentation as a decision instead of staying in the code as an accident. The fourth [pass
+outcome](../concepts/reconciliation.md#pass-outcomes) arrived that way. An observe-mode pass that
+found work to do fitted none of the three outcomes that had been written down, and inventing a
+fourth in the code alone would have left the site describing a system that no longer existed.
 
 ## The pages
 
