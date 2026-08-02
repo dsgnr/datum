@@ -39,6 +39,11 @@ type pass struct {
 	graph    *graph.Graph
 	observed observe.State
 	plan     plan.Plan
+
+	// Carried so that reconcile can apply against the same providers and checkout
+	// the plan was built from.
+	providers provider.Set
+	repoRoot  string
 }
 
 // runPass resolves, observes and plans, changing nothing.
@@ -74,10 +79,12 @@ func runPass(e *env, f hostFlags) (pass, int) {
 	}
 
 	return pass{
-		manifest: manifest,
-		graph:    g,
-		observed: observed,
-		plan:     plan.Build(manifest, g, observed),
+		manifest:  manifest,
+		graph:     g,
+		observed:  observed,
+		plan:      plan.Build(manifest, g, observed),
+		providers: providers,
+		repoRoot:  result.Root,
 	}, exitOK
 }
 
