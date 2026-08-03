@@ -1,0 +1,17 @@
+{% extends "main.html" %}
+
+{% block site_meta %}
+  {{ super() }}
+{% endblock %}
+
+{#
+  The landing page renders full-bleed, so it gets the content container without
+  the article width limit the documentation pages use.
+#}
+{% block container %}
+  <div class="md-content md-content--landing" data-md-component="content">
+    <article class="md-typeset dt-landing-article">
+      {{ page.content }}
+    </article>
+  </div>
+{% endblock %}
