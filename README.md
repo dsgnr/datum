@@ -32,8 +32,8 @@ Datum is being built specification first.
 
 A complete pass runs end to end. A repository can be parsed, a host resolved into an effective
 manifest, that manifest compared against what is actually on a machine, and the resulting plan
-applied and verified. The three resource types that have a provider are `File`, `Directory` and
-`Symlink`, and the rest are reported as skipped.
+applied and verified. `File`, `Directory` and `Symlink` have a provider, and so does `Package`
+where `apt` is installed. The rest are reported as skipped.
 
 Everything above the provider boundary is portable, so most of it is developed and tested without a
 host. A provider is the only part that touches an operating system. Reading a host works anywhere.
@@ -42,9 +42,10 @@ equivalent.
 
 | Works | Not yet |
 | ----- | ------- |
-| `render`, `explain`, `validate`, `affected` | Providers for the other six resource types |
+| `render`, `explain`, `validate`, `affected` | Providers for the other five resource types |
 | `observe`, `diff`, `plan` | The agent as a resident process |
 | `reconcile`, `status` | Fetching from a remote, signature verification |
+| `Package` through `apt` | `dnf`, `apk` and `pacman` |
 | Discovery, matchers, composition, precedence | Secrets and reboots |
 | Label substitution, manifest digests | `init` and `migrate` |
 | The resource graph, cycles, duplicate targets | |
@@ -64,6 +65,7 @@ undecided, it says so instead of describing a guess.
 ```bash
 make build      # build ./bin/datum for this machine
 make test       # run the Go tests
+make test-apt   # run the apt provider against a real Debian container
 make lint       # formatting, vet and tests, which is what CI runs
 ```
 
