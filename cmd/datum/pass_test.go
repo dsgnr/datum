@@ -36,10 +36,11 @@ desired:
   state: absent
 ---
 datum: v1alpha1
-type: Package
-name: curl
+type: Service
+name: unmanaged
 desired:
-  state: present
+  state: running
+  enabled: true
 `,
 		"fleet/hosts/web-001/host.yaml": `datum: v1alpha1
 type: Host
@@ -80,8 +81,8 @@ func TestObserveSkipsTypesWithNoProvider(t *testing.T) {
 	if got.code != exitOK {
 		t.Fatalf("code = %d, output:\n%s", got.code, got.all())
 	}
-	if !strings.Contains(got.out, "no provider for Package") {
-		t.Errorf("output should say the package type is unsupported, got:\n%s", got.out)
+	if !strings.Contains(got.out, "no provider for Service") {
+		t.Errorf("output should say the service type is unsupported, got:\n%s", got.out)
 	}
 }
 
@@ -158,7 +159,7 @@ func TestPlanShowsActionsAndCounts(t *testing.T) {
 	for _, want := range []string{
 		"create   File[app-config]",
 		"remove   File[stale]",
-		"skip     Package[curl]",
+		"skip     Service[unmanaged]",
 		"provider",
 		"posix-file",
 		"1 to create, 0 to update, 1 to remove, 1 to skip, 0 unchanged",
@@ -175,7 +176,7 @@ func TestPlanReportsADegradedHost(t *testing.T) {
 	dir := hostFleet(t, t.TempDir())
 
 	got := invoke("plan", "-host", "web-001", "-repo", dir)
-	for _, want := range []string{"host state: degraded", "no provider on this host for: Package"} {
+	for _, want := range []string{"host state: degraded", "no provider on this host for: Service"} {
 		if !strings.Contains(got.out, want) {
 			t.Errorf("output should contain %q, got:\n%s", want, got.out)
 		}

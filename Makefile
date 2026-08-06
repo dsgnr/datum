@@ -7,7 +7,7 @@ STAMP    := $(VENV)/.installed
 # CGO is off because the agent has to run on a host with nothing installed on it.
 GO_BUILD := CGO_ENABLED=0 go build
 
-.PHONY: help build build-linux dist test test-linux fmt vet lint shell clean \
+.PHONY: help build build-linux dist test test-linux test-apt fmt vet lint shell clean \
 	docs-install docs-serve docs-build docs-check
 
 help:
@@ -16,6 +16,7 @@ help:
 	@echo "dist          Build every supported target into ./bin"
 	@echo "test          Run the Go tests"
 	@echo "test-linux    Run the Go tests in a Linux container"
+	@echo "test-apt      Run the apt provider against a real Debian image"
 	@echo "fmt           Format the Go sources"
 	@echo "vet           Run go vet"
 	@echo "lint          fmt check, vet and tests, which is what CI runs"
@@ -46,6 +47,15 @@ test:
 # This runs the whole suite where all of it is reachable.
 test-linux:
 	docker run --rm -v "$(CURDIR):/src" -w /src golang:1.25 go test ./...
+
+# The apt provider drives real programs that install and remove packages, so these
+# tests run in a throwaway container rather than on the machine you are sitting at.
+# The support matrix asks for behaviour tested against a real image, and this is it.
+# The golang image is itself Debian, so it has the real dpkg and apt-get rather than
+# a stand-in for them.
+test-apt:
+	docker run --rm -v "$(CURDIR):/src" -w /src golang:1.25 \
+		go test -tags integration -count=1 ./internal/provider/apt/
 
 fmt:
 	gofmt -w .
