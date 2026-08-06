@@ -11,7 +11,7 @@ GO_BUILD := CGO_ENABLED=0 go build
 # test binary into an image rather than installing a toolchain in it.
 DOCKER_ARCH := $(shell docker version --format '{{.Server.Arch}}' 2>/dev/null)
 
-.PHONY: help build build-linux dist test test-linux test-apt test-dnf test-sysctl test-systemd fmt vet lint shell clean \
+.PHONY: help build build-linux dist test test-linux test-apt test-dnf test-sysctl test-user test-systemd fmt vet lint shell clean \
 	docs-install docs-serve docs-build docs-check
 
 help:
@@ -23,6 +23,7 @@ help:
 	@echo "test-apt      Run the apt provider against a real Debian image"
 	@echo "test-dnf      Run the dnf provider against a real Fedora image"
 	@echo "test-sysctl   Run the sysctl provider against a real kernel"
+	@echo "test-user     Run the user provider against a real account database"
 	@echo "test-systemd  Run the systemd provider against a booted systemd"
 	@echo "fmt           Format the Go sources"
 	@echo "vet           Run go vet"
@@ -77,6 +78,12 @@ test-dnf:
 test-sysctl:
 	docker run --rm --privileged -v "$(CURDIR):/src" -w /src golang:1.25 \
 		go test -tags integration -count=1 ./internal/provider/procsys/
+
+# Real accounts are created and removed, so this runs in a container rather than on the
+# machine you are sitting at.
+test-user:
+	docker run --rm -v "$(CURDIR):/src" -w /src golang:1.25 \
+		go test -tags integration -count=1 ./internal/provider/linuxuser/
 
 # systemd has to be PID 1 for any of this to mean anything, which needs a privileged
 # container and a real boot rather than docker run of a single command.
