@@ -76,6 +76,15 @@ matching account, and the manifest does not describe which files to reassign.
     model where a difference is left uncorrected, since correcting it would
     orphan files.
 
+    The provider declares the field uncorrectable, so the difference appears in the diff and in the
+    plan marked as such, the resource ends the pass `drifted` and not `converged` or `failed`, and
+    the number on the host is left alone.
+
+    ```text
+    User[deploy]
+      uid  4242 -> 4343  (reported, not corrected)
+    ```
+
 ## Observation
 
 | Field | Reported |
@@ -89,9 +98,18 @@ matching account, and the manifest does not describe which files to reassign.
 | `comment` | The GECOS comment field. |
 | `password` | A digest of the stored hash, never the hash. |
 
-`home` is read from the account record, not from the filesystem, so a user whose
-home directory is recorded but missing reports the recorded path. Managing the
-directory itself needs a `Directory` resource.
+`home` is read from the account record rather than the filesystem, so a user
+whose home directory is recorded but missing reports the recorded path. Managing
+the directory requires a `Directory` resource.
+
+!!! note "Implementation status"
+
+    `User` and `Group` are implemented by the `linux-user` provider, which reads through `getent`
+    and changes through the shadow utilities. `getent` covers accounts from any configured name
+    service rather than only local ones in `/etc/passwd`.
+
+    The two utilities do not share an option table. `useradd` spells the home directory `--home-dir`
+    and `usermod` spells it `--home`.
 
 ## Removal
 

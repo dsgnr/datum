@@ -32,9 +32,8 @@ Datum is being built specification first.
 
 A complete pass runs end to end. A repository can be parsed, a host resolved into an effective
 manifest, that manifest compared against what is actually on a machine, and the resulting plan
-applied and verified. `File`, `Directory` and `Symlink` have a provider, `Package` has one
-on Debian and one on Fedora, and `Service` has one where systemd is the init system. The rest
-are reported as skipped.
+applied and verified. Eight of the nine resource types have a provider. `Repository` is
+the one that does not, and its resources are reported as skipped.
 
 Everything above the provider boundary is portable, so most of it is developed and tested without a
 host. A provider is the only part that touches an operating system. Reading a host works anywhere.
@@ -43,11 +42,13 @@ equivalent.
 
 | Works | Not yet |
 | ----- | ------- |
-| `render`, `explain`, `validate`, `affected` | Providers for the other four resource types |
+| `render`, `explain`, `validate`, `affected` | `apk` and `pacman` |
 | `observe`, `diff`, `plan` | The agent as a resident process |
 | `reconcile`, `status` | Fetching from a remote, signature verification |
-| `Package` through `apt` and `dnf` | `apk` and `pacman` |
-| `Service` through `systemd` | `User`, `Group`, `Sysctl`, `Repository` |
+| `Package` through `apt` and `dnf` | |
+| `Service` through `systemd` | A provider for `Repository` |
+| `User`, `Group` through the shadow utilities | |
+| `Sysctl` through `/proc/sys` | |
 | Discovery, matchers, composition, precedence | Secrets and reboots |
 | Label substitution, manifest digests | `init` and `migrate` |
 | The resource graph, cycles, duplicate targets | |
@@ -69,6 +70,8 @@ make build      # build ./bin/datum for this machine
 make test       # run the Go tests
 make test-apt   # run the apt provider against a real Debian container
 make test-dnf   # run the dnf provider against a real Fedora container
+make test-sysctl   # run the sysctl provider against a real kernel
+make test-user  # run the user provider against a real account database
 make test-systemd  # run the systemd provider against a booted systemd
 make lint       # formatting, vet and tests, which is what CI runs
 ```
