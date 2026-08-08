@@ -152,17 +152,22 @@ func enforce(ctx context.Context, step plan.Step, opts Options) (state.Resource,
 		Desired:  node.Resource.Desired,
 		LayerDir: node.Resource.LayerDir,
 		RepoRoot: opts.RepoRoot,
+		Trigger:  step.Trigger,
 	}
 
 	if err := p.Apply(ctx, req, step.Action); err != nil {
 		return state.Failed, err
 	}
 
-	observation, err := p.Observe(ctx, req)
+	// Verification observes without the trigger, because a restart is something the pass
+	// asked for, not a property of the target to read back.
+	verifyReq := req
+	verifyReq.Trigger = provider.NoTrigger
+	observation, err := p.Observe(ctx, verifyReq)
 	if err != nil {
 		return state.Failed, fmt.Errorf("verifying %s: %w", step.Ref, err)
 	}
-	return verify(step, req, observation)
+	return verify(step, verifyReq, observation)
 }
 
 // verify decides whether the target now holds what was declared.

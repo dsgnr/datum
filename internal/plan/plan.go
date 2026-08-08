@@ -12,6 +12,7 @@ import (
 	"github.com/dsgnr/datum/internal/document"
 	"github.com/dsgnr/datum/internal/graph"
 	"github.com/dsgnr/datum/internal/observe"
+	"github.com/dsgnr/datum/internal/provider"
 	"github.com/dsgnr/datum/internal/resolve"
 	"github.com/dsgnr/datum/internal/state"
 )
@@ -31,8 +32,10 @@ type Step struct {
 	// Err means the resource could not be read, so it cannot be planned.
 	Err error
 
-	// Triggers are the resources whose change caused this one to be updated.
+	// Triggers are the resources whose change caused this one to be updated, and
+	// Trigger is the operation they ask for.
 	Triggers []document.Reference
+	Trigger  provider.Trigger
 }
 
 // Plan is the ordered set of actions for one pass.
@@ -124,6 +127,7 @@ func Build(m resolve.Manifest, g *graph.Graph, observed observe.State) Plan {
 		// update, not a new action, to keep the set small.
 		if triggers := firedTriggers(g, ref, changed); len(triggers) > 0 {
 			step.Triggers = triggers
+			step.Trigger = triggerOp(g, ref)
 			if step.Action == state.None {
 				step.Action = state.Update
 				step.Reason = triggerReason(g, ref, triggers)
@@ -174,6 +178,20 @@ func firedTriggers(g *graph.Graph, ref document.Reference, changed map[document.
 		}
 	}
 	return out
+}
+
+// triggerOp is the operation a resource's trigger edges ask for. Declaring both
+// restartOn and reloadOn is rejected during resolution, so the first edge decides.
+func triggerOp(g *graph.Graph, ref document.Reference) provider.Trigger {
+	for _, edge := range g.Dependencies(ref) {
+		switch edge.Kind {
+		case graph.RestartOn:
+			return provider.Restart
+		case graph.ReloadOn:
+			return provider.Reload
+		}
+	}
+	return provider.NoTrigger
 }
 
 // triggerReason describes an update caused by something else changing. Several
