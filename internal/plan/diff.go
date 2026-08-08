@@ -54,7 +54,7 @@ func Compare(ref document.Reference, desired document.Value, observation provide
 
 	for _, field := range declaredFields(desired) {
 		// Fields that steer a provider have nothing on the host to compare.
-		if field == identity || !comparable(field) {
+		if field == identity || !comparable(field, desired.Map[field]) {
 			continue
 		}
 		if !observation.CanObserve(field) {
@@ -84,7 +84,6 @@ func Compare(ref document.Reference, desired document.Value, observation provide
 
 // notComparable tell a provider how to act, they do not describe a target.
 var notComparable = map[string]bool{
-	"state":           true,
 	"source":          true,
 	"template":        true,
 	"secretRef":       true,
@@ -96,8 +95,22 @@ var notComparable = map[string]bool{
 	"suite":           true,
 }
 
-func comparable(field string) bool {
+// comparable reports whether a declared field describes something on the host.
+//
+// state is two different fields wearing one name. On most types it says whether the
+// target should be there at all, which the existence check already answers and
+// comparing would double count. On Service it says running or stopped, a property of a
+// unit that is already there, and skipping it made a service somebody stopped by hand
+// look converged.
+func comparable(field string, desired document.Value) bool {
+	if field == "state" {
+		return !existenceWord(desired.Scalar)
+	}
 	return !notComparable[field]
+}
+
+func existenceWord(value string) bool {
+	return value == "present" || value == "absent"
 }
 
 func declaredFields(desired document.Value) []string {

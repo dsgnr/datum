@@ -418,3 +418,60 @@ var errRead = &readError{}
 type readError struct{}
 
 func (e *readError) Error() string { return "permission denied" }
+
+// state is two different fields wearing one name. On a Service it says running or
+// stopped, which is a property of a unit that is already there. Leaving it out of the
+// comparison made a service somebody had stopped by hand look converged.
+func TestStoppedServiceIsDrift(t *testing.T) {
+	host := providertest.New("fake", "Service")
+	host.SetFields("Service", "nginx", map[string]string{
+		"state":   "stopped",
+		"enabled": "true",
+	})
+
+	p := build(t, []resolve.Resource{
+		resource("Service", "nginx", map[string]string{"state": "running", "enabled": "true"}),
+	}, provider.NewSet(host))
+
+	step := stepFor(t, p, "Service[nginx]")
+	if step.Action != state.Update {
+		t.Fatalf("action = %s, want update", step.Action)
+	}
+	if len(step.Fields) != 1 || step.Fields[0].Field != "state" {
+		t.Errorf("fields = %v, want the state field", step.Fields)
+	}
+}
+
+// On the types where state means present or absent, existence already answers the
+// question and comparing the field as well would report drift twice.
+func TestPresentStateIsNotComparedAsAField(t *testing.T) {
+	host := providertest.New("fake", "Package")
+	host.SetFields("Package", "nginx", map[string]string{"version": "1.24.0-2"})
+
+	p := build(t, []resolve.Resource{
+		resource("Package", "nginx", map[string]string{"state": "present", "version": "1.24.0-2"}),
+	}, provider.NewSet(host))
+
+	step := stepFor(t, p, "Package[nginx]")
+	if step.Action != state.None {
+		t.Errorf("action = %s, want none. fields = %v", step.Action, step.Fields)
+	}
+}
+
+// A service that is running but should not start at boot is drift on one field only.
+func TestServiceEnabledDriftIsReported(t *testing.T) {
+	host := providertest.New("fake", "Service")
+	host.SetFields("Service", "nginx", map[string]string{
+		"state":   "running",
+		"enabled": "false",
+	})
+
+	p := build(t, []resolve.Resource{
+		resource("Service", "nginx", map[string]string{"state": "running", "enabled": "true"}),
+	}, provider.NewSet(host))
+
+	step := stepFor(t, p, "Service[nginx]")
+	if len(step.Fields) != 1 || step.Fields[0].Field != "enabled" {
+		t.Errorf("fields = %v, want just enabled", step.Fields)
+	}
+}
