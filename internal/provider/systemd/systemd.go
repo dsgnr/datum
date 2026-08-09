@@ -254,27 +254,11 @@ func boolField(req provider.Request, name string) (bool, bool) {
 	return value == "true", true
 }
 
-// validUnit rejects anything that is not a unit name.
-//
-// Arguments reach systemctl as a vector, so this is not what stops a shell
-// metacharacter. It stops a name systemctl would read as an option, and one
-// containing a path separator, which is a unit path rather than a unit.
+// A unit name is alphanumeric plus these. A path separator would make it a unit path,
+// not a unit.
 func validUnit(name string) error {
-	if name == "" {
-		return fmt.Errorf("systemd: empty unit name")
-	}
-	if strings.HasPrefix(name, "-") {
-		return fmt.Errorf("systemd: unit name %q would be read as an option", name)
-	}
-	for _, r := range name {
-		switch {
-		case r >= 'a' && r <= 'z',
-			r >= 'A' && r <= 'Z',
-			r >= '0' && r <= '9',
-			r == '-', r == '_', r == '.', r == '@', r == ':', r == '\\':
-		default:
-			return fmt.Errorf("systemd: %q is not a unit name", name)
-		}
+	if err := run.Word("unit name", name, "-_.@:\\"); err != nil {
+		return fmt.Errorf("systemd: %w", err)
 	}
 	return nil
 }

@@ -196,6 +196,31 @@ func executable(path string) bool {
 	return info.Mode().Perm()&0o111 != 0
 }
 
+// Word checks that a value can be handed to a program as itself.
+//
+// Arguments reach a program as a vector, so this is not what stops a shell
+// metacharacter. It stops a value a program would read as an option, and a value
+// carrying characters that mean something to whatever the program hands it to next.
+// kind names the thing for the error message, extra lists the punctuation allowed
+// beyond letters and digits.
+func Word(kind, value, extra string) error {
+	if value == "" {
+		return fmt.Errorf("empty %s", kind)
+	}
+	if strings.HasPrefix(value, "-") {
+		return fmt.Errorf("%s %q would be read as an option", kind, value)
+	}
+	for _, r := range value {
+		switch {
+		case r >= 'a' && r <= 'z', r >= 'A' && r <= 'Z', r >= '0' && r <= '9':
+		case strings.ContainsRune(extra, r):
+		default:
+			return fmt.Errorf("%q is not a %s", value, kind)
+		}
+	}
+	return nil
+}
+
 func firstLine(s string) string {
 	s = strings.TrimSpace(s)
 	if s == "" {

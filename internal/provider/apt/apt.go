@@ -168,39 +168,18 @@ func unknownPackage(stderr string) bool {
 		strings.Contains(lowered, "not found")
 }
 
-// validName rejects anything that is not a Debian package name.
-//
-// The runner passes arguments as a vector, so this is not what stops a shell
-// metacharacter. It stops an argument that apt-get would read as an option or as a
-// version specifier, which is a different problem.
+// A Debian package name is alphanumeric plus these, and an equals sign would turn one
+// argument into a version specifier.
 func validName(name string) error {
-	if name == "" {
-		return fmt.Errorf("apt: empty package name")
-	}
-	if strings.HasPrefix(name, "-") {
-		return fmt.Errorf("apt: package name %q would be read as an option", name)
-	}
-	for _, r := range name {
-		switch {
-		case r >= 'a' && r <= 'z',
-			r >= 'A' && r <= 'Z',
-			r >= '0' && r <= '9',
-			r == '+', r == '-', r == '.', r == ':', r == '_':
-		default:
-			return fmt.Errorf("apt: %q is not a package name", name)
-		}
+	if err := run.Word("package name", name, "+-._:"); err != nil {
+		return fmt.Errorf("apt: %w", err)
 	}
 	return nil
 }
 
-// validVersion rejects a version that would change the meaning of the argument
-// rather than pin it.
 func validVersion(version string) error {
-	if strings.ContainsAny(version, "=  \t\n") {
-		return fmt.Errorf("apt: %q is not a version", version)
-	}
-	if strings.HasPrefix(version, "-") {
-		return fmt.Errorf("apt: version %q would be read as an option", version)
+	if err := run.Word("version", version, "+-.:~"); err != nil {
+		return fmt.Errorf("apt: %w", err)
 	}
 	return nil
 }
