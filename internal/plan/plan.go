@@ -113,7 +113,7 @@ func Build(m resolve.Manifest, g *graph.Graph, observed observe.State) Plan {
 		switch {
 		case result.Skipped:
 			step.Action = state.Skip
-			step.Reason = "no provider for " + ref.Type + " on this host"
+			step.Reason = result.Reason
 
 		case result.Err != nil:
 			step.Action = state.None

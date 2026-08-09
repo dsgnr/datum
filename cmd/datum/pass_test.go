@@ -81,7 +81,7 @@ func TestObserveSkipsTypesWithNoProvider(t *testing.T) {
 	if got.code != exitOK {
 		t.Fatalf("code = %d, output:\n%s", got.code, got.all())
 	}
-	if !strings.Contains(got.out, "no provider for Service") {
+	if !strings.Contains(got.out, "no Service provider") {
 		t.Errorf("output should say the service type is unsupported, got:\n%s", got.out)
 	}
 }

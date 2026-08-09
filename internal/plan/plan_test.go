@@ -212,7 +212,7 @@ func TestNoProviderMeansSkipped(t *testing.T) {
 	if step.Action != state.Skip {
 		t.Errorf("action = %s, want skip", step.Action)
 	}
-	if !strings.Contains(step.Reason, "no provider for Service") {
+	if !strings.Contains(step.Reason, "no Service provider") {
 		t.Errorf("reason = %q", step.Reason)
 	}
 }
