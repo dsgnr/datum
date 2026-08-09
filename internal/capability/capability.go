@@ -9,6 +9,7 @@ import (
 	"github.com/dsgnr/datum/internal/provider"
 	"github.com/dsgnr/datum/internal/provider/apt"
 	"github.com/dsgnr/datum/internal/provider/posix"
+	"github.com/dsgnr/datum/internal/provider/systemd"
 )
 
 // Detect returns the capability set for this host.
@@ -16,12 +17,15 @@ import (
 // Selection is by what is installed rather than by what /etc/os-release claims, so
 // a derivative nobody has heard of works without being listed anywhere.
 //
-// Providers for the types needing an init system or a user database are not written
-// yet, so those types are absent and get skipped.
+// Providers for the types needing a user database are not written yet, so those types
+// are absent and get skipped.
 func Detect() provider.Set {
 	providers := []provider.Provider{posix.New()}
 	if apt.Detect() {
 		providers = append(providers, apt.New())
+	}
+	if systemd.Detect() {
+		providers = append(providers, systemd.New())
 	}
 	return provider.NewSet(providers...)
 }

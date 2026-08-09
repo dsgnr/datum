@@ -7,7 +7,7 @@ STAMP    := $(VENV)/.installed
 # CGO is off because the agent has to run on a host with nothing installed on it.
 GO_BUILD := CGO_ENABLED=0 go build
 
-.PHONY: help build build-linux dist test test-linux test-apt fmt vet lint shell clean \
+.PHONY: help build build-linux dist test test-linux test-apt test-systemd fmt vet lint shell clean \
 	docs-install docs-serve docs-build docs-check
 
 help:
@@ -17,6 +17,7 @@ help:
 	@echo "test          Run the Go tests"
 	@echo "test-linux    Run the Go tests in a Linux container"
 	@echo "test-apt      Run the apt provider against a real Debian image"
+	@echo "test-systemd  Run the systemd provider against a booted systemd"
 	@echo "fmt           Format the Go sources"
 	@echo "vet           Run go vet"
 	@echo "lint          fmt check, vet and tests, which is what CI runs"
@@ -56,6 +57,23 @@ test-linux:
 test-apt:
 	docker run --rm -v "$(CURDIR):/src" -w /src golang:1.25 \
 		go test -tags integration -count=1 ./internal/provider/apt/
+
+# systemd has to be PID 1 for any of this to mean anything, which needs a privileged
+# container and a real boot rather than docker run of a single command.
+test-systemd:
+	docker build -q -t datum-systemd-test test/systemd
+	docker rm -f datum-systemd >/dev/null 2>&1 || true
+	docker run -d --name datum-systemd --privileged --cgroupns=host \
+		-v /sys/fs/cgroup:/sys/fs/cgroup:rw -v "$(CURDIR):/src" -w /src \
+		datum-systemd-test >/dev/null
+	@for i in $$(seq 30); do \
+		if docker exec datum-systemd systemctl is-system-running --wait >/dev/null 2>&1; then break; fi; \
+		sleep 1; \
+	done
+	@docker exec datum-systemd go test -tags integration -count=1 ./internal/provider/systemd/; \
+		status=$$?; \
+		docker rm -f datum-systemd >/dev/null; \
+		exit $$status
 
 fmt:
 	gofmt -w .
