@@ -1,8 +1,9 @@
-# Host lifecycle
+# Installation
 
-A machine enters a fleet, participates in it for a while, and eventually leaves. Each of those
-transitions is a separate operation with its own failure modes, and treating them as one step is
-what produces fleets where nobody can say which machines are still being managed.
+Getting a machine into a fleet takes three separate operations. Installation puts the agent on it,
+enrolment gives it an identity the fleet recognises, and departure takes it out again. Each has its
+own failure modes, and treating them as one step produces fleets where nobody can say which machines
+are still being managed.
 
 ## The three phases
 
