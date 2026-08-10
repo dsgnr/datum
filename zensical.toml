@@ -97,6 +97,7 @@ nav = [
   { "Host lifecycle" = [
     "lifecycle/index.md",
     "lifecycle/installation.md",
+    "lifecycle/running.md",
     "lifecycle/enrolment.md",
     "lifecycle/decommissioning.md",
   ] },

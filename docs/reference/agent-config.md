@@ -12,6 +12,11 @@ file](../adr/0010-no-self-managed-trust-anchors.md), so a repository cannot alte
     Nothing here exists. The structure is settled to the extent that every page describing a setting
     agrees with this one, and the individual defaults are proposals.
 
+    No agent reads this file yet. What configures Datum today is command line flags, and
+    [running Datum on a host](../lifecycle/running.md) covers installing it and running passes on a
+    systemd timer. `--host`, `--repo`, `--state` and `--mode` are the flags that correspond to keys
+    below.
+
 ## The whole file
 
 ```yaml title="/etc/datum/agent.yaml"
