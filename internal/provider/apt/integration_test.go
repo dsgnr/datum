@@ -9,11 +9,15 @@ package apt
 
 import (
 	"context"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/dsgnr/datum/internal/document"
+	"github.com/dsgnr/datum/internal/provider"
 	"github.com/dsgnr/datum/internal/state"
 )
 
@@ -181,5 +185,127 @@ func TestIntegrationObserveUnknownPackage(t *testing.T) {
 	}
 	if got.Exists {
 		t.Error("a package that does not exist is not installed")
+	}
+}
+
+// The value of testing a source against real apt is that apt decides whether the stanza
+// is valid. A mock accepts anything written to it, and a deb822 field name that is
+// subtly wrong is exactly the mistake that survives a unit test.
+//
+// A local flat repository instead of a third-party one, so the test needs no network
+// and no key that would have to be committed.
+func TestASourceThisProviderWritesIsOneAptCanRead(t *testing.T) {
+	p := setup(t)
+	c := ctx(t)
+
+	// Not t.TempDir, because apt drops privilege to the _apt user to fetch and a
+	// per-test temporary directory is mode 0700. The fetch has to actually succeed
+	// for this to test more than parsing.
+	served := "/tmp/datum-apt-source"
+	if err := os.MkdirAll(served, 0o755); err != nil {
+		t.Fatalf("mkdir: %v", err)
+	}
+	t.Cleanup(func() { _ = os.RemoveAll(served) })
+	// A flat repository is a directory holding Packages. An empty index is valid and
+	// describes a source with no packages, which is all this needs.
+	if err := os.WriteFile(filepath.Join(served, "Packages"), nil, 0o644); err != nil {
+		t.Fatalf("write Packages: %v", err)
+	}
+
+	req := provider.Request{
+		Ref:    document.Reference{Type: "Repository", Name: "datum-local"},
+		Target: "datum-local",
+		Desired: document.Value{Kind: document.KindMap, Map: map[string]document.Value{
+			"id":       document.Scalar("datum-local"),
+			"url":      document.Scalar("file:" + served + "/"),
+			"unsigned": document.Scalar("true"),
+		}},
+	}
+	t.Cleanup(func() {
+		_ = p.Apply(context.Background(), req, state.Remove)
+	})
+
+	if err := p.Apply(c, req, state.Create); err != nil {
+		t.Fatalf("Apply: %v", err)
+	}
+
+	// Restricted to this source, so an unrelated archive being unreachable in the
+	// container cannot fail the assertion.
+	out, err := exec.CommandContext(c, "apt-get", "update", "-qq",
+		"-o", "Dir::Etc::sourcelist=/dev/null",
+		"-o", "Dir::Etc::sourceparts=/etc/apt/sources.list.d",
+		"-o", "APT::Get::List-Cleanup=0",
+	).CombinedOutput()
+	if err != nil {
+		t.Fatalf("apt-get update rejected the source: %v\n%s", err, out)
+	}
+	if strings.Contains(strings.ToLower(string(out)), "malformed") {
+		t.Fatalf("apt reported a malformed source:\n%s", out)
+	}
+
+	observation, err := p.Observe(c, req)
+	if err != nil {
+		t.Fatalf("Observe: %v", err)
+	}
+	if !observation.Exists {
+		t.Fatal("the source apt just read does not exist")
+	}
+
+	if err := p.Apply(c, req, state.Remove); err != nil {
+		t.Fatalf("Apply remove: %v", err)
+	}
+	if after, err := p.Observe(c, req); err != nil || after.Exists {
+		t.Fatalf("source survived removal (exists=%v, err=%v)", after.Exists, err)
+	}
+}
+
+// A real keyring has to end up somewhere apt will read it, with the stanza pointing
+// at the path it was actually written to.
+func TestASignedSourceLandsItsKeyringWhereTheStanzaPoints(t *testing.T) {
+	p := setup(t)
+	c := ctx(t)
+
+	repo := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(repo, "files"), 0o755); err != nil {
+		t.Fatalf("mkdir: %v", err)
+	}
+	key := "-----BEGIN PGP PUBLIC KEY BLOCK-----\nnot a real key\n"
+	if err := os.WriteFile(filepath.Join(repo, "files", "k.asc"), []byte(key), 0o644); err != nil {
+		t.Fatalf("write key: %v", err)
+	}
+
+	req := provider.Request{
+		Ref:    document.Reference{Type: "Repository", Name: "datum-signed"},
+		Target: "datum-signed",
+		Desired: document.Value{Kind: document.KindMap, Map: map[string]document.Value{
+			"id":         document.Scalar("datum-signed"),
+			"url":        document.Scalar("https://packages.example.com/debian"),
+			"suite":      document.Scalar("stable"),
+			"signingKey": document.Scalar("files/k.asc"),
+		}},
+		RepoRoot: repo,
+	}
+	t.Cleanup(func() {
+		_ = p.Apply(context.Background(), req, state.Remove)
+	})
+
+	if err := p.Apply(c, req, state.Create); err != nil {
+		t.Fatalf("Apply: %v", err)
+	}
+
+	stanza, err := os.ReadFile("/etc/apt/sources.list.d/datum-signed.sources")
+	if err != nil {
+		t.Fatalf("reading stanza: %v", err)
+	}
+	const wantPath = "/etc/apt/keyrings/datum-signed.asc"
+	if !strings.Contains(string(stanza), "Signed-By: "+wantPath) {
+		t.Fatalf("stanza does not point at the keyring:\n%s", stanza)
+	}
+	onDisk, err := os.ReadFile(wantPath)
+	if err != nil {
+		t.Fatalf("keyring is not where the stanza points: %v", err)
+	}
+	if string(onDisk) != key {
+		t.Errorf("keyring content = %q", onDisk)
 	}
 }
