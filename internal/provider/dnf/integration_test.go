@@ -12,11 +12,15 @@ package dnf
 
 import (
 	"context"
+	"os"
 	"os/exec"
+	"path/filepath"
 	"strings"
 	"testing"
 	"time"
 
+	"github.com/dsgnr/datum/internal/document"
+	"github.com/dsgnr/datum/internal/provider"
 	"github.com/dsgnr/datum/internal/state"
 )
 
@@ -192,5 +196,114 @@ func TestIntegrationObserveUnknownPackage(t *testing.T) {
 	}
 	if got.Exists {
 		t.Error("a package that does not exist is not installed")
+	}
+}
+
+// dnf decides whether a repo file is valid, which is the part a mock cannot check. A
+// local directory is served so the test needs no network, and `dnf repolist` is asked
+// about this source specifically.
+func TestARepoFileThisProviderWritesIsOneDnfCanRead(t *testing.T) {
+	p := setup(t)
+	c := ctx(t)
+
+	served := t.TempDir()
+	req := provider.Request{
+		Ref:    document.Reference{Type: "Repository", Name: "datum-local"},
+		Target: "datum-local",
+		Desired: document.Value{Kind: document.KindMap, Map: map[string]document.Value{
+			"id":       document.Scalar("datum-local"),
+			"url":      document.Scalar("file://" + served),
+			"unsigned": document.Scalar("true"),
+			"priority": document.Scalar("20"),
+		}},
+	}
+	t.Cleanup(func() {
+		_ = p.Apply(context.Background(), req, state.Remove)
+	})
+
+	if err := p.Apply(c, req, state.Create); err != nil {
+		t.Fatalf("Apply: %v", err)
+	}
+
+	// repolist parses every repo file, so a malformed one shows up here. The source
+	// is disabled for the query because an empty directory has no metadata to fetch.
+	out, err := exec.CommandContext(c, "dnf", "repolist", "--all").CombinedOutput()
+	if err != nil {
+		t.Fatalf("dnf repolist failed: %v\n%s", err, out)
+	}
+	if !strings.Contains(string(out), "datum-local") {
+		t.Fatalf("dnf does not list the source:\n%s", out)
+	}
+
+	observation, err := p.Observe(c, req)
+	if err != nil {
+		t.Fatalf("Observe: %v", err)
+	}
+	if !observation.Exists {
+		t.Fatal("the source dnf just listed does not exist")
+	}
+	if got, _ := observation.Value("priority"); got.Scalar != "20" {
+		t.Errorf("observed priority = %q", got.Scalar)
+	}
+
+	if err := p.Apply(c, req, state.Remove); err != nil {
+		t.Fatalf("Apply remove: %v", err)
+	}
+	after, err := exec.CommandContext(c, "dnf", "repolist", "--all").CombinedOutput()
+	if err != nil {
+		t.Fatalf("dnf repolist after removal: %v\n%s", err, after)
+	}
+	if strings.Contains(string(after), "datum-local") {
+		t.Errorf("dnf still lists a removed source:\n%s", after)
+	}
+}
+
+// The key has to land where gpgkey points, or dnf refuses everything from the source
+// the first time it tries to verify a package.
+func TestASignedSourceLandsItsKeyWhereGpgkeyPoints(t *testing.T) {
+	p := setup(t)
+	c := ctx(t)
+
+	repo := t.TempDir()
+	if err := os.MkdirAll(filepath.Join(repo, "files"), 0o755); err != nil {
+		t.Fatalf("mkdir: %v", err)
+	}
+	key := "-----BEGIN PGP PUBLIC KEY BLOCK-----\nnot a real key\n"
+	if err := os.WriteFile(filepath.Join(repo, "files", "k.asc"), []byte(key), 0o644); err != nil {
+		t.Fatalf("write key: %v", err)
+	}
+
+	req := provider.Request{
+		Ref:    document.Reference{Type: "Repository", Name: "datum-signed"},
+		Target: "datum-signed",
+		Desired: document.Value{Kind: document.KindMap, Map: map[string]document.Value{
+			"id":         document.Scalar("datum-signed"),
+			"url":        document.Scalar("https://rpm.example.com/fedora"),
+			"signingKey": document.Scalar("files/k.asc"),
+		}},
+		RepoRoot: repo,
+	}
+	t.Cleanup(func() {
+		_ = p.Apply(context.Background(), req, state.Remove)
+	})
+
+	if err := p.Apply(c, req, state.Create); err != nil {
+		t.Fatalf("Apply: %v", err)
+	}
+
+	text, err := os.ReadFile("/etc/yum.repos.d/datum-signed.repo")
+	if err != nil {
+		t.Fatalf("reading repo file: %v", err)
+	}
+	const wantPath = "/etc/pki/rpm-gpg/datum-signed.asc"
+	if !strings.Contains(string(text), "gpgkey=file://"+wantPath) {
+		t.Fatalf("repo file does not point at the key:\n%s", text)
+	}
+	onDisk, err := os.ReadFile(wantPath)
+	if err != nil {
+		t.Fatalf("key is not where gpgkey points: %v", err)
+	}
+	if string(onDisk) != key {
+		t.Errorf("key content = %q", onDisk)
 	}
 }

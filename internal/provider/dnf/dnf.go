@@ -19,23 +19,31 @@ import (
 	"github.com/dsgnr/datum/internal/state"
 )
 
-// Provider satisfies Package where rpm and dnf are the package manager.
+// Provider satisfies Package and Repository where rpm and dnf are the package manager.
 type Provider struct {
 	runner run.Runner
+	// root is where the source and key directories live, as a field so the tests can
+	// write into a temporary tree.
+	root string
 }
 
 func New() *Provider {
-	return &Provider{runner: run.Exec{}}
+	return &Provider{runner: run.Exec{}, root: "/"}
 }
 
 // NewWith returns a provider driving a supplied runner, which is how the tests run
 // without rpm.
 func NewWith(runner run.Runner) *Provider {
-	return &Provider{runner: runner}
+	return &Provider{runner: runner, root: "/"}
+}
+
+// NewIn returns a provider writing its source files beneath root.
+func NewIn(runner run.Runner, root string) *Provider {
+	return &Provider{runner: runner, root: root}
 }
 
 func (p *Provider) Name() string    { return "dnf" }
-func (p *Provider) Types() []string { return []string{"Package"} }
+func (p *Provider) Types() []string { return []string{"Package", "Repository"} }
 
 // versionFormat is the form rpm reports and dnf accepts in a name-version argument.
 // Epoch is left out because it is usually unset and dnf takes the argument without it.
@@ -47,6 +55,9 @@ const versionFormat = `--queryformat=%{VERSION}-%{RELEASE}\n`
 // where apt's assumption of stderr would have quietly turned every absent package
 // into a failure.
 func (p *Provider) Observe(ctx context.Context, req provider.Request) (provider.Observation, error) {
+	if req.Ref.Type == "Repository" {
+		return p.observeRepository(req)
+	}
 	if err := validName(req.Target); err != nil {
 		return provider.Observation{}, err
 	}
@@ -72,6 +83,9 @@ func (p *Provider) Observe(ctx context.Context, req provider.Request) (provider.
 
 // Apply installs, moves or removes the package.
 func (p *Provider) Apply(ctx context.Context, req provider.Request, action state.Action) error {
+	if req.Ref.Type == "Repository" {
+		return p.applyRepository(req, action)
+	}
 	if err := validName(req.Target); err != nil {
 		return err
 	}
