@@ -56,13 +56,16 @@ func (s State) Unsupported() []string {
 	return out
 }
 
-// skipReason names the host in the terms selection used, so the gap is actionable
-// rather than merely reported.
-func skipReason(typeName, host string) string {
-	if host == "" {
+// skipReason says why nothing serves a type, preferring the explanation selection
+// recorded over a guess from the distribution alone.
+func skipReason(typeName string, providers provider.Set) string {
+	if reason, ok := providers.Unserved[typeName]; ok && reason != "" {
+		return "no " + typeName + " provider on this host: " + reason
+	}
+	if providers.Host == "" {
 		return "no " + typeName + " provider on this host"
 	}
-	return "no " + typeName + " provider supports " + host
+	return "no " + typeName + " provider supports " + providers.Host
 }
 
 // Host reads every resource in a graph.
@@ -84,7 +87,7 @@ func Host(ctx context.Context, g *graph.Graph, providers provider.Set, repoRoot 
 		p, supported := providers.For(ref.Type)
 		if !supported {
 			result.Skipped = true
-			result.Reason = skipReason(ref.Type, providers.Host)
+			result.Reason = skipReason(ref.Type, providers)
 		} else {
 			result.Provider = p.Name()
 			observation, err := p.Observe(ctx, provider.Request{

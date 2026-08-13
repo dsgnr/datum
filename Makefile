@@ -7,7 +7,11 @@ STAMP    := $(VENV)/.installed
 # CGO is off because the agent has to run on a host with nothing installed on it.
 GO_BUILD := CGO_ENABLED=0 go build
 
-.PHONY: help build build-linux dist test test-linux test-apt test-systemd fmt vet lint shell clean \
+# The architecture Docker runs containers as, for the integration tests that ship a
+# test binary into an image rather than installing a toolchain in it.
+DOCKER_ARCH := $(shell docker version --format '{{.Server.Arch}}' 2>/dev/null)
+
+.PHONY: help build build-linux dist test test-linux test-apt test-dnf test-systemd fmt vet lint shell clean \
 	docs-install docs-serve docs-build docs-check
 
 help:
@@ -17,6 +21,7 @@ help:
 	@echo "test          Run the Go tests"
 	@echo "test-linux    Run the Go tests in a Linux container"
 	@echo "test-apt      Run the apt provider against a real Debian image"
+	@echo "test-dnf      Run the dnf provider against a real Fedora image"
 	@echo "test-systemd  Run the systemd provider against a booted systemd"
 	@echo "fmt           Format the Go sources"
 	@echo "vet           Run go vet"
@@ -57,6 +62,13 @@ test-linux:
 test-apt:
 	docker run --rm -v "$(CURDIR):/src" -w /src golang:1.25 \
 		go test -tags integration -count=1 ./internal/provider/apt/
+
+# Fedora ships an older Go than this module needs, so the test binary is compiled here
+# and carried in. What matters is the real rpm and dnf, not which Go built the test.
+test-dnf:
+	CGO_ENABLED=0 GOOS=linux GOARCH=$(DOCKER_ARCH) \
+		go test -c -tags integration -o bin/dnf.test ./internal/provider/dnf/
+	docker run --rm -v "$(CURDIR)/bin/dnf.test:/dnf.test:ro" fedora:41 /dnf.test -test.count=1 -test.v
 
 # systemd has to be PID 1 for any of this to mean anything, which needs a privileged
 # container and a real boot rather than docker run of a single command.
