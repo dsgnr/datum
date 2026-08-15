@@ -22,6 +22,8 @@ type Target struct {
 	Fields map[string]string
 	// Unobservable fields this target cannot report.
 	Unobservable []string
+	// Uncorrectable fields this target reports and never changes.
+	Uncorrectable []string
 }
 
 // Provider is a fake host, keyed by type and target identity.
@@ -106,10 +108,11 @@ func (p *Provider) Observe(ctx context.Context, req provider.Request) (provider.
 	}
 
 	out := provider.Observation{
-		Exists:       t.Exists,
-		Found:        t.Found,
-		Fields:       map[string]document.Value{},
-		Unobservable: t.Unobservable,
+		Exists:        t.Exists,
+		Found:         t.Found,
+		Fields:        map[string]document.Value{},
+		Unobservable:  t.Unobservable,
+		Uncorrectable: t.Uncorrectable,
 	}
 	for name, value := range t.Fields {
 		out.Fields[name] = document.Scalar(value)

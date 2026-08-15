@@ -400,3 +400,86 @@ func TestCancellationStopsThePass(t *testing.T) {
 		t.Error("a cancelled pass should apply nothing")
 	}
 }
+
+// A uid that does not match is drift Datum reports and refuses to act on, because
+// changing it would leave every file owned by the old one belonging to nobody. It is
+// not a failed apply, and no number of passes will change it.
+func TestUncorrectableFieldIsReportedNotFailed(t *testing.T) {
+	host := providertest.New("fake", "User")
+	host.Set("User", "deploy", providertest.Target{
+		Exists:        true,
+		Fields:        map[string]string{"uid": "1001", "shell": "/bin/sh"},
+		Uncorrectable: []string{"uid"},
+	})
+	host.Unchanging("User", "deploy")
+
+	result := run(t, []resolve.Resource{
+		resource("User", "deploy", map[string]string{"uid": "1500", "shell": "/bin/sh"}),
+	}, provider.NewSet(host), Enforce)
+
+	entry := resourceFor(t, result, "User[deploy]")
+	if entry.State != state.Drifted {
+		t.Errorf("state = %s, want drifted", entry.State)
+	}
+	if entry.Err != nil {
+		t.Errorf("uncorrectable drift is not a failure, got %v", entry.Err)
+	}
+	if !strings.Contains(entry.Reason, "uid") {
+		t.Errorf("reason = %q, want it to name the field", entry.Reason)
+	}
+	if result.Outcome != state.OutcomeDrifted {
+		t.Errorf("outcome = %s, want drifted", result.Outcome)
+	}
+	if result.HostState != state.HostDrifted {
+		t.Errorf("host state = %s, want drifted", result.HostState)
+	}
+}
+
+// A correctable field that did not take is still a failure, even alongside one that
+// was never going to be corrected.
+func TestCorrectableDriftAlongsideUncorrectableStillFails(t *testing.T) {
+	host := providertest.New("fake", "User")
+	host.Set("User", "deploy", providertest.Target{
+		Exists:        true,
+		Fields:        map[string]string{"uid": "1001", "shell": "/bin/sh"},
+		Uncorrectable: []string{"uid"},
+	})
+	host.Unchanging("User", "deploy")
+
+	result := run(t, []resolve.Resource{
+		resource("User", "deploy", map[string]string{"uid": "1500", "shell": "/bin/bash"}),
+	}, provider.NewSet(host), Enforce)
+
+	entry := resourceFor(t, result, "User[deploy]")
+	if entry.State != state.Drifted {
+		t.Errorf("state = %s", entry.State)
+	}
+	if entry.Err == nil {
+		t.Error("the shell not taking is a verification failure")
+	}
+	if result.Outcome != state.OutcomeFailed {
+		t.Errorf("outcome = %s, want failed", result.Outcome)
+	}
+}
+
+// Drift nothing can correct does not block what depends on the resource, because the
+// resource is otherwise in the state that was asked for.
+func TestUncorrectableDriftDoesNotBlockDependents(t *testing.T) {
+	host := providertest.New("fake", "User", "File")
+	host.Set("User", "deploy", providertest.Target{
+		Exists:        true,
+		Fields:        map[string]string{"uid": "1001"},
+		Uncorrectable: []string{"uid"},
+	})
+	host.Unchanging("User", "deploy")
+
+	user := resource("User", "deploy", map[string]string{"uid": "1500"})
+	file := resource("File", "key", map[string]string{"path": "/home/deploy/.ssh/key", "mode": "0600"})
+	file.Requires = []document.Reference{user.Ref}
+
+	result := run(t, []resolve.Resource{file, user}, provider.NewSet(host), Enforce)
+
+	if got := resourceFor(t, result, "File[key]").State; got != state.Converged {
+		t.Errorf("File state = %s, want converged", got)
+	}
+}

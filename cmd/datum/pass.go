@@ -204,10 +204,16 @@ func runDiff(e *env, args []string) int {
 }
 
 func fieldChange(d plan.FieldDiff) string {
+	out := oneLine(d.Observed) + " -> " + oneLine(d.Desired)
 	if d.Missing {
-		return "not set, want " + oneLine(d.Desired)
+		out = "not set, want " + oneLine(d.Desired)
 	}
-	return oneLine(d.Observed) + " -> " + oneLine(d.Desired)
+	// Said on the line instead of in a note, because a difference nothing will act on
+	// otherwise looks like a plan that did not work.
+	if d.Uncorrectable {
+		return out + "  (reported, not corrected)"
+	}
+	return out
 }
 
 func runPlan(e *env, args []string) int {
