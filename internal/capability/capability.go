@@ -16,6 +16,7 @@ import (
 	"github.com/dsgnr/datum/internal/provider"
 	"github.com/dsgnr/datum/internal/provider/apt"
 	"github.com/dsgnr/datum/internal/provider/dnf"
+	"github.com/dsgnr/datum/internal/provider/linuxuser"
 	"github.com/dsgnr/datum/internal/provider/posix"
 	"github.com/dsgnr/datum/internal/provider/procsys"
 	"github.com/dsgnr/datum/internal/provider/systemd"
@@ -53,6 +54,7 @@ func candidates() []candidate {
 		{provider: posix.New()},
 		{provider: apt.New(), distributions: []string{"debian"}},
 		{provider: dnf.New(), distributions: []string{"fedora", "rhel"}},
+		{provider: linuxuser.New(), applicable: linuxuser.Detect, needs: "the shadow utilities"},
 		{provider: procsys.New(), applicable: procsys.Detect, needs: "a writable /proc/sys"},
 		{provider: systemd.New(), applicable: systemd.Detect, needs: "systemd as the init system"},
 	}
