@@ -57,6 +57,9 @@ The ordering matters, because unenrolling first removes the means of emptying it
 
 ## The pages
 
+[Running Datum on a host](running.md)
+:   Installing the binary, the state directory, and running passes from a systemd timer.
+
 [Installation](installation.md)
 :   Getting the agent onto a machine, what an image may and may not contain, and how that fits
     with cloud-init, network installation and autoscaling.
