@@ -184,3 +184,111 @@ func TestAffectedRejectsAnUnknownRevision(t *testing.T) {
 		t.Errorf("code = %d stderr = %q", got.code, got.err)
 	}
 }
+
+// nested returns file names moved under a subdirectory, which is how a fleet sits in a
+// repository that holds other things as well.
+func nested(files map[string]string, under string) map[string]string {
+	out := make(map[string]string, len(files)+1)
+	for name, body := range files {
+		out[filepath.Join(under, name)] = body
+	}
+	return out
+}
+
+// The fleet is not always the repository root, and a repository can hold more than one.
+// Reading history has to look in the same subdirectory the command was pointed at,
+// because a worktree is a checkout of the whole repository and walking its root finds
+// every fleet in it.
+func TestAffectedWorksWhenTheFleetIsASubdirectory(t *testing.T) {
+	first := nested(worked(), "infra/production")
+	// A second fleet elsewhere in the same repository, which is what makes walking
+	// the worktree root ambiguous.
+	for name, body := range nested(worked(), "infra/staging") {
+		first[name] = body
+	}
+	first["services/api/main.go"] = "package main\n"
+
+	second := nested(map[string]string{
+		"fleet/roles/web/files/nginx.conf": "worker_processes 4;\n",
+	}, "infra/production")
+
+	repo := gitFleet(t, first, second)
+	fleetDir := filepath.Join(repo, "infra", "production", "fleet")
+
+	got := invoke("affected", "-from", "HEAD~1", "-to", "HEAD", "-repo", fleetDir)
+	if got.code != exitOK {
+		t.Fatalf("code = %d, output:\n%s", got.code, got.all())
+	}
+	if !strings.Contains(got.out, "web-001") {
+		t.Errorf("output should name the affected host, got:\n%s", got.out)
+	}
+	if strings.Contains(got.all(), "more than one Fleet") {
+		t.Errorf("only the fleet that was asked for should have been read, got:\n%s", got.all())
+	}
+}
+
+// The other commands take the fleet directory directly, so they only need the revision
+// to come from the repository the subdirectory belongs to.
+func TestRevisionIsFoundFromASubdirectory(t *testing.T) {
+	repo := gitFleet(t, nested(worked(), "infra"), nil)
+	fleetDir := filepath.Join(repo, "infra", "fleet")
+
+	where := inspect(fleetDir)
+	if where.Toplevel == "" {
+		t.Fatal("the repository root should have been found")
+	}
+	if where.Prefix != "infra/fleet" {
+		t.Errorf("Prefix = %q, want infra/fleet", where.Prefix)
+	}
+	if got := where.Revision(); got == "(no revision)" {
+		t.Error("the revision should have been read")
+	}
+
+	got := invoke("render", "-host", "web-001", "-repo", fleetDir)
+	if got.code != exitOK {
+		t.Fatalf("code = %d, output:\n%s", got.code, got.all())
+	}
+}
+
+// A fleet at the repository root has no prefix, and nothing should change for it.
+func TestFleetAtTheRepositoryRootHasNoPrefix(t *testing.T) {
+	repo := gitFleet(t, worked(), nil)
+
+	where := inspect(repo)
+	if where.Prefix != "" {
+		t.Errorf("Prefix = %q, want empty", where.Prefix)
+	}
+	if where.fleetIn("/tmp/tree") != "/tmp/tree" {
+		t.Errorf("fleetIn = %q", where.fleetIn("/tmp/tree"))
+	}
+}
+
+// Outside a work tree there is no revision and no root, and the read-only commands
+// still work because resolution does not need either.
+func TestDirectoryOutsideAGitRepository(t *testing.T) {
+	dir := fleet(t, worked())
+
+	where := inspect(dir)
+	if where.Toplevel != "" {
+		t.Errorf("Toplevel = %q, want empty", where.Toplevel)
+	}
+	if got := where.Revision(); got != "(no revision)" {
+		t.Errorf("Revision = %q", got)
+	}
+
+	if got := invoke("render", "-host", "web-001", "-repo", dir); got.code != exitOK {
+		t.Fatalf("code = %d, output:\n%s", got.code, got.all())
+	}
+}
+
+func TestAffectedOutsideAGitRepositoryIsAnError(t *testing.T) {
+	dir := fleet(t, worked())
+
+	got := invoke("affected", "-from", "HEAD~1", "-repo", dir)
+	if got.code != exitError {
+		t.Fatalf("code = %d, want %d", got.code, exitError)
+	}
+	if !strings.Contains(got.err, "not inside a git repository") {
+		t.Errorf("stderr = %q", got.err)
+	}
+}

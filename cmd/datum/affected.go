@@ -40,12 +40,18 @@ func runAffected(e *env, args []string) int {
 		return exitError
 	}
 
-	before, err := resolveAt(*repo, *from)
+	where := inspect(*repo)
+	if where.Toplevel == "" {
+		e.errorf("datum affected: %s is not inside a git repository\n", *repo)
+		return exitError
+	}
+
+	before, err := resolveAt(where, *from)
 	if err != nil {
 		e.errorf("%v\n", err)
 		return exitError
 	}
-	after, err := resolveAt(*repo, *to)
+	after, err := resolveAt(where, *to)
 	if err != nil {
 		e.errorf("%v\n", err)
 		return exitError
@@ -73,7 +79,7 @@ type snapshot struct {
 
 // resolveAt resolves every host at one revision, using a worktree so that the caller's
 // checkout is left alone.
-func resolveAt(repo, revision string) (snapshot, error) {
+func resolveAt(where checkout, revision string) (snapshot, error) {
 	dir, err := os.MkdirTemp("", "datum-worktree-")
 	if err != nil {
 		return snapshot{}, err
@@ -81,16 +87,18 @@ func resolveAt(repo, revision string) (snapshot, error) {
 	defer os.RemoveAll(dir)
 
 	tree := filepath.Join(dir, "tree")
-	add := exec.Command("git", "-C", repo, "worktree", "add", "--quiet", "--detach", tree, revision)
+	add := exec.Command("git", "-C", where.Dir, "worktree", "add", "--quiet", "--detach", tree, revision)
 	if out, err := add.CombinedOutput(); err != nil {
 		return snapshot{}, fmt.Errorf("cannot read revision %s: %s", revision, strings.TrimSpace(string(out)))
 	}
 	defer func() {
-		remove := exec.Command("git", "-C", repo, "worktree", "remove", "--force", tree)
+		remove := exec.Command("git", "-C", where.Dir, "worktree", "remove", "--force", tree)
 		_ = remove.Run()
 	}()
 
-	result, err := discover.Walk(tree)
+	// A worktree is a checkout of the whole repository, so the fleet is wherever it sits
+	// below the root and not at the top of the tree.
+	result, err := discover.Walk(where.fleetIn(tree))
 	if err != nil {
 		return snapshot{}, fmt.Errorf("at revision %s: %w", revision, err)
 	}

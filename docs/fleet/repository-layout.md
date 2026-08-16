@@ -172,10 +172,36 @@ Datum has no view on whether that opinion is correct. The gaps between the value
 exist so that a layer can be inserted between two others without renumbering
 anything.
 
+## The fleet directory and the repository
+
+The fleet root is the directory holding the `Fleet` document. It does not have to be the
+repository root, so a fleet can live in a subdirectory of a repository that holds other
+things.
+
+```text
+monorepo/
+  services/
+  infra/
+    fleet/
+      datum.yaml
+      base/
+      hosts/
+```
+
+Every command takes the fleet directory, not the repository. `--repo infra/fleet` is what
+the example above needs. The revision still comes from the repository the directory
+belongs to, since git finds the root itself.
+
+`datum affected` is the one command that reads history. It checks out each revision in a worktree,
+which is a copy of the whole repository, and looks for the fleet at the same path below the root.
+Walking the worktree root instead would find every fleet in the repository rather than the one asked
+for.
+
 ## Discovery
 
 Datum walks the fleet directory, reads every YAML document it finds, and dispatches
-on `datum` and `type`. Paths matched by `exclude` are skipped.
+on `datum` and `type`. Paths matched by `exclude` are skipped. Files outside the fleet
+root are not read, so unrelated YAML elsewhere in a repository is not a concern.
 
 A document with an unrecognised `type` is an error and not something ignored,
 because silently skipping a misspelled `type` would mean a resource quietly not
