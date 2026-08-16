@@ -1,9 +1,8 @@
 # Project status
 
-Datum is being built, specification first. A complete pass runs end to end for five
-resource types, which is enough to install a package, write its configuration and restart
-the service that reads it. The remaining four resolve and plan without a provider to apply
-them.
+Datum is being built, specification first. A complete pass runs end to end for eight of the
+nine resource types. `Repository` is the one with no provider, so its resources resolve and
+plan and are reported as skipped.
 
 | Part | State |
 | ---- | ----- |
@@ -21,11 +20,14 @@ them.
 | `Package` through `apt`, tested against Debian | Implemented |
 | `Package` through `dnf`, tested against Fedora | Implemented |
 | Provider selection from `os-release` | Implemented |
+| `Sysctl` through `/proc/sys` and `/etc/sysctl.d` | Implemented |
+| `User` and `Group` through the shadow utilities | Implemented |
+| Drift a provider declares uncorrectable | Implemented |
 | `Service` through `systemd`, tested against a booted systemd | Implemented |
 | Applying, verification and failure propagation | Implemented |
 | The pass lock and pass reports | Implemented |
 | `datum reconcile`, `datum status` | Implemented |
-| Providers for the other four types | Not started |
+| A provider for `Repository` | Not started |
 | The agent as a resident process, scheduling, fetching from a remote | Not started |
 | Secret resolution and reboot handling | Not started |
 

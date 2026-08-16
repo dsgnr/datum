@@ -20,6 +20,27 @@ Field-level detail lets a plan state which fields change and lets a provider
 make a narrow change. Correcting a mode does not rewrite content, which matters
 for files that other services watch.
 
+## Drift no provider will correct
+
+Almost all drift is corrected on the pass that finds it. The exception is a
+[uid](../resources/types/user.md#identifiers) or
+[gid](../resources/types/group.md#identifiers) that does not match what the
+manifest declares. Changing either would leave every file owned by the old
+number belonging to nobody, and the manifest does not say which files to
+reassign.
+
+A provider declares such a field uncorrectable. The difference is compared and reported in the diff
+and in the plan without being acted on, and the resource ends the pass as `drifted`. The plan marks
+the field on its own line so that an uncorrectable difference is distinguishable from a failed
+change.
+
+```text
+User[deploy]
+  uid  4242 -> 4343  (reported, not corrected)
+```
+
+Reporting the difference keeps the mismatch visible while allowing the rest of the pass to converge.
+
 ## The repository is a source of drift
 
 Drift does not only mean the host changed. A commit that alters a resource

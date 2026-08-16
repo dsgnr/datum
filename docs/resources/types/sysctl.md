@@ -78,6 +78,10 @@ the provider to declare the paths it owns.
 | `value` | The value the running kernel reports. |
 | `persisted` | Whether the provider's file holds the same value. |
 
+`persisted` is measured against the value the manifest asks for. Where somebody has changed the
+running kernel by hand, the file still holds the declared value and `persisted` reports a match,
+which leaves `value` as the field that shows the difference.
+
 Observation reads the running value and the provider's own file. Other files
 under `/etc/sysctl.d` are not examined. Where a lower-numbered file from a
 package sets the same parameter, load order decides the running value, and
@@ -113,3 +117,13 @@ Writing to `/etc/sysctl.d` is supported across the distributions this design
 targets. A container without a writable `/proc/sys` cannot support the resource
 at all, and that is reported as its own condition rather than as a permission
 error.
+
+!!! note "Implementation status"
+
+    `Sysctl` is implemented by the `proc-sys` provider. It is selected wherever `/proc/sys` is
+    writable, and elsewhere the resource is skipped with that reason recorded once per resource.
+
+    Existence means Datum manages the parameter, measured by whether its file in
+    `/etc/sysctl.d` is present. It says nothing about whether the kernel has the
+    key. A key the kernel does not have reports an unobservable value and fails
+    on apply, since `/proc/sys` does not allow a file to be created.

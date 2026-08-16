@@ -61,7 +61,13 @@ desired:
 
 As with `User`, a group that exists with a different gid than the one declared is
 drift that Datum reports and does not correct, because changing a gid orphans the
-group ownership of every file that refers to it.
+group ownership of every file that refers to it. The provider declares the field
+[uncorrectable](../../concepts/drift.md#drift-no-provider-will-correct), so the
+difference is reported on every pass and the number is left alone.
+
+Since `gid` is the only field a group has, that makes an update to an existing group a
+no-op by construction. A `Group` resource either creates the group, removes it, or reports
+a gid that will not be changed.
 
 ## Removal
 

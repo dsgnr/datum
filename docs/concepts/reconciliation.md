@@ -50,7 +50,7 @@ not converged the host.
 | `converged` | The plan was empty. Nothing was applied. |
 | `changed` | Actions were applied and every affected resource verified. |
 | `failed` | One or more actions failed, or verification did not confirm the intended state. |
-| `drifted` | The plan had actions in it and the host is in [observe mode](reconciliation-modes.md), so nothing was applied. |
+| `drifted` | Drift was reported and not applied, either because the host is in [observe mode](reconciliation-modes.md) or because the difference is one no provider corrects. |
 
 A failed pass usually leaves the host partially changed, which is expected and
 not a defect. Actions that succeeded before the failure are not undone.
@@ -59,6 +59,12 @@ not a defect. Actions that succeeded before the failure are not undone.
 the other three. The pass neither converged the host nor failed, and reporting
 the drift is the requested behaviour. Folding it into `converged` would let a
 host with known drift report the same outcome as one with none.
+
+An enforce-mode pass reports it for a second reason. A [uid that does not
+match](../resources/types/user.md#identifiers) is drift Datum will not act on, so the pass neither
+converged nor failed, and no number of further passes will change that. The distinction that matters
+is whether an action was attempted, since drift left behind by an apply that claimed success is a
+failure while drift nobody tried to correct is a report.
 
 ## There is no rollback
 

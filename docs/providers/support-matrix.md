@@ -20,19 +20,23 @@ and work-in-progress branches do not qualify.
 | `File` | `posix-file` | Reads and writes on Linux, reads elsewhere |
 | `Directory` | `posix-file` | Reads and writes on Linux, reads elsewhere |
 | `Service` | `systemd` | Supported on Debian |
-| `User` | built in | Not implemented |
-| `Group` | built in | Not implemented |
-| `Sysctl` | built in | Not implemented |
+| `User` | `linux-user` | Working, not yet through the checks |
+| `Group` | `linux-user` | Working, not yet through the checks |
+| `Sysctl` | `proc-sys` | Working, not yet through the checks |
 | `Symlink` | `posix-file` | Reads and writes on Linux, reads elsewhere |
 | `Repository` | `apt` | Not implemented |
 | `Repository` | `dnf` | Not implemented |
 | `Repository` | `apk` | Not implemented |
 
-`User`, `Group` and `Sysctl` are marked as built in because their
-operations are kernel and libc interfaces rather than distribution tooling. That does
-not make them distribution independent, since user and group management differs in
-which utilities exist and in default id ranges, and it does mean they are unlikely to
-need more than one provider each.
+`linux-user` and `proc-sys` claim no distribution, since the account database and the kernel
+parameter namespace are interfaces shared by every target. They still have per-distribution
+requirements. `linux-user` needs the shadow utilities, which are absent from minimal images and
+replaced by BusyBox equivalents on Alpine, and default id ranges differ. Both are selected where
+their requirements are met and skipped with that reason where they are not.
+
+The three entries marked working reconcile and verify but have not been through the checks below
+against a named distribution image. Their integration tests run against the real account database
+and the real `/proc/sys`, so what is outstanding is the per-distribution matrix work.
 
 ## Distributions
 
@@ -60,9 +64,10 @@ partially applied resources.
 Each of those is tested against a real image of the distribution, since command output formats and
 failure modes are where distributions differ. For `apt` and `systemd` the tests sit behind a build
 tag, as they install packages and start services on the machine that runs them. `make test-apt`,
-`make test-dnf` and `make test-systemd` run them in throwaway containers. The systemd one boots
-systemd as PID 1, because systemctl is present in plenty of images where nothing booted it and
-testing against that would prove nothing.
+`make test-dnf`, `make test-sysctl`, `make test-user` and `make test-systemd` run them in throwaway
+containers. The systemd suite boots systemd as PID 1, since `systemctl` is present in images where
+systemd is not running. The sysctl suite is privileged and runs against procfs, whose files have
+fixed sizes, cannot be created or removed, and reject values the kernel will not take.
 
 `File`, `Directory` and `Symlink` reconcile and verify on Linux and are not recorded as supported,
 since their tests run against a temporary directory rather than a named distribution. They contain
