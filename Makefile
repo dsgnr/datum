@@ -35,15 +35,22 @@ help:
 	@echo "docs-check    Build the site with --strict"
 	@echo "clean         Remove build output and caches"
 
-build:
-	$(GO_BUILD) -o bin/datum ./cmd/datum
+# Every source file, so a binary is rebuilt when the code changes. Without this the
+# cross-compiled outputs are up to date the moment they exist, and a container ends up
+# running yesterday's build against today's tests.
+SOURCES := $(shell find cmd internal -name '*.go') go.mod go.sum
+
+build: bin/datum
+
+bin/datum: $(SOURCES)
+	$(GO_BUILD) -o $@ ./cmd/datum
 
 build-linux: bin/datum-linux-amd64 bin/datum-linux-arm64
 
-bin/datum-linux-amd64:
+bin/datum-linux-amd64: $(SOURCES)
 	GOOS=linux GOARCH=amd64 $(GO_BUILD) -o $@ ./cmd/datum
 
-bin/datum-linux-arm64:
+bin/datum-linux-arm64: $(SOURCES)
 	GOOS=linux GOARCH=arm64 $(GO_BUILD) -o $@ ./cmd/datum
 
 dist: build build-linux
