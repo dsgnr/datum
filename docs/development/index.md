@@ -1,8 +1,7 @@
 # Development
 
-Datum is being built specification first. A complete pass runs end to end for three resource types,
-the remaining six have no provider, and [project status](../introduction/project-status.md) tracks
-which is which.
+Datum is being built specification first. A complete pass runs end to end for all nine resource
+types, and [project status](../introduction/project-status.md) tracks what is and is not done.
 
 The most useful contributions are still the ones that find a problem in the design before anything is
 built around it.

@@ -24,8 +24,8 @@ and work-in-progress branches do not qualify.
 | `Group` | `linux-user` | Working, not yet through the checks |
 | `Sysctl` | `proc-sys` | Working, not yet through the checks |
 | `Symlink` | `posix-file` | Reads and writes on Linux, reads elsewhere |
-| `Repository` | `apt` | Not implemented |
-| `Repository` | `dnf` | Not implemented |
+| `Repository` | `apt` | Supported on Debian, except `priority` |
+| `Repository` | `dnf` | Supported on Fedora, except `suite` and `components` |
 | `Repository` | `apk` | Not implemented |
 
 `linux-user` and `proc-sys` claim no distribution, since the account database and the kernel
@@ -37,6 +37,12 @@ their requirements are met and skipped with that reason where they are not.
 The three entries marked working reconcile and verify but have not been through the checks below
 against a named distribution image. Their integration tests run against the real account database
 and the real `/proc/sys`, so what is outstanding is the per-distribution matrix work.
+
+The two `Repository` exceptions are fields the underlying tool has no equivalent for, and each is
+[refused rather than dropped](../resources/lifecycle.md#when-a-provider-cannot-do-something).
+`suite` and `components` describe an apt archive, which has no rpm equivalent. `priority` on an apt
+source corresponds to a pin in `apt_preferences`, a separate file with its own matching rules, and
+the provider writes no pin.
 
 ## Distributions
 
