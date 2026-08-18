@@ -309,7 +309,7 @@ safely](../security/provider-safety.md). What remains is below.
     reports healthy, because every signal Datum emits is produced by the host about itself. Closing
     that needs something a host cannot forge, which is a different problem from monitoring.
 
-## Identity and delivery
+## Identity
 
 [Hostname as an identity fallback](../architecture/host-identity.md#where-identity-comes-from)
 :   Whether the system hostname should be usable when the identity file is absent. It would make
@@ -319,7 +319,7 @@ safely](../security/provider-safety.md). What remains is below.
 :   Whether unrelated actions should be applied concurrently, given that package manager locks
     would serialise the most expensive actions anyway.
 
-## Host lifecycle
+## Installation and enrolment
 
 [An agent with no identity](../lifecycle/installation.md#verifying-an-installation)
 :   Whether the agent refuses to start when it has no identity or runs and reports an unenrolled
@@ -342,7 +342,7 @@ Secret material is a gap, not an open question, and the distinction is deliberat
 files need credentials and Datum has no mechanism for them, but there is no half-designed answer
 waiting for a decision. Every host reads the whole repository, so a secret committed there is
 readable by every managed machine, which means a mechanism cannot be added without changing how
-desired state reaches a host.
+desired state is delivered.
 
 One constraint on any future secret mechanism is settled even though the mechanism is not. The
 [effective manifest describes secret references, never resolved secret
