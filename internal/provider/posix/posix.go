@@ -9,14 +9,10 @@ package posix
 
 import (
 	"context"
-	"crypto/sha256"
-	"encoding/hex"
 	"fmt"
 	"io/fs"
 	"os"
-	"path/filepath"
 	"strconv"
-	"strings"
 
 	"github.com/dsgnr/datum/internal/document"
 	"github.com/dsgnr/datum/internal/provider"
@@ -123,7 +119,7 @@ func (p Provider) compareContent(req provider.Request, observation *provider.Obs
 	}
 
 	observation.Desired = document.Value{Kind: document.KindMap, Map: map[string]document.Value{
-		"content": document.Scalar(digest(declared)),
+		"content": document.Scalar(provider.Digest(declared)),
 	}}
 	for name, value := range req.Desired.Map {
 		if name != "content" {
@@ -138,7 +134,7 @@ func (p Provider) compareContent(req provider.Request, observation *provider.Obs
 	if err != nil {
 		return err
 	}
-	observation.Fields["content"] = document.Scalar(digest(actual))
+	observation.Fields["content"] = document.Scalar(provider.Digest(actual))
 	return nil
 }
 
@@ -183,73 +179,13 @@ func desiredContent(req provider.Request) ([]byte, contentKind, error) {
 		if !ok {
 			continue
 		}
-		path, err := sourcePath(req, rel)
-		if err != nil {
-			return nil, contentSource, err
-		}
-		data, err := os.ReadFile(path)
+		data, err := req.ReadSource(rel)
 		if err != nil {
 			return nil, contentSource, fmt.Errorf("reading %s: %w", field, err)
 		}
 		return data, contentSource, nil
 	}
 	return nil, contentNone, nil
-}
-
-// sourcePath resolves a content source against its layer and confirms it stays in
-// the repository. Without it, write access to one layer would be read access to
-// everything the agent can reach.
-func sourcePath(req provider.Request, rel string) (string, error) {
-	// Both sides canonicalised, or the comparison is wrong wherever a parent
-	// directory is itself a link.
-	root, err := canonical(req.RepoRoot)
-	if err != nil {
-		return "", err
-	}
-	full := filepath.Join(root, filepath.FromSlash(req.LayerDir), filepath.FromSlash(rel))
-
-	// Resolved before the check, so a link out of the fleet is rejected.
-	resolved, err := canonical(full)
-	if err != nil {
-		return "", err
-	}
-
-	if !contains(root, resolved) {
-		return "", fmt.Errorf("source %s resolves outside the repository", rel)
-	}
-	return resolved, nil
-}
-
-// canonical resolves a path as far as it exists. A missing final component is not
-// an error here, because the read that follows gives a better message.
-func canonical(path string) (string, error) {
-	absolute, err := filepath.Abs(path)
-	if err != nil {
-		return "", err
-	}
-	if resolved, err := filepath.EvalSymlinks(absolute); err == nil {
-		return resolved, nil
-	}
-	// Resolve the deepest part that exists, then put the tail back.
-	dir, name := filepath.Split(absolute)
-	resolvedDir, err := filepath.EvalSymlinks(filepath.Clean(dir))
-	if err != nil {
-		return absolute, nil
-	}
-	return filepath.Join(resolvedDir, name), nil
-}
-
-// contains reports whether path is root or beneath it.
-func contains(root, path string) bool {
-	if path == root {
-		return true
-	}
-	return strings.HasPrefix(path, root+string(filepath.Separator))
-}
-
-func digest(data []byte) string {
-	sum := sha256.Sum256(data)
-	return "sha256:" + hex.EncodeToString(sum[:])
 }
 
 // kindOf maps what is on disk to the type that manages it.
