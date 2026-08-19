@@ -10,6 +10,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/dsgnr/datum/internal/document"
 	"github.com/dsgnr/datum/internal/graph"
@@ -65,6 +66,21 @@ type Options struct {
 	Providers provider.Set
 	Graph     *graph.Graph
 	RepoRoot  string
+
+	// ActionTimeout bounds one provider action. A package manager waiting on a lock
+	// held by an unattended upgrade is the case it exists for, and without it one
+	// stuck action consumes the whole pass. Zero leaves an action unbounded, which is
+	// what a one-off command wants.
+	ActionTimeout time.Duration
+}
+
+// actionContext bounds a single action, so a provider that hangs fails that resource,
+// not the pass.
+func (o Options) actionContext(ctx context.Context) (context.Context, context.CancelFunc) {
+	if o.ActionTimeout <= 0 {
+		return ctx, func() {}
+	}
+	return context.WithTimeout(ctx, o.ActionTimeout)
 }
 
 // Apply works through the plan in order.
@@ -161,7 +177,16 @@ func enforce(ctx context.Context, step plan.Step, opts Options) (state.Resource,
 		Trigger:  step.Trigger,
 	}
 
-	if err := p.Apply(ctx, req, step.Action); err != nil {
+	applyCtx, cancelApply := opts.actionContext(ctx)
+	err := p.Apply(applyCtx, req, step.Action)
+	cancelApply()
+	if err != nil {
+		// Said plainly, because "signal: killed" on its own reads like a crash rather than a
+		// bound the agent imposed.
+		if applyCtx.Err() != nil && ctx.Err() == nil {
+			return state.Failed, "", fmt.Errorf("%s did not finish within the action timeout of %s",
+				step.Action, opts.ActionTimeout)
+		}
 		return state.Failed, "", err
 	}
 
@@ -169,7 +194,9 @@ func enforce(ctx context.Context, step plan.Step, opts Options) (state.Resource,
 	// asked for, not a property of the target to read back.
 	verifyReq := req
 	verifyReq.Trigger = provider.NoTrigger
-	observation, err := p.Observe(ctx, verifyReq)
+	verifyCtx, cancelVerify := opts.actionContext(ctx)
+	observation, err := p.Observe(verifyCtx, verifyReq)
+	cancelVerify()
 	if err != nil {
 		return state.Failed, "", fmt.Errorf("verifying %s: %w", step.Ref, err)
 	}
