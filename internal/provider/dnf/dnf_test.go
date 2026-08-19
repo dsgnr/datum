@@ -309,7 +309,7 @@ func TestTypesAndName(t *testing.T) {
 	if p.Name() != "dnf" {
 		t.Errorf("Name = %q", p.Name())
 	}
-	if types := p.Types(); len(types) != 1 || types[0] != "Package" {
+	if types := p.Types(); len(types) != 2 || types[0] != "Package" || types[1] != "Repository" {
 		t.Errorf("Types = %v", types)
 	}
 }
