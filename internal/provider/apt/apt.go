@@ -17,28 +17,37 @@ import (
 	"github.com/dsgnr/datum/internal/state"
 )
 
-// Provider satisfies Package where dpkg and apt-get are present.
+// Provider satisfies Package and Repository where dpkg and apt-get are present.
 type Provider struct {
 	runner run.Runner
+	// root is where the source and keyring directories live, as a field so the
+	// tests can write into a temporary tree.
+	root string
 }
 
 // New returns a provider driving the real programs.
 func New() *Provider {
 	// apt-get prompts on some upgrades and conffile changes, and a prompt in a
 	// pass is a hang. The frontend setting is the documented way to refuse.
-	return &Provider{runner: run.Exec{}.With(map[string]string{
-		"DEBIAN_FRONTEND": "noninteractive",
-	})}
+	return &Provider{
+		runner: run.Exec{}.With(map[string]string{"DEBIAN_FRONTEND": "noninteractive"}),
+		root:   "/",
+	}
 }
 
 // NewWith returns a provider driving a supplied runner, which is how the tests run
 // without dpkg.
 func NewWith(runner run.Runner) *Provider {
-	return &Provider{runner: runner}
+	return &Provider{runner: runner, root: "/"}
+}
+
+// NewIn returns a provider writing its source files beneath root.
+func NewIn(runner run.Runner, root string) *Provider {
+	return &Provider{runner: runner, root: root}
 }
 
 func (p *Provider) Name() string    { return "apt" }
-func (p *Provider) Types() []string { return []string{"Package"} }
+func (p *Provider) Types() []string { return []string{"Package", "Repository"} }
 
 // Detect reports whether this host is one apt manages.
 func Detect() bool {
@@ -50,6 +59,9 @@ func Detect() bool {
 // dpkg-query exits non-zero for a package it has never heard of, which is the common
 // case for something not installed, not an error.
 func (p *Provider) Observe(ctx context.Context, req provider.Request) (provider.Observation, error) {
+	if req.Ref.Type == "Repository" {
+		return p.observeRepository(req)
+	}
 	if err := validName(req.Target); err != nil {
 		return provider.Observation{}, err
 	}
@@ -90,6 +102,9 @@ func (p *Provider) Observe(ctx context.Context, req provider.Request) (provider.
 
 // Apply installs, changes or removes the package.
 func (p *Provider) Apply(ctx context.Context, req provider.Request, action state.Action) error {
+	if req.Ref.Type == "Repository" {
+		return p.applyRepository(req, action)
+	}
 	if err := validName(req.Target); err != nil {
 		return err
 	}
