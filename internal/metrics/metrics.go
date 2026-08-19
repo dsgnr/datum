@@ -157,8 +157,9 @@ func (r *Registry) Render() string {
 		"Duration of the last pass", r.duration.Seconds())
 
 	w.help("datum_passes_total", "counter", "Passes by outcome")
-	for _, outcome := range []string{"converged", "changed", "failed"} {
-		w.sample("datum_passes_total", labels{{"outcome", outcome}}, float64(r.passes[outcome]))
+	for _, outcome := range state.Outcomes() {
+		w.sample("datum_passes_total", labels{{"outcome", outcome.String()}},
+			float64(r.passes[outcome.String()]))
 	}
 
 	w.help("datum_host_state", "gauge", "Current host state, 1 for the active state")
