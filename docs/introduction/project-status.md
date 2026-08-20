@@ -1,8 +1,7 @@
 # Project status
 
-Datum is being built, specification first. A complete pass runs end to end for eight of the
-nine resource types. `Repository` is the one with no provider, so its resources resolve and
-plan and are reported as skipped.
+Datum is being built, specification first. A complete pass runs end to end for all nine
+resource types.
 
 | Part | State |
 | ---- | ----- |
@@ -27,7 +26,7 @@ plan and are reported as skipped.
 | Applying, verification and failure propagation | Implemented |
 | The pass lock and pass reports | Implemented |
 | `datum reconcile`, `datum status` | Implemented |
-| A provider for `Repository` | Not started |
+| `Repository` through `apt` and `dnf` | Implemented |
 | The agent as a resident process, scheduling, fetching from a remote | Not started |
 | Secret resolution and reboot handling | Not started |
 

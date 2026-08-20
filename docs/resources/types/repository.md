@@ -49,7 +49,7 @@ configuration](../../providers/multi-distribution.md).
 | `signingKey` | path or secret reference | Yes unless `unsigned` | The key packages from this source must be signed by. |
 | `unsigned` | boolean | No, defaults to `false` | Accept a source with no signing key. |
 | `enabled` | boolean | No, defaults to `true` | Whether the source is used for installs. |
-| `priority` | integer | No | Preference relative to other sources, where the provider supports one. |
+| `priority` | integer | No | Preference relative to other sources, where the provider expresses one. |
 | `suite` | string | No | The apt suite, for providers that need one. |
 | `components` | list of strings | No | The apt components, for providers that need them. |
 
@@ -129,9 +129,14 @@ Those packages stay installed, keep working, and stop receiving updates. Removin
 treating anything traceable to one source as unwanted. That decision is expressed in the repository
 as `Package` resources declared absent.
 
-!!! note "Proposed behaviour"
+!!! note "Implementation status"
 
-    This type does not exist. It is specified ahead of the others because it is the type most likely to
-    be needed first, given that installing anything outside a distribution's default sources currently
-    has no representation, and because the security argument for it is independent of the convenience
-    one.
+    `apt` writes a deb822 source in `/etc/apt/sources.list.d` with the key in
+    `/etc/apt/keyrings`, and `dnf` writes an ini source in `/etc/yum.repos.d` with the key in
+    `/etc/pki/rpm-gpg`. Both are tested by asking the real package manager to read what was
+    written, because a field name that is subtly wrong parses fine in a test of Datum's own making.
+
+    Two fields are refused and not approximated, which the [support
+    matrix](../../providers/support-matrix.md#resource-types) records. `signingKey` as a [secret
+    reference](../secrets.md) waits on secret resolution, so a key has to be a repository path for
+    now.
