@@ -28,7 +28,17 @@ func (d *Duration) UnmarshalYAML(node *yaml.Node) error {
 	return nil
 }
 
-func (d Duration) String() string { return time.Duration(d).String() }
+// String prints the form the reference writes, so 30m and not the standard library's
+// 30m0s. A value with a remainder keeps every unit it needs.
+func (d Duration) String() string {
+	text := time.Duration(d).String()
+	for _, suffix := range []string{"h0m0s", "m0s"} {
+		if trimmed, ok := strings.CutSuffix(text, suffix); ok {
+			return trimmed + suffix[:1]
+		}
+	}
+	return text
+}
 
 // ParseDuration reads a duration, allowing a trailing d for whole days.
 func ParseDuration(text string) (time.Duration, error) {

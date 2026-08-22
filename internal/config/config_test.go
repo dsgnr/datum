@@ -241,3 +241,25 @@ func TestDurationsAndSizes(t *testing.T) {
 		t.Errorf("Size.String = %q", got)
 	}
 }
+
+// The reference writes 30m, and a command that echoes 30m0s back at somebody reading
+// the reference looks like it parsed something else.
+func TestDurationsPrintTheWayTheReferenceWritesThem(t *testing.T) {
+	for text, want := range map[string]string{
+		"30m":    "30m",
+		"15m":    "15m",
+		"1h":     "1h",
+		"5m":     "5m",
+		"90s":    "1m30s",
+		"15m30s": "15m30s",
+		"2h30m":  "2h30m",
+	} {
+		parsed, err := config.ParseDuration(text)
+		if err != nil {
+			t.Fatalf("ParseDuration(%q): %v", text, err)
+		}
+		if got := config.Duration(parsed).String(); got != want {
+			t.Errorf("Duration(%q).String() = %q, want %q", text, got, want)
+		}
+	}
+}
