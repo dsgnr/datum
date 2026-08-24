@@ -55,7 +55,7 @@ func runReconcile(e *env, args []string) int {
 	defer held.Release()
 
 	startedAt := time.Now()
-	p, code := runPass(e, f)
+	p, code := runPass(context.Background(), e, f)
 	if code != exitOK {
 		return code
 	}

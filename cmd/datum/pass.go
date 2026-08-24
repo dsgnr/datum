@@ -47,7 +47,10 @@ type pass struct {
 }
 
 // runPass resolves, observes and plans, changing nothing.
-func runPass(e *env, f hostFlags) (pass, int) {
+//
+// The context bounds the whole thing, which is how the agent applies the configured
+// pass timeout. A one-off command passes a context that is never cancelled.
+func runPass(ctx context.Context, e *env, f hostFlags) (pass, int) {
 	if *f.host == "" {
 		e.errorf("--host is required, because nothing yet works out which host this machine is\n")
 		return pass{}, exitError
@@ -77,7 +80,7 @@ func runPass(e *env, f hostFlags) (pass, int) {
 		return pass{}, exitError
 	}
 
-	observed, err := observe.Host(context.Background(), g, providers, result.Root)
+	observed, err := observe.Host(ctx, g, providers, result.Root)
 	if err != nil {
 		e.errorf("%v\n", err)
 		return pass{}, exitError
@@ -117,7 +120,7 @@ func runObserve(e *env, args []string) int {
 	if _, err := parseFlags(fs, args); err != nil {
 		return exitError
 	}
-	p, code := runPass(e, f)
+	p, code := runPass(context.Background(), e, f)
 	if code != exitOK {
 		return code
 	}
@@ -163,7 +166,7 @@ func runDiff(e *env, args []string) int {
 	if _, err := parseFlags(fs, args); err != nil {
 		return exitError
 	}
-	p, code := runPass(e, f)
+	p, code := runPass(context.Background(), e, f)
 	if code != exitOK {
 		return code
 	}
@@ -222,7 +225,7 @@ func runPlan(e *env, args []string) int {
 	if _, err := parseFlags(fs, args); err != nil {
 		return exitError
 	}
-	p, code := runPass(e, f)
+	p, code := runPass(context.Background(), e, f)
 	if code != exitOK {
 		return code
 	}
