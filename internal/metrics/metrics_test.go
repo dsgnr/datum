@@ -16,6 +16,7 @@ import (
 	"github.com/dsgnr/datum/internal/config"
 	"github.com/dsgnr/datum/internal/metrics"
 	"github.com/dsgnr/datum/internal/report"
+	"github.com/dsgnr/datum/internal/state"
 )
 
 func newRegistry() *metrics.Registry {
@@ -379,4 +380,46 @@ func scrape(t *testing.T, address string) string {
 		t.Fatalf("reading body: %v", err)
 	}
 	return string(body)
+}
+
+// The outcome counter has to carry a series for every outcome a pass can have. A
+// missing one silently counts nothing, which is how two drifted passes came to be
+// reported as zero passes.
+func TestEveryPassOutcomeHasASeries(t *testing.T) {
+	r := newRegistry()
+	for _, outcome := range state.Outcomes() {
+		rep := passReport()
+		rep.Outcome = outcome.String()
+		r.RecordPass(rep, 0)
+	}
+
+	text := r.Render()
+	for _, outcome := range state.Outcomes() {
+		series := `datum_passes_total{outcome="` + outcome.String() + `"}`
+		got, ok := sample(t, text, series)
+		if !ok {
+			t.Errorf("%s is missing", series)
+			continue
+		}
+		if got != 1 {
+			t.Errorf("%s = %v, want 1", series, got)
+		}
+	}
+}
+
+// An observe-mode pass reports drift and is not a failure, so it must not move the
+// consecutive-failure gauge or the success timestamp.
+func TestADriftedPassCountsAsASuccessfulPass(t *testing.T) {
+	r := newRegistry()
+	rep := passReport()
+	rep.Outcome = state.OutcomeDrifted.String()
+	r.RecordPass(rep, 0)
+
+	text := r.Render()
+	if got := mustSample(t, text, `datum_passes_total{outcome="drifted"}`); got != 1 {
+		t.Errorf("drifted passes = %v, want 1", got)
+	}
+	if got := mustSample(t, text, "datum_pass_last_success_timestamp_seconds"); got == 0 {
+		t.Error("a drifted pass did not count as a success")
+	}
 }

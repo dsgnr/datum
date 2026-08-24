@@ -130,6 +130,14 @@ func (o Outcome) String() string {
 	}
 }
 
+// Outcomes is every outcome a pass can have.
+//
+// Exported so that anything enumerating them, such as the metric exporting one series
+// per outcome, cannot fall behind a new one being added here.
+func Outcomes() []Outcome {
+	return []Outcome{OutcomeConverged, OutcomeChanged, OutcomeDrifted, OutcomeFailed}
+}
+
 // HostFrom works out a host's condition from its resources. A failure outweighs a
 // coverage gap, which outweighs drift.
 func HostFrom(resources []Resource) Host {
