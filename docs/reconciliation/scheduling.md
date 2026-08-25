@@ -3,11 +3,14 @@
 This page specifies what causes a pass to run. The rest of the documentation describes what one pass
 does.
 
-!!! note "Proposed behaviour"
+!!! note "Implementation status"
 
-    None of this exists. The shape matters more than the numbers, because whether the agent is a
-    resident process or a one-shot invocation decides what else is possible, and several things
-    already specified elsewhere assume the answer.
+    The agent runs as a resident service, the offset is derived from the host name, and a tick it
+    cannot take the lock for is skipped. What it cannot do yet is fetch, so the repository has to be
+    on disk and `--repo` names it. [Running Datum on a host](../lifecycle/running.md) covers starting
+    it.
+
+    The interval, splay and timeouts take the default values below.
 
 ## The agent is a resident process
 
@@ -120,3 +123,19 @@ bounds the latency of a correction by the interval.
     Whether an agent should support being triggered into a pass by a signal or a local socket is
     undecided. It would let a deployment pipeline reconcile immediately after a merge, and it would
     add a second inbound control surface to a process running as root.
+
+## Stopping the agent
+
+`SIGTERM` stops scheduling and ends a pass that is still running. `SIGINT` does the same, so that a
+terminal behaves like a service manager.
+
+A pass interrupted this way is a [partially applied
+pass](../concepts/reconciliation.md#pass-outcomes), the same state a [pass that exceeds its
+timeout](failure-handling.md#a-pass-is-bounded) leaves. Completed actions stay completed, nothing is
+reverted, and the next pass observes the current state. Finishing the pass before exiting would make
+a stop take as long as the timeout allows, after which a service manager sends `SIGKILL`.
+
+The [pass lock](locking.md) is released in both cases, since the kernel drops it when the process
+ends. A restarted agent does not find a lock left by its predecessor.
+
+The agent exits `0` when it was asked to stop, so a deliberate restart is not reported as a crash.

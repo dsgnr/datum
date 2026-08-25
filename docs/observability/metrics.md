@@ -4,11 +4,16 @@ Metrics answer aggregate questions across a fleet. They are not a per-resource e
 cardinality reasons covered below, and the per-resource detail lives in logs and
 [status](../reference/status.md) instead.
 
-!!! note "Proposed design"
+!!! note "Implementation status"
 
-    The metric names and shapes are proposed. They follow Prometheus naming conventions because that
-    is what most fleets already collect, and nothing about the design depends on Prometheus
-    specifically.
+    The agent serves this catalogue at `/metrics` and writes the same text to
+    [`metrics.textfile`](#writing-a-file-as-well) where one is configured. The names follow Prometheus
+    naming conventions because that is what most fleets already collect, and nothing about the design
+    depends on Prometheus specifically.
+
+    The trust and refusal series exist and read zero, because the controls they report on are not
+    implemented. `datum_last_known_good_info` is absent, not zero, since exporting it would claim a
+    fallback that nothing computes.
 
 ## Exposure
 
@@ -138,7 +143,7 @@ datum_pass_duration_seconds                 gauge
 datum_passes_total{outcome}                  counter
 ```
 
-`outcome` is one of `converged`, `changed` or `failed`, matching the [pass
+`outcome` is one of `converged`, `changed`, `drifted` or `failed`, matching the [pass
 outcomes](../concepts/reconciliation.md#pass-outcomes).
 
 **Host condition.**

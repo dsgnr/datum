@@ -2,14 +2,12 @@
 
 !!! warning "Some of these commands do not exist yet"
 
-    `render`, `explain`, `observe`, `diff`, `plan`, `reconcile`, `status`, `validate` and
-    `affected` are implemented. `init` and `migrate` are not, and the output shown for
-    those two is illustrative.
+    `render`, `explain`, `observe`, `diff`, `plan`, `reconcile`, `status`, `validate`,
+    `affected`, `agent` and `config check` are implemented. `init` and `migrate` are not, and
+    the output shown for those two is illustrative.
 
-    `File`, `Directory` and `Symlink` have a provider, `Package` has one on Debian and on
-    Fedora, and `Service` has one where systemd is the init system. The other types
-    resolve and plan and are reported as skipped,
-    which makes a host with any of them
+    Every resource type has a provider. Which one serves a host depends on what it runs, so a type
+    with none here is reported as skipped, which makes a host
     [degraded](../concepts/state.md#host-state-across-passes) rather than converged.
 
     Applying is Linux-only. Reading a host works anywhere, since the safety rules the writing path
@@ -26,6 +24,7 @@ datum diff        desired against observed         read only
 datum plan        ordered actions                  read only
 datum reconcile   apply and verify                 changes the host
 datum status      the last pass result             no host access
+datum agent       reconcile on the interval        changes the host
 ```
 
 Only `reconcile` changes anything. Everything above it in that list is safe to run on a production
@@ -56,12 +55,14 @@ machine.
 
 !!! note "Implementation status"
 
-    Of the four, `--host` and `--repo` are the two that work. `--host` is currently required,
-    because nothing yet works out which host the local machine is, and that is
-    [enrolment](../lifecycle/enrolment.md), not a missing default. `--revision` and `--json` are not
-    implemented, and neither is fetching from a configured remote, so `--repo` is the only source of
-    documents at the moment. `datum status` has its own `--output json` because it is the one
-    command whose structured form is already [designed](status.md#machine-readable-output).
+    Of the four, `--host` and `--repo` are the two that work. `--host` is required on the commands
+    that take it, because nothing works out which host the local machine is, and that is
+    [enrolment](../lifecycle/enrolment.md), not a missing default. `datum agent` is the exception,
+    since it reads `host` from [its configuration](agent-config.md#identity). `--revision` and
+    `--json` are not implemented, and neither is fetching from a configured remote, so `--repo` is
+    the only source of documents at the moment. `datum status` has its own `--output json` because
+    it is the one command whose structured form is already
+    [designed](status.md#machine-readable-output).
 
 ## datum render
 
@@ -284,6 +285,60 @@ for the cases where the absence of an entry is itself the question.
 
 A host that has never run says so and exits `0`, because never having reported is not the
 same as having reported a problem.
+
+## datum agent
+
+Runs as a service, reconciling on the interval in
+[the configuration file](agent-config.md#reconciliation).
+
+```console
+# datum agent --repo /var/lib/datum/fleet
+2026-02-08T09:00:00Z serving metrics on 127.0.0.1:10056
+2026-02-08T09:00:00Z host web-001, interval 30m, offset 6m51s, next pass 2026-02-08T09:06:51Z
+2026-02-08T09:06:51Z pass converged, 14 of 14 resources converged, next pass 2026-02-08T09:36:51Z
+```
+
+| Flag | Meaning |
+| ---- | ------- |
+| `--config PATH` | Configuration file. Defaults to `/etc/datum/agent.yaml`. |
+| `--repo PATH` | Local checkout to reconcile from, required until fetching exists. |
+
+There is no pass at startup. The agent waits for its own
+[offset](../reconciliation/scheduling.md#passes-are-spread-deterministically) within the first
+interval, so a fleet rebooting together does not reconcile at once.
+
+It exits `0` when asked to stop and `1` when it could not start. `SIGTERM` and `SIGINT` both
+stop scheduling and end a pass that is still running, which leaves the host partially applied
+in the way any [interrupted pass](../reconciliation/failure-handling.md#a-pass-is-bounded) does.
+[Running Datum on a host](../lifecycle/running.md#run-the-agent-as-a-service) has the unit file.
+
+## datum config check
+
+Reports the resolved configuration, including the defaults.
+
+```console
+# datum config check
+
+/etc/datum/agent.yaml       ok
+  host                     web-001
+  source.url               https://git.example.com/fleet.git
+  source.branch            main
+  trust.require            none
+  trust.requireDescendant  true
+  reconciliation.mode      enforce
+  reconciliation.interval  30m, offset 06:51
+  reconciliation.timeout   15m
+  metrics.listen           127.0.0.1:10056
+  state                    /var/lib/datum   root 0700   ok
+```
+
+| Flag | Meaning |
+| ---- | ------- |
+| `--config PATH` | Configuration file. Defaults to `/etc/datum/agent.yaml`. |
+
+Printing the resolved values instead of echoing the file is what the command is for, since a key in
+the wrong place looks correct when a file is read back verbatim. An unrecognised key is reported as
+a warning after the values, and does not stop the agent.
 
 ## datum init
 

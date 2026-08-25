@@ -32,7 +32,8 @@ Datum is being built specification first.
 
 A complete pass runs end to end. A repository can be parsed, a host resolved into an effective
 manifest, that manifest compared against what is actually on a machine, and the resulting plan
-applied and verified. All nine resource types have a provider.
+applied and verified. All nine resource types have a provider, and the agent runs as a service that
+reconciles on its own interval and serves metrics between passes.
 
 Everything above the provider boundary is portable, so most of it is developed and tested without a
 host. A provider is the only part that touches an operating system. Reading a host works anywhere.
@@ -42,8 +43,9 @@ equivalent.
 | Works | Not yet |
 | ----- | ------- |
 | `render`, `explain`, `validate`, `affected` | `apk` and `pacman` |
-| `observe`, `diff`, `plan` | The agent as a resident process |
-| `reconcile`, `status` | Fetching from a remote, signature verification |
+| `observe`, `diff`, `plan` | Fetching from a remote |
+| `reconcile`, `status` | Signature verification, last known good |
+| `agent`, `config check` | |
 | `Package` through `apt` and `dnf` | |
 | `Repository` through `apt` and `dnf` | |
 | `Service` through `systemd` | |

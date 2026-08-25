@@ -26,8 +26,10 @@ resource types.
 | Applying, verification and failure propagation | Implemented |
 | The pass lock and pass reports | Implemented |
 | `datum reconcile`, `datum status` | Implemented |
+| `datum agent`, `datum config check` | Implemented |
 | `Repository` through `apt` and `dnf` | Implemented |
-| The agent as a resident process, scheduling, fetching from a remote | Not started |
+| The agent as a resident process, scheduling, metrics on a port | Implemented |
+| Fetching from a remote, signature verification, last known good | Not started |
 | Secret resolution and reboot handling | Not started |
 
 Applying is Linux-only. Reading a host works anywhere, since the safety rules

@@ -5,11 +5,12 @@ which hosts are up to date, which have drifted, which have stopped reconciling e
 are waiting to reboot. The signals Datum emits are specified below, so those questions have answers
 that do not involve logging into machines.
 
-!!! note "Proposed design"
+!!! note "Implementation status"
 
-    None of this is implemented. The signals and their shapes are proposed, and they are specified
-    at this level of detail because the components have to preserve the information the signals
-    carry, which is cheap to design now and awkward to add later.
+    [Metrics](metrics.md) and [status](../reference/status.md) are implemented. Structured logs and
+    traces are not, and the shapes below are specified at this level of detail because the components
+    have to preserve the information the signals carry, which is cheap to design now and awkward to
+    add later.
 
 ## The four questions
 
