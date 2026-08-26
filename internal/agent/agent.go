@@ -76,6 +76,16 @@ func New(opts Options) (*Agent, error) {
 	}
 
 	cfg := opts.Config
+
+	// Refused rather than ignored. This agent verifies nothing, so starting with
+	// trust.require set to anything else would apply unverified desired state on a host
+	// whose configuration says it should not, which is worse than not running.
+	if cfg.Trust.Require != config.RequireNone {
+		return nil, fmt.Errorf("trust.require is %s and signature verification is not implemented, "+
+			"so set trust.require: none to say that applying unverified desired state is intended",
+			cfg.Trust.Require)
+	}
+
 	// Checked before anything else. A readable state directory discloses plans, and a
 	// writable one allows downgrade protection to be reset.
 	if err := statedir.Ensure(cfg.State); err != nil {
