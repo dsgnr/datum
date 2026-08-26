@@ -104,7 +104,8 @@ test-systemd:
 		if docker exec datum-systemd systemctl is-system-running --wait >/dev/null 2>&1; then break; fi; \
 		sleep 1; \
 	done
-	@docker exec datum-systemd go test -tags integration -count=1 ./internal/provider/systemd/; \
+	@docker exec datum-systemd go test -tags integration -count=1 \
+		./internal/provider/systemd/ ./internal/agent/; \
 		status=$$?; \
 		docker rm -f datum-systemd >/dev/null; \
 		exit $$status
