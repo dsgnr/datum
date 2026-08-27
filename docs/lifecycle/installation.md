@@ -10,7 +10,7 @@ reconciles nothing until it is [enrolled](enrolment.md).
     because an image built on the assumption that installation includes enrolment cannot be un-built
     once thousands of machines have booted from it.
 
-    For installing the binary that does exist and running passes from a systemd timer, see
+    For installing the binary that does exist and running the agent as a service, see
     [running Datum on a host](running.md).
 
 ## What installation provides

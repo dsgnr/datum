@@ -4,11 +4,10 @@ Two concurrent passes against one host observe the same state, build overlapping
 them against each other. This page specifies the mechanism that prevents it, which [the concepts
 section asserts](../concepts/reconciliation.md#one-pass-at-a-time) without saying how.
 
-!!! note "Proposed behaviour"
+!!! note "Implementation status"
 
-    The lock does not exist. The requirement is the settled part, and the reason it is worth
-    specifying now rather than during implementation is that the obvious implementation covers only
-    half the cases.
+    The lock is implemented as described, including `--wait` and the scheduled pass that skips its
+    tick rather than queueing behind whatever holds it.
 
 ## An operator racing the scheduled pass
 

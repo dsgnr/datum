@@ -7,15 +7,20 @@ The file is a trust anchor. Every setting that determines whether Datum may chan
 here rather than in the repository, and [Datum does not manage this
 file](../adr/0010-no-self-managed-trust-anchors.md), so a repository cannot alter it.
 
-!!! note "Proposed behaviour"
+!!! note "Implementation status"
 
-    Nothing here exists. The structure is settled to the extent that every page describing a setting
-    agrees with this one, and the individual defaults are proposals.
+    The agent reads this file, and every key and default below is the one it applies. `datum config
+    check` reports the resolved values.
 
-    No agent reads this file yet. What configures Datum today is command line flags, and
-    [running Datum on a host](../lifecycle/running.md) covers installing it and running passes on a
-    systemd timer. `--host`, `--repo`, `--state` and `--mode` are the flags that correspond to keys
-    below.
+    Some keys are read and not yet acted on, because what would act on them does not exist. The whole
+    `source` block is reported and unused, since [fetching](../security/repository-fetch.md) is not
+    implemented and `--repo` names a checkout instead. `trust.requireDescendant` and
+    `trust.strictPaths` are inert for the same reason, and `secrets` accepts only the `file` provider
+    that [secret resolution](../resources/secrets.md) has yet to implement.
+
+    `trust.require` is the exception. Nothing verifies a signature yet, so rather than ignore the key
+    the agent refuses to start unless it is set to `none`, which turns the default into the error it
+    was designed to produce instead of a control that silently does nothing.
 
 ## The whole file
 

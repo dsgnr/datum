@@ -4,11 +4,12 @@ A pass can fail before it reaches the host or partway through changing it, and t
 differently. This page specifies what the agent does next in each case, and what bounds a pass that
 never finishes on its own.
 
-!!! note "Proposed behaviour"
+!!! note "Implementation status"
 
-    None of the numbers here exist. The [retry shape](../concepts/reconciliation.md#retry) is already
-    settled, being that nothing is retried within a pass and the next pass re-observes, and what
-    follows is the timing that shape needs in order to be operable.
+    The back-off ladder, the cap, the reset on success and both timeouts are implemented, and the
+    consecutive-failure count is exposed as described. A failure is classed as upstream when
+    resolution did not produce a manifest, which today means a bad repository, not a fetch or a
+    signature, because neither of those exists yet.
 
 ## Two kinds of failure
 
