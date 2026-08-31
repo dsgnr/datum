@@ -3,8 +3,8 @@
 !!! warning "Some of these commands do not exist yet"
 
     `render`, `explain`, `observe`, `diff`, `plan`, `reconcile`, `status`, `validate`,
-    `affected`, `agent` and `config check` are implemented. `init` and `migrate` are not, and
-    the output shown for those two is illustrative.
+    `affected`, `agent`, `config check` and `revision` are implemented. `init` and `migrate` are
+    not, and the output shown for those two is illustrative.
 
     Every resource type has a provider. Which one serves a host depends on what it runs, so a type
     with none here is reported as skipped, which makes a host
@@ -40,6 +40,13 @@ datum affected    which hosts a change reaches     no host access
 datum migrate     rewrite documents to a schema    writes local files
 ```
 
+Two more read and write the agent's own state, not a host or a repository.
+
+```text
+datum config check   the resolved configuration    reads local files
+datum revision       the accepted revision         reads and writes local state
+```
+
 ## Global flags
 
 | Flag | Meaning |
@@ -58,10 +65,10 @@ machine.
     Of the four, `--host` and `--repo` are the two that work. `--host` is required on the commands
     that take it, because nothing works out which host the local machine is, and that is
     [enrolment](../lifecycle/enrolment.md), not a missing default. `datum agent` is the exception,
-    since it reads `host` from [its configuration](agent-config.md#identity). `--revision` and
-    `--json` are not implemented, and neither is fetching from a configured remote, so `--repo` is
-    the only source of documents at the moment. `datum status` has its own `--output json` because
-    it is the one command whose structured form is already
+    since it reads `host` from [its configuration](agent-config.md#identity) and fetches from
+    `source.url` instead of needing `--repo`. `--revision` and `--json` are not implemented, so
+    every command other than the agent reads a checkout named with `--repo`. `datum status` has its
+    own `--output json` because it is the one command whose structured form is already
     [designed](status.md#machine-readable-output).
 
 ## datum render
@@ -292,7 +299,7 @@ Runs as a service, reconciling on the interval in
 [the configuration file](agent-config.md#reconciliation).
 
 ```console
-# datum agent --repo /var/lib/datum/fleet
+# datum agent
 2026-02-08T09:00:00Z serving metrics on 127.0.0.1:10056
 2026-02-08T09:00:00Z host web-001, interval 30m, offset 6m51s, next pass 2026-02-08T09:06:51Z
 2026-02-08T09:06:51Z pass converged, 14 of 14 resources converged, next pass 2026-02-08T09:36:51Z
@@ -301,7 +308,16 @@ Runs as a service, reconciling on the interval in
 | Flag | Meaning |
 | ---- | ------- |
 | `--config PATH` | Configuration file. Defaults to `/etc/datum/agent.yaml`. |
-| `--repo PATH` | Local checkout to reconcile from, required until fetching exists. |
+| `--repo PATH` | Reconcile a local checkout instead of fetching, which verifies nothing. |
+| `--prefix PATH` | Fleet directory within the repository, for a monorepo. |
+
+Each pass clones or fetches `source.url`, selects a revision according to
+[`trust.require`](../security/repository-trust.md#verifying-that-a-revision-is-genuine), checks
+it descends from the one this host accepted, and reconciles it. A revision that is refused
+leaves the host on [the last one that worked](../reconciliation/last-known-good.md).
+
+`--repo` skips all of that, so it is refused unless `trust.require` is `none`. That keeps a
+host from applying an unverified tree while its own configuration says it should not.
 
 There is no pass at startup. The agent waits for its own
 [offset](../reconciliation/scheduling.md#passes-are-spread-deterministically) within the first
@@ -339,6 +355,35 @@ Reports the resolved configuration, including the defaults.
 Printing the resolved values instead of echoing the file is what the command is for, since a key in
 the wrong place looks correct when a file is read back verbatim. An unrecognised key is reported as
 a warning after the values, and does not stop the agent.
+
+## datum revision
+
+Shows or clears the revision this host has accepted.
+
+```console
+# datum revision show
+8b91f2036f4e6b0f5a7c1d2e3f4a5b6c7d8e9f01
+```
+
+| Subcommand | Meaning |
+| ---------- | ------- |
+| `show` | Print the accepted revision, or say the host is at first contact. |
+| `clear --yes` | Forget it, so the next signed revision becomes the baseline. |
+
+Clearing is the documented recovery from
+[a history that has been rewritten](../security/repository-fetch.md#when-the-recorded-revision-is-absent),
+where the host cannot tell whether a candidate moves forward or backward and refuses every
+pass until somebody says which baseline to trust.
+
+It needs `--yes` because it disarms downgrade protection until the next pass completes. That is a
+one-shot action and not a setting, since a control that can be switched off during an incident and
+left off is a suggestion.
+
+```console
+# datum revision clear --yes
+cleared 8b91f2036f4e6b0f5a7c1d2e3f4a5b6c7d8e9f01
+the next signed revision this host sees becomes its baseline
+```
 
 ## datum init
 

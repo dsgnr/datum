@@ -12,15 +12,16 @@ file](../adr/0010-no-self-managed-trust-anchors.md), so a repository cannot alte
     The agent reads this file, and every key and default below is the one it applies. `datum config
     check` reports the resolved values.
 
-    Some keys are read and not yet acted on, because what would act on them does not exist. The whole
-    `source` block is reported and unused, since [fetching](../security/repository-fetch.md) is not
-    implemented and `--repo` names a checkout instead. `trust.requireDescendant` and
-    `trust.strictPaths` are inert for the same reason, and `secrets` accepts only the `file` provider
-    that [secret resolution](../resources/secrets.md) has yet to implement.
+    The `source`, `trust` and `reconciliation` blocks are acted on. The agent fetches from
+    `source.url`, verifies against `trust.signers` in whichever `trust.require` mode is set, and
+    refuses a revision that does not descend from the one it accepted.
 
-    `trust.require` is the exception. Nothing verifies a signature yet, so rather than ignore the key
-    the agent refuses to start unless it is set to `none`, which turns the default into the error it
-    was designed to produce instead of a control that silently does nothing.
+    Three keys are read and do nothing. `source.maxSourceSize` does not yet bound a `File` content
+    source. `trust.strictPaths` is inert. `secrets` accepts only the `file` provider that
+    [secret resolution](../resources/secrets.md) has yet to implement, so a `secretRef` resource
+    fails either way.
+
+    `source.credential` works for an ssh identity file and not for an https token.
 
 ## The whole file
 
