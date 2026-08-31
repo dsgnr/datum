@@ -88,6 +88,29 @@ func New(dir string, limits Limits) *Client {
 	return NewWith(run.Exec{Env: environment}, dir, limits)
 }
 
+// WithCredential returns a client that authenticates with an ssh identity file.
+//
+// Only ssh identity files are supported. An https token would have to reach git either
+// on a command line readable by every local user or through a credential helper, and
+// this package runs no helpers.
+//
+// BatchMode suppresses prompting, which would hang a pass. IdentitiesOnly restricts ssh
+// to the configured key rather than any key an agent holds.
+func (c *Client) WithCredential(path string) *Client {
+	if path == "" {
+		return c
+	}
+	exec, ok := c.runner.(run.Exec)
+	if !ok {
+		return c
+	}
+	command := "ssh -i " + path +
+		" -o IdentitiesOnly=yes" +
+		" -o BatchMode=yes" +
+		" -o StrictHostKeyChecking=accept-new"
+	return NewWith(exec.With(map[string]string{"GIT_SSH_COMMAND": command}), c.dir, c.limits)
+}
+
 // NewWith returns a client driving a supplied runner.
 func NewWith(runner run.Runner, dir string, limits Limits) *Client {
 	return &Client{runner: runner, dir: dir, limits: limits}
