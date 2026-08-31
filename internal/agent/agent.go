@@ -42,6 +42,11 @@ type Options struct {
 	// rather than managing its own log file.
 	Log io.Writer
 
+	// Registry is what the endpoint serves. Supplied by the caller when the pass also
+	// records into it, such as counting the revisions a trust control refused, and
+	// created here otherwise.
+	Registry *metrics.Registry
+
 	// Now and After exist so the tests can drive the clock instead of sleeping
 	// through a thirty-minute interval.
 	Now   func() time.Time
@@ -77,15 +82,6 @@ func New(opts Options) (*Agent, error) {
 
 	cfg := opts.Config
 
-	// Refused rather than ignored. This agent verifies nothing, so starting with
-	// trust.require set to anything else would apply unverified desired state on a host
-	// whose configuration says it should not, which is worse than not running.
-	if cfg.Trust.Require != config.RequireNone {
-		return nil, fmt.Errorf("trust.require is %s and signature verification is not implemented, "+
-			"so set trust.require: none to say that applying unverified desired state is intended",
-			cfg.Trust.Require)
-	}
-
 	// Checked before anything else. A readable state directory discloses plans, and a
 	// writable one allows downgrade protection to be reset.
 	if err := statedir.Ensure(cfg.State); err != nil {
@@ -93,7 +89,10 @@ func New(opts Options) (*Agent, error) {
 	}
 
 	s := schedule.New(cfg.Host, time.Duration(cfg.Reconciliation.Interval), cfg.Reconciliation.SplayOr())
-	registry := metrics.NewRegistry(cfg)
+	registry := opts.Registry
+	if registry == nil {
+		registry = metrics.NewRegistry(cfg)
+	}
 	registry.SetOffset(s.Offset())
 
 	// Seeded from the last pass on disk, so a restarted agent serves the state the host is

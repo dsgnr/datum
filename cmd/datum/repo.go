@@ -29,14 +29,14 @@ type checkout struct {
 // so this reports what it can rather than failing.
 func inspect(dir string) checkout {
 	out := checkout{Dir: dir}
-	toplevel, err := git(dir, "rev-parse", "--show-toplevel")
+	toplevel, err := gitOutput(dir, "rev-parse", "--show-toplevel")
 	if err != nil {
 		return out
 	}
 	out.Toplevel = toplevel
 	// show-prefix is the path of the working directory below the root, with a
 	// trailing slash, and empty at the root itself.
-	prefix, err := git(dir, "rev-parse", "--show-prefix")
+	prefix, err := gitOutput(dir, "rev-parse", "--show-prefix")
 	if err != nil {
 		return out
 	}
@@ -49,7 +49,7 @@ func (c checkout) Revision() string {
 	if c.Toplevel == "" {
 		return "(no revision)"
 	}
-	revision, err := git(c.Dir, "rev-parse", "--short", "HEAD")
+	revision, err := gitOutput(c.Dir, "rev-parse", "--short", "HEAD")
 	if err != nil {
 		return "(no revision)"
 	}
@@ -74,7 +74,7 @@ func loadRepo(dir string) (discover.Result, string, error) {
 	return result, inspect(dir).Revision(), nil
 }
 
-func git(dir string, args ...string) (string, error) {
+func gitOutput(dir string, args ...string) (string, error) {
 	out, err := exec.Command("git", append([]string{"-C", dir}, args...)...).Output()
 	if err != nil {
 		return "", err

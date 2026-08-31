@@ -152,8 +152,8 @@ func baseConfig(t *testing.T) config.Config {
 	cfg.Host = "web-001"
 	cfg.State = stateDir(t)
 	cfg.Metrics.Listen = "none"
-	// The agent refuses to start while it cannot honour a verification requirement, so
-	// the tests say out loud that these hosts apply unverified desired state.
+	// Verification belongs to whatever obtains a revision, and these tests supply the
+	// pass directly, so there is nothing to verify.
 	cfg.Trust.Require = config.RequireNone
 	return cfg
 }
@@ -492,23 +492,4 @@ func (s *syncBuffer) Write(p []byte) (int, error) {
 	s.mu.Lock()
 	defer s.mu.Unlock()
 	return s.b.Write(p)
-}
-
-// trust.require defaults to signed-commit so that a fleet which has not thought about
-// signing gets an error rather than silently applying unverified desired state. Nothing
-// verifies yet, so honouring that means refusing to start.
-func TestAnAgentRefusesToRunWhenItCannotHonourTrustRequire(t *testing.T) {
-	for _, require := range []config.Require{config.RequireSignedCommit, config.RequireSignedTag} {
-		cfg := baseConfig(t)
-		cfg.Trust.Require = require
-		cfg.Trust.TagPattern = "release-*"
-
-		_, err := agent.New(agent.Options{Config: cfg, Pass: newRecorder().pass})
-		if err == nil {
-			t.Fatalf("trust.require %s started an agent that verifies nothing", require)
-		}
-		if !strings.Contains(err.Error(), "trust.require: none") {
-			t.Errorf("the error does not say what to do: %v", err)
-		}
-	}
 }
