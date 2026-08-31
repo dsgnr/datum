@@ -583,3 +583,55 @@ func TestRefsThatCouldBeOptionsAreRefused(t *testing.T) {
 		}
 	}
 }
+
+// The fingerprint has to match what ssh tooling prints, or a fleet cannot match the
+// metric against the key it is rotating to.
+func TestSignersReportsTheSameFingerprintAsSshKeygen(t *testing.T) {
+	o := newOrigin(t)
+
+	out, err := exec.Command("ssh-keygen", "-l", "-f", o.keyFile+".pub").Output()
+	if err != nil {
+		t.Fatalf("ssh-keygen -l: %v", err)
+	}
+	// The output is `bits SHA256:... comment (TYPE)`.
+	var want string
+	for _, field := range strings.Fields(string(out)) {
+		if strings.HasPrefix(field, "SHA256:") {
+			want = field
+		}
+	}
+	if want == "" {
+		t.Fatalf("no fingerprint in %q", out)
+	}
+
+	signers, err := git.Signers(o.signers)
+	if err != nil {
+		t.Fatalf("Signers: %v", err)
+	}
+	if len(signers) != 1 {
+		t.Fatalf("Signers = %+v", signers)
+	}
+	if signers[0].KeyID != want {
+		t.Errorf("KeyID = %q, want %q", signers[0].KeyID, want)
+	}
+	if signers[0].Principals != "fleet@example.com" {
+		t.Errorf("Principals = %q", signers[0].Principals)
+	}
+}
+
+// A keyring, not an allowed-signers file, is how a gpg fleet holds its trust root, and
+// that is not a misconfiguration to fail over.
+func TestSignersIgnoresLinesItCannotRead(t *testing.T) {
+	path := filepath.Join(t.TempDir(), "signers")
+	content := "# a comment\n\nnot-a-signer-line\nfleet@example.com ssh-ed25519 !!!notbase64!!!\n"
+	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
+		t.Fatalf("write: %v", err)
+	}
+	signers, err := git.Signers(path)
+	if err != nil {
+		t.Fatalf("Signers: %v", err)
+	}
+	if len(signers) != 0 {
+		t.Errorf("Signers = %+v, want none", signers)
+	}
+}
