@@ -11,7 +11,7 @@ GO_BUILD := CGO_ENABLED=0 go build
 # test binary into an image rather than installing a toolchain in it.
 DOCKER_ARCH := $(shell docker version --format '{{.Server.Arch}}' 2>/dev/null)
 
-.PHONY: help build build-linux dist test test-linux test-apt test-dnf test-sysctl test-user test-systemd test-git fmt vet lint shell clean \
+.PHONY: help build build-linux dist test test-linux test-apt test-dnf test-sysctl test-user test-systemd test-git test-source fmt vet lint shell clean \
 	docs-install docs-serve docs-build docs-check
 
 help:
@@ -21,6 +21,7 @@ help:
 	@echo "test          Run the Go tests"
 	@echo "test-linux    Run the Go tests in a Linux container"
 	@echo "test-git      Run the git client against real signed repositories"
+	@echo "test-source   Run revision selection against a real signed repository"
 	@echo "test-apt      Run the apt provider against a real Debian image"
 	@echo "test-dnf      Run the dnf provider against a real Fedora image"
 	@echo "test-sysctl   Run the sysctl provider against a real kernel"
@@ -164,3 +165,9 @@ clean:
 test-git:
 	docker run --rm -v "$(CURDIR):/src" -w /src golang:1.25 \
 		go test -tags integration -count=1 ./internal/git/
+
+# Revision selection is tested against a real repository with real signatures, because
+# the fallback is what stops one bad commit becoming a fleet-wide outage.
+test-source:
+	docker run --rm -v "$(CURDIR):/src" -w /src golang:1.25 \
+		go test -tags integration -count=1 ./internal/source/
