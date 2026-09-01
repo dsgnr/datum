@@ -11,11 +11,12 @@ commit pushed from a compromised account on the Git server arrives over a valid 
     recorded revision has gone. Verification is git's own, against `trust.signers`, so a well-formed
     signature made by an untrusted key is refused.
 
-    Two things on this page are not implemented. `trust.strictPaths` is read and does nothing. The
-    refusal of a resource that targets a trust anchor, under
-    [trust anchors are never managed by Datum](#trust-anchors-are-never-managed-by-datum), is
-    specified and not enforced, so a manifest declaring a `File` at `/etc/datum/agent.yaml` is
-    currently applied.
+    The refusal of a resource that targets a trust anchor is enforced, in two places. A manifest is
+    refused by name when its graph is built, which needs no host, and a path that reaches protected
+    state through a hard link or through a link already on the disk is refused immediately before
+    anything is written, because that route is only visible where the host is.
+
+    `trust.strictPaths` is read and does nothing.
 
 ## Agent configuration
 
@@ -186,6 +187,16 @@ above would be defeated by each of the following.
 Paths are canonicalised and compared as device and inode where the target exists, and by containment
 against the protected prefixes where it does not. An ancestor of a protected path is refused as well
 as a descendant, since a resource managing `/etc` covers everything the list names.
+
+The two comparisons happen at different points. Containment and canonicalisation are properties of
+the manifest, so they are checked when the graph is built and fail with no host involved, which is
+what `datum validate` reports in a pull request. Device and inode are properties of a filesystem, so
+they are checked on the host immediately before a resource is applied. An earlier check would leave
+a window in which a link placed between the check and the write would be followed.
+
+The protected paths come from the agent's own configuration rather than from the table above. A host
+that keeps its state elsewhere needs that directory protected, and the default location would not be
+the one in use.
 
 ### Routes other than the filesystem
 

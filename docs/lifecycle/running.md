@@ -196,20 +196,19 @@ for the service, because the agent holds the exit code itself and reports outcom
 
 ## What is missing
 
-The agent fetches, verifies and falls back on its own. Four things on the pages this one
-links to are specified and not implemented.
+The agent fetches, verifies, falls back, and refuses desired state that targets its own
+controls. Three things on the pages this one links to are specified and not implemented.
 
 | Missing | Designed in |
 | ------- | ----------- |
-| Refusing a resource that targets Datum's own files | [Trust anchors](../security/repository-trust.md#trust-anchors-are-never-managed-by-datum) |
 | `trust.strictPaths` | [Provider safety](../security/provider-safety.md#untrusted-path-components) |
 | `source.maxSourceSize` | [Limits](../security/repository-fetch.md#limits) |
 | Secret references | [Secrets](../resources/secrets.md) |
 
-The first is the one worth knowing about before trusting this on a machine that matters. A
-commit declaring a `File` at `/etc/datum/allowed-signers` is currently applied, which means a
-repository can replace the key set that authorises it. Until that refusal exists, the
-protection is that the repository is reviewed rather than that Datum refuses.
-
-Verifying a revision is no use on a host whose clock is wrong in a way that matters for key
-expiry, which is [time](../security/time.md), and nothing here enforces a freshness bound yet.
+Two limits of what is implemented need stating instead of being left to discover. Verifying a
+revision is no use on a host whose clock is wrong in a way that matters for key expiry, which is
+[time](../security/time.md), and nothing enforces a freshness bound yet. And the refusal of
+resources that target Datum's own files protects Datum's controls from being disabled by desired
+state, which is not the same as protecting the host from a repository that is trusted to configure
+it. A `File` writing `/etc/sudoers.d/` is root-equivalent and permitted, because that is what a
+configuration system is for.

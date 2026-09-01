@@ -33,7 +33,7 @@ resource types.
 | Signature verification and the descendant check | Implemented |
 | Last known good, so a bad revision does not stop a host working | Implemented |
 | `datum revision` | Implemented |
-| Refusing resources that target Datum's own files | Not started |
+| Refusing resources that target Datum's own files | Implemented |
 | Secret resolution and reboot handling | Not started |
 
 Applying is Linux-only. Reading a host works anywhere, since the safety rules

@@ -44,10 +44,11 @@ equivalent.
 | Works | Not yet |
 | ----- | ------- |
 | `render`, `explain`, `validate`, `affected` | `apk` and `pacman` |
-| `observe`, `diff`, `plan` | Refusing resources that target Datum |
+| `observe`, `diff`, `plan` | `trust.strictPaths` |
 | `reconcile`, `status` | `--revision` and `--json` |
 | `agent`, `config check`, `revision` | |
 | Fetching, verification, last known good | |
+| Refusing resources that target Datum | |
 | `Package` through `apt` and `dnf` | |
 | `Repository` through `apt` and `dnf` | |
 | `Service` through `systemd` | |
