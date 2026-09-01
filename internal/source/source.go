@@ -106,10 +106,11 @@ type Source struct {
 // keeps between passes, and both are covered by the same directory permissions.
 func New(cfg config.Config, prefix string) *Source {
 	clone := filepath.Join(cfg.State, "repository")
-	return NewWith(cfg, prefix, git.New(clone, git.Limits{
+	client := git.New(clone, git.Limits{
 		FetchTimeout:      time.Duration(cfg.Source.FetchTimeout),
 		MaxRepositorySize: int64(cfg.Source.MaxRepositorySize),
-	}))
+	}).WithCredential(cfg.Source.Credential)
+	return NewWith(cfg, prefix, client)
 }
 
 // NewWith returns a source using a supplied client.
