@@ -9,6 +9,7 @@ import (
 	"io"
 	"text/tabwriter"
 
+	"github.com/dsgnr/datum/internal/anchor"
 	"github.com/dsgnr/datum/internal/capability"
 	"github.com/dsgnr/datum/internal/document"
 	"github.com/dsgnr/datum/internal/graph"
@@ -23,6 +24,18 @@ import (
 type hostFlags struct {
 	host *string
 	repo *string
+
+	// protected is the set of Datum's own paths a manifest may not target. A one-off
+	// command assumes the stock paths, and the agent supplies its own.
+	protected *anchor.Set
+}
+
+// protectedSet returns what this invocation defends.
+func (f hostFlags) protectedSet() anchor.Set {
+	if f.protected != nil {
+		return *f.protected
+	}
+	return anchor.Default()
 }
 
 func addHostFlags(fs *flag.FlagSet) hostFlags {
@@ -68,7 +81,7 @@ func runPass(ctx context.Context, e *env, f hostFlags) (pass, int) {
 		return pass{}, exitError
 	}
 
-	g, err := graph.Build(manifest)
+	g, err := graph.BuildProtecting(manifest, f.protectedSet())
 	if err != nil {
 		e.errorf("%v\n", err)
 		return pass{}, exitError

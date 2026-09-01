@@ -9,6 +9,7 @@ import (
 	"text/tabwriter"
 	"time"
 
+	"github.com/dsgnr/datum/internal/anchor"
 	"github.com/dsgnr/datum/internal/lock"
 	"github.com/dsgnr/datum/internal/reconcile"
 	"github.com/dsgnr/datum/internal/report"
@@ -65,6 +66,7 @@ func runReconcile(e *env, args []string) int {
 		Providers: p.providers,
 		Graph:     p.graph,
 		RepoRoot:  p.repoRoot,
+		Protected: anchor.Default(),
 	})
 	if err != nil {
 		e.errorf("%v\n", err)
