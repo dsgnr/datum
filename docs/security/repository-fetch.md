@@ -4,12 +4,17 @@ Every control in [trusting desired state](repository-trust.md) reasons about Git
 clone leaves two of those controls unenforceable without reporting anything, and a checkout
 performed with default settings can execute code before any manifest has been read.
 
-!!! note "Proposed behaviour"
+!!! note "Implementation status"
 
-    None of this exists. It is specified because the failure mode is a control that appears to be
-    working and is not, which is worse than one that is absent, and because the checkout step is the
-    only place where [ADR-0011](../adr/0011-no-command-execution-from-desired-state.md) can be
-    defeated without any repository content being at fault.
+    The agent keeps a full clone with tags at `/var/lib/datum/repository`, fetches rather than
+    re-cloning, refuses a shallow clone, and refuses a pass whose recorded revision is absent. The
+    four checkout mechanisms below are disabled, and the tests for that run against real
+    repositories.
+
+    Two limits are not enforced yet. `maxSourceSize` is read and does nothing, so a `File` pointing
+    at a very large blob is not bounded. `source.credential` works for an ssh identity file and not
+    for an https token. A token would have to reach git either on a command line every local user
+    can read or through a credential helper, and a helper is a command Datum will not run.
 
 ## History has to be complete
 

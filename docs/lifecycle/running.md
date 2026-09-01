@@ -1,8 +1,8 @@
 # Running Datum on a host
 
 This page covers installing the binary, configuring the agent and running it as a service.
-Everything here works today. What is still missing is listed at the end, and the largest
-gap is that nothing fetches from a remote yet, so the repository has to be on disk.
+Everything here works today, including fetching and verifying a revision. What is still
+missing is listed at the end.
 
 ## Install the binary
 
@@ -25,21 +25,28 @@ On the host:
 The binary is statically linked with cgo disabled, so it needs nothing else installed.
 Cross-compiling needs no toolchain beyond Go.
 
-## Put the fleet on the host
+## Give the host a signing key to trust
 
-Nothing fetches from a remote yet, so the repository has to be on disk already. Clone it,
-and pull it on whatever schedule suits until the agent does that itself.
-
-```console
-# git clone https://git.example.com/fleet.git /var/lib/datum/fleet
-```
-
-Datum reads the fleet directory, which is the one holding the `Fleet` document. In a
-repository that holds other things, point at the subdirectory:
+The agent verifies that a revision was signed by a key in `trust.signers` before it applies
+it. The file is in ssh allowed-signers format, and it is
+[not something Datum manages](../adr/0010-no-self-managed-trust-anchors.md), so whatever
+builds the machine puts it there.
 
 ```console
-# datum plan --host web-001 --repo /var/lib/datum/fleet/infra/fleet
+# install -d -m 0755 /etc/datum
+# install -m 0644 allowed-signers /etc/datum/allowed-signers
 ```
+
+```text title="/etc/datum/allowed-signers"
+release@example.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI...
+```
+
+A fleet signing commits with ssh keys needs nothing else. A fleet using gpg keeps its trust
+root in a keyring instead, which works for verification and means
+[`datum_trust_signer_info`](../observability/metrics.md#security-controls) reports nothing.
+
+Set `trust.require: none` to run without any of this, which is a decision that [reports itself
+through a metric](../observability/metrics.md#security-controls) rather than being invisible.
 
 ## The state directory
 
@@ -63,18 +70,14 @@ host: web-001
 source:
   url: https://git.example.com/fleet.git
 
-trust:
-  require: none
-
 reconciliation:
   mode: observe
   interval: 30m
 ```
 
-`trust.require: none` is there because signature verification is not implemented, and the
-default of `signed-commit` would refuse every revision. It
-[reports itself through a metric](../observability/metrics.md#security-controls), which is
-the point of it being a setting rather than a silent default.
+`trust.require` defaults to `signed-commit`, so that file expects every commit on the tracked branch
+to be signed by a key in `/etc/datum/allowed-signers`. A fleet signing releases instead of every
+commit uses `signed-tag` with a `tagPattern`.
 
 Starting in `observe` mode suits a machine being adopted, since the first pass then reports what it
 would change without changing it.
@@ -89,7 +92,8 @@ what catches a key in the wrong place.
   host                     web-001
   source.url               https://git.example.com/fleet.git
   source.branch            main
-  trust.require            none
+  trust.require            signed-commit
+  trust.signers            /etc/datum/allowed-signers   1 key
   trust.requireDescendant  true
   reconciliation.mode      observe
   reconciliation.interval  30m, offset 06:51
@@ -106,9 +110,13 @@ read, because it says when a pass is due and nobody can compute it by hand.
 Read before writing, since `plan` changes nothing and exits 2 when something
 differs.
 
+These read a checkout rather than fetching, so point them at one. Cloning by hand is the easiest way
+to see what a host would do before the service starts.
+
 ```console
-# datum plan --host web-001 --repo /var/lib/datum/fleet
-# datum reconcile --host web-001 --repo /var/lib/datum/fleet
+# git clone https://git.example.com/fleet.git /tmp/fleet
+# datum plan --host web-001 --repo /tmp/fleet
+# datum reconcile --host web-001 --repo /tmp/fleet
 # datum status
 ```
 
@@ -125,7 +133,7 @@ Wants=network-online.target
 
 [Service]
 Type=exec
-ExecStart=/usr/local/bin/datum agent --repo /var/lib/datum/fleet
+ExecStart=/usr/local/bin/datum agent
 # The agent stops scheduling on SIGTERM and abandons any pass still running, which
 # leaves the host partially applied in the way an interrupted pass always does.
 KillSignal=SIGTERM
@@ -144,8 +152,10 @@ WantedBy=multi-user.target
 # journalctl -u datum.service -f
 ```
 
-`--repo` is there because fetching is not implemented. It goes away when the agent reads
-`source.url` itself.
+The agent clones `source.url` into `/var/lib/datum/repository` on its first pass and fetches
+after that. Naming a checkout with `--repo` is still possible and skips fetching and
+verification entirely, which is refused unless `trust.require` is `none`, so a host cannot end
+up applying an unverified tree while its configuration says otherwise.
 
 The agent runs no pass at startup. It waits for its own offset within the first interval,
 so a fleet rebooting together does not reconcile all at once.
@@ -186,16 +196,20 @@ for the service, because the agent holds the exit code itself and reports outcom
 
 ## What is missing
 
-The agent runs and reconciles on its interval. Three things it is designed to do are not
-implemented yet.
+The agent fetches, verifies and falls back on its own. Four things on the pages this one
+links to are specified and not implemented.
 
 | Missing | Designed in |
 | ------- | ----------- |
-| Fetching from a remote, so `--repo` is required | [Repository fetch](../security/repository-fetch.md) |
-| Signature verification of the revision | [Repository trust](../security/repository-trust.md) |
-| Falling back to the last good revision | [Last known good](../reconciliation/last-known-good.md) |
+| Refusing a resource that targets Datum's own files | [Trust anchors](../security/repository-trust.md#trust-anchors-are-never-managed-by-datum) |
+| `trust.strictPaths` | [Provider safety](../security/provider-safety.md#untrusted-path-components) |
+| `source.maxSourceSize` | [Limits](../security/repository-fetch.md#limits) |
+| Secret references | [Secrets](../resources/secrets.md) |
 
-Those three are one piece of work rather than three, because a fallback needs something to
-fall back from and a verified revision is what makes falling back meaningful. Until they
-exist, a host applies whatever is in its checkout, and that is the reason this is not yet a
-production deployment.
+The first is the one worth knowing about before trusting this on a machine that matters. A
+commit declaring a `File` at `/etc/datum/allowed-signers` is currently applied, which means a
+repository can replace the key set that authorises it. Until that refusal exists, the
+protection is that the repository is reviewed rather than that Datum refuses.
+
+Verifying a revision is no use on a host whose clock is wrong in a way that matters for key
+expiry, which is [time](../security/time.md), and nothing here enforces a freshness bound yet.

@@ -4,6 +4,16 @@ A pass begins by resolving a revision from Git. That step can fail before the ho
 all, and what an agent does when it cannot obtain a usable revision is a first-class question, not
 an error path.
 
+!!! note "Implementation status"
+
+    This works. The pointer is a single value at `/var/lib/datum/accepted-revision`, it advances when
+    a revision verifies, satisfies the descendant requirement, resolves and validates, and a host
+    whose newer revision is refused keeps reconciling what the pointer holds. A host that cannot
+    reach its source does the same.
+
+    Whether a cached revision expires is still undecided, so a host disconnected for months keeps
+    enforcing what it last resolved.
+
 ## Two kinds of failure
 
 Resolving and validating a revision can fail in ways that have nothing to do with the host.

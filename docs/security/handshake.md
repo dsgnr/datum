@@ -36,31 +36,33 @@ Transport authentication proves the connection reached the right server. It says
 produced the content, since a commit pushed by a compromised account on the Git server arrives over
 a valid connection.
 
-!!! note "Proposed behaviour"
+!!! note "Implementation status"
 
-    The agent holds a set of trusted public keys and refuses to resolve a revision whose commit
-    or tag is not signed by one of them. Trust then rests on a key rather than on a server, and
-    an attacker who takes over the remote cannot produce desired state the agent will accept.
+    Implemented. The agent holds a set of trusted public keys and refuses a revision whose commit or
+    tag is not signed by one of them. Trust rests on a key rather than on a server, so an attacker
+    holding the remote cannot produce desired state the agent accepts.
 
-    The operational cost is real. Every commit that reaches the tracked branch has to be signed
-    by a key the fleet trusts, which constrains automation and means key rotation becomes a
-    fleet-wide operation.
+    [`signed-tag`](repository-trust.md#verifying-that-a-revision-is-genuine) exists because that has
+    an operational cost. Requiring a signature on every commit on the tracked branch constrains
+    automation and makes key rotation a fleet-wide operation. Moving the requirement to a release
+    step avoids both.
 
 ## Verifying that a revision is current
 
 A signed old commit is still a valid signed commit, so signature verification does not stop a
 downgrade.
 
-!!! note "Proposed behaviour"
+!!! note "Implementation status"
 
-    The agent records the revision it last applied and requires the next one to be a descendant of
-    it, refusing anything that is not a fast-forward. Git history supplies the ordering, so nothing
-    extra has to be stored beyond one revision identifier, and a legitimate revert is a new commit
-    rather than a rewritten branch.
+    Implemented. The agent records the revision it accepted and requires the next one to descend
+    from it, refusing anything that is not a fast-forward. Git history supplies the ordering, so
+    nothing is stored beyond one revision identifier. A revert is expressed as a new commit and the
+    branch is not rewritten.
 
-    The awkward case is a host that has been off long enough for history to have been rewritten,
-    or a repository that force-pushes. Both would require an explicit override, and what that
-    looks like has not been designed.
+    The awkward case is a host that has been off long enough for history to have been rewritten, or
+    a repository that force-pushes. Both refuse every pass until an operator runs [`datum revision
+    clear`](../reference/cli.md#datum-revision). That is a one-shot action rather than a setting,
+    since a setting turned on during an incident tends to stay on.
 
 ## Getting the repository credential onto a host
 

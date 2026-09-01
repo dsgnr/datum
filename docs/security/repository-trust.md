@@ -4,11 +4,18 @@ Two questions have to be answered before an agent acts on a revision. Was this d
 produced by someone trusted, and is it the current one. Transport authentication answers neither. A
 commit pushed from a compromised account on the Git server arrives over a valid connection.
 
-!!! note "Proposed behaviour"
+!!! note "Implementation status"
 
-    The mechanisms below are specified rather than merely intended, and none of them are
-    implemented. They are written at this level of detail because they constrain the agent's
-    configuration format and its startup sequence, which are cheap to design now.
+    All three `trust.require` modes work, including signed-tag candidate selection and its refusal
+    of an ambiguous pair, and the descendant check refuses both a downgrade and a history whose
+    recorded revision has gone. Verification is git's own, against `trust.signers`, so a well-formed
+    signature made by an untrusted key is refused.
+
+    Two things on this page are not implemented. `trust.strictPaths` is read and does nothing. The
+    refusal of a resource that targets a trust anchor, under
+    [trust anchors are never managed by Datum](#trust-anchors-are-never-managed-by-datum), is
+    specified and not enforced, so a manifest declaring a `File` at `/etc/datum/agent.yaml` is
+    currently applied.
 
 ## Agent configuration
 
