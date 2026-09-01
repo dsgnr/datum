@@ -12,6 +12,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/dsgnr/datum/internal/anchor"
 	"github.com/dsgnr/datum/internal/document"
 	"github.com/dsgnr/datum/internal/graph"
 	"github.com/dsgnr/datum/internal/plan"
@@ -72,6 +73,12 @@ type Options struct {
 	// stuck action consumes the whole pass. Zero leaves an action unbounded, which is
 	// what a one-off command wants.
 	ActionTimeout time.Duration
+
+	// Protected is the last gate before a change. The graph already checked the manifest
+	// by name, and this catches what only exists on a host, being a hard link into
+	// protected state or a path that resolves there through a link somebody already
+	// placed.
+	Protected anchor.Set
 }
 
 // actionContext bounds a single action, so a provider that hangs fails that resource,
@@ -175,6 +182,12 @@ func enforce(ctx context.Context, step plan.Step, opts Options) (state.Resource,
 		LayerDir: node.Resource.LayerDir,
 		RepoRoot: opts.RepoRoot,
 		Trigger:  step.Trigger,
+	}
+
+	// Checked against the host immediately before the change, because a link placed
+	// between observation and now would otherwise be followed.
+	if err := opts.Protected.CheckIdentity(step.Ref, node.Target); err != nil {
+		return state.Failed, "", err
 	}
 
 	applyCtx, cancelApply := opts.actionContext(ctx)

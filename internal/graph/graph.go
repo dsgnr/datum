@@ -11,6 +11,7 @@ import (
 	"sort"
 	"strings"
 
+	"github.com/dsgnr/datum/internal/anchor"
 	"github.com/dsgnr/datum/internal/document"
 	"github.com/dsgnr/datum/internal/resolve"
 )
@@ -67,7 +68,17 @@ type Graph struct {
 }
 
 // Build validates a manifest and returns its graph.
+//
+// Protected targets are refused here and not later, so a manifest that would disable
+// Datum's own controls fails with no host involved and nothing applied.
 func Build(m resolve.Manifest) (*Graph, error) {
+	return BuildProtecting(m, anchor.Default())
+}
+
+// BuildProtecting validates a manifest against a named protected set, which an agent
+// supplies from its own configuration because a host that keeps its state somewhere other
+// than the default still needs that directory protected.
+func BuildProtecting(m resolve.Manifest, protected anchor.Set) (*Graph, error) {
 	g := &Graph{Nodes: make(map[document.Reference]Node, len(m.Resources))}
 	var errs document.Errors
 
@@ -75,6 +86,10 @@ func Build(m resolve.Manifest) (*Graph, error) {
 		target, err := document.TargetIdentity(resource.Ref.Type, resource.Ref.Name, resource.Desired)
 		if err != nil {
 			errs.Add(resource.Position, "%s %v", resource.Ref, err)
+			continue
+		}
+		if err := protected.Check(resource.Ref, target, resource.Desired); err != nil {
+			errs.Add(resource.Position, "%v", err)
 			continue
 		}
 		g.Nodes[resource.Ref] = Node{Resource: resource, Target: target}

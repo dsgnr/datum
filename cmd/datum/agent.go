@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/dsgnr/datum/internal/agent"
+	"github.com/dsgnr/datum/internal/anchor"
 	"github.com/dsgnr/datum/internal/config"
 	"github.com/dsgnr/datum/internal/git"
 	"github.com/dsgnr/datum/internal/metrics"
@@ -138,7 +139,7 @@ func fetchingPass(e *env, cfg config.Config, registry *metrics.Registry, prefix 
 		}
 		registry.SetTrust(trustedSigners(cfg), !selection.FirstContact)
 
-		p, code := runPassIn(ctx, e, cfg.Host, selection.Fleet)
+		p, code := runPassIn(ctx, e, cfg, selection.Fleet)
 		if code != exitOK {
 			// Resolution covers parsing, the graph and validation, so a failure here is the
 			// repository, not the host.
@@ -164,7 +165,7 @@ func fetchingPass(e *env, cfg config.Config, registry *metrics.Registry, prefix 
 // localPass reconciles a local checkout, with no fetch and no verification.
 func localPass(e *env, cfg config.Config, repo string) agent.Pass {
 	return func(ctx context.Context) (report.Report, schedule.Failure, error) {
-		p, code := runPassIn(ctx, e, cfg.Host, repo)
+		p, code := runPassIn(ctx, e, cfg, repo)
 		if code != exitOK {
 			return report.Report{}, schedule.Upstream, errPassFailed
 		}
@@ -202,8 +203,10 @@ func trustedSigners(cfg config.Config) []string {
 }
 
 // runPassIn resolves, observes and plans against one fleet directory.
-func runPassIn(ctx context.Context, e *env, host, fleet string) (pass, int) {
-	f := hostFlags{host: &host, repo: &fleet}
+func runPassIn(ctx context.Context, e *env, cfg config.Config, fleet string) (pass, int) {
+	host := cfg.Host
+	protected := anchor.For(cfg)
+	f := hostFlags{host: &host, repo: &fleet, protected: &protected}
 	return runPass(ctx, e, f)
 }
 
@@ -220,6 +223,7 @@ func applyAndReport(ctx context.Context, e *env, cfg config.Config, p pass, sele
 		Graph:         p.graph,
 		RepoRoot:      p.repoRoot,
 		ActionTimeout: time.Duration(cfg.Reconciliation.ActionTimeout),
+		Protected:     anchor.For(cfg),
 	})
 	if err != nil {
 		return report.Report{}, schedule.Local, err
