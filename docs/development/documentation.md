@@ -117,10 +117,18 @@ that the page still makes sense without it.
 Plain text diagrams in fenced blocks are often clearer than Mermaid for short pipelines, and
 they diff readably.
 
+Mermaid is rendered in the browser, not at build time, so a syntax error produces a diagram that
+silently fails to draw and a build that reports nothing. `make docs-mermaid` parses every block with
+the real parser and is part of `make docs-check`.
+
+The common mistake is a node identifier that is also a keyword. A `graph TD` diagram cannot
+have a node called `graph`, so name it `rgraph` or similar.
+
 ## Before committing
 
-Run `make docs-check`. Read the rendered page and not only the source, because tables and
-admonitions are easy to get subtly wrong in Markdown and obvious in the browser.
+Run `make docs-check`, which builds with `--strict` and parses every diagram. Read the rendered page
+and not only the source, because tables and admonitions are easy to get subtly wrong in Markdown and
+obvious in the browser.
 
 Keep commits small and coherent, one improvement each, with a one-line [Conventional
 Commits](https://www.conventionalcommits.org/) subject.
