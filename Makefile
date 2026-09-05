@@ -12,7 +12,7 @@ GO_BUILD := CGO_ENABLED=0 go build
 DOCKER_ARCH := $(shell docker version --format '{{.Server.Arch}}' 2>/dev/null)
 
 .PHONY: help build build-linux dist test test-linux test-apt test-dnf test-sysctl test-user test-systemd test-git test-source fmt vet lint shell clean \
-	docs-install docs-serve docs-build docs-check
+	docs-install docs-serve docs-build docs-check docs-mermaid
 
 help:
 	@echo "build         Build ./bin/datum for this machine"
@@ -34,7 +34,8 @@ help:
 	@echo "docs-install  Create $(VENV) and install the documentation toolchain"
 	@echo "docs-serve    Preview the documentation locally"
 	@echo "docs-build    Build the site into ./site"
-	@echo "docs-check    Build the site with --strict"
+	@echo "docs-check    Build the site with --strict and check the diagrams"
+	@echo "docs-mermaid  Parse every mermaid block with the real parser"
 	@echo "clean         Remove build output and caches"
 
 # Every source file, so a binary is rebuilt when the code changes. Without this the
@@ -154,8 +155,15 @@ docs-serve: $(STAMP)
 docs-build: $(STAMP)
 	$(ZENSICAL) build
 
-docs-check: $(STAMP)
+docs-check: $(STAMP) docs-mermaid
 	$(ZENSICAL) build --strict
+
+# A strict build never parses mermaid, because the browser renders it. In a container so
+# this needs no node installed.
+docs-mermaid:
+	docker run --rm -v "$(CURDIR):/src" -w /src node:22-slim sh -c \
+		'npm install --prefix test/mermaid --silent --no-audit --no-fund >/dev/null && \
+		 node test/mermaid/check.mjs docs'
 
 clean:
 	rm -rf site .cache bin

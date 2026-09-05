@@ -12,3 +12,7 @@ __pycache__/
 # Editor and OS noise
 .DS_Store
 *.swp
+
+# Installed by the mermaid documentation check
+/test/mermaid/node_modules/
+/test/mermaid/package-lock.json
