@@ -21,6 +21,7 @@ nav = [
     "introduction/why-datum.md",
     "introduction/how-datum-works.md",
     "introduction/design-principles.md",
+    "introduction/comparison.md",
     "introduction/project-status.md",
   ] },
   { "Concepts" = [

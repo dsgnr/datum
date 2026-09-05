@@ -60,3 +60,6 @@ None of these properties is novel. Declarative state, reconciliation loops, type
 and provider abstraction all exist in tools that predate this one, and several influenced
 the design directly. The aim is a system that holds all of them at once for Linux hosts,
 keeps the resource model small enough to reason about, and can explain its own decisions.
+
+Which of those tools already does which of these, and where they are the better choice, is set
+out under [compared with other tools](comparison.md).

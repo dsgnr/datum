@@ -130,5 +130,6 @@ claim made by the hosts, not evidence about them.
 [Why Datum?](why-datum.md) sets out the problems this design is responding to,
 and [how Datum works](how-datum-works.md) follows a single change through the
 whole pipeline. [Design principles](design-principles.md) records the constraints
-the design is held to, and [project status](project-status.md) explains how this
+the design is held to, [compared with other tools](comparison.md) places it against
+Puppet, NixOS and the rest, and [project status](project-status.md) explains how this
 site distinguishes settled decisions from open proposals.
