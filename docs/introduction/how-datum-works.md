@@ -8,8 +8,8 @@ configuration it shows is proposed, not settled, but the sequence is the part be
 graph TD
   repo[Repository] --> resolver[Fleet resolver]
   resolver --> manifest[Effective manifest]
-  manifest --> graph[Resource graph]
-  graph --> observer[Observer]
+  manifest --> rgraph[Resource graph]
+  rgraph --> observer[Observer]
   observer --> planner[Planner]
   planner --> reconciler[Reconciler]
   reconciler --> providers[Providers]
