@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"strings"
 	"testing"
 
 	"github.com/dsgnr/datum/internal/provider"
@@ -95,5 +96,27 @@ func write(t *testing.T, path, content string) {
 	t.Helper()
 	if err := os.WriteFile(path, []byte(content), 0o644); err != nil {
 		t.Fatalf("write %s: %v", path, err)
+	}
+}
+
+// A secrets placeholder is left alone by resolution for the host to fill in. Nothing does
+// that yet, so one reaching a provider has to say so rather than report a missing file
+// whose name contains braces.
+func TestAnUnresolvedPlaceholderIsNotTreatedAsAFilename(t *testing.T) {
+	root := t.TempDir()
+	mkdirAll(t, filepath.Join(root, "layers", "web"))
+	req := provider.Request{RepoRoot: root, LayerDir: "layers/web"}
+
+	_, err := req.ReadSource("{{ secrets.signing_key }}")
+	if err == nil {
+		t.Fatal("a placeholder was read as a path")
+	}
+	for _, want := range []string{"placeholder", "not implemented"} {
+		if !strings.Contains(err.Error(), want) {
+			t.Errorf("error %q does not mention %q", err, want)
+		}
+	}
+	if strings.Contains(err.Error(), "no such file") {
+		t.Errorf("the error blames a missing file: %v", err)
 	}
 }

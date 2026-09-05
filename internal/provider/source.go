@@ -40,6 +40,12 @@ func (r Request) SourcePath(rel string) (string, error) {
 
 // ReadSource reads a repository-relative file.
 func (r Request) ReadSource(rel string) ([]byte, error) {
+	// Resolution leaves a secrets placeholder alone for the host to fill in, so one
+	// arriving here means nothing did. Treating it as a filename reports a missing file
+	// with braces in its name, which sends the reader looking for a typo.
+	if strings.Contains(rel, "{{") {
+		return nil, fmt.Errorf("%q is an unresolved placeholder, and secret references are not implemented", rel)
+	}
 	path, err := r.SourcePath(rel)
 	if err != nil {
 		return nil, err
