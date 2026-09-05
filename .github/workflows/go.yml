@@ -14,8 +14,8 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
-  test:
-    name: Build and test
+  check:
+    name: Format, vet and unit tests
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -23,5 +23,87 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
-      - run: make lint
-      - run: make build
+
+      - name: gofmt
+        run: |
+          unformatted=$(gofmt -l .)
+          if [ -n "$unformatted" ]; then
+            echo "these files need gofmt:"
+            echo "$unformatted"
+            exit 1
+          fi
+
+      - run: go vet ./...
+      - run: go test ./... -count=1
+
+  # Applying is Linux-only, reading is not, so the suite has to pass on a Mac too.
+  macos:
+    name: Unit tests on macOS
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: go test ./... -count=1
+
+  cross:
+    name: Cross-compile
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: make dist
+
+      # A dynamically linked binary means cgo is back on.
+      - name: Check the Linux builds
+        run: |
+          set -e
+          file bin/datum-linux-amd64
+          file bin/datum-linux-arm64
+          file bin/datum-linux-amd64 | grep -q 'x86-64'
+          file bin/datum-linux-arm64 | grep -q 'aarch64'
+          ! file bin/datum-linux-amd64 | grep -q 'dynamically linked'
+
+  # Same make targets as locally, so a failure here reproduces with one command.
+  integration:
+    name: ${{ matrix.suite }}
+    runs-on: ubuntu-latest
+    needs: check
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - test-apt
+          - test-dnf
+          - test-sysctl
+          - test-user
+          - test-systemd
+          - test-git
+          - test-source
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: make ${{ matrix.suite }}
+
+  # One job for branch protection to require, so the matrix can change without
+  # anybody updating repository settings.
+  required:
+    name: All checks
+    runs-on: ubuntu-latest
+    if: always()
+    needs: [check, macos, cross, integration]
+    steps:
+      - run: |
+          results="${{ join(needs.*.result, ' ') }}"
+          echo "$results"
+          case "$results" in
+            *failure*|*cancelled*) exit 1 ;;
+          esac
