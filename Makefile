@@ -12,7 +12,7 @@ GO_BUILD := CGO_ENABLED=0 go build
 DOCKER_ARCH := $(shell docker version --format '{{.Server.Arch}}' 2>/dev/null)
 
 .PHONY: help build build-linux dist test test-linux test-apt test-dnf test-sysctl test-user test-systemd test-git test-source fmt vet lint shell clean \
-	package package-deb package-rpm \
+	package package-deb package-rpm test-package \
 	docs-install docs-serve docs-build docs-check docs-mermaid
 
 help:
@@ -20,6 +20,7 @@ help:
 	@echo "build-linux   Cross-compile for linux/amd64 and linux/arm64"
 	@echo "dist          Build every supported target into ./bin"
 	@echo "package       Build a .deb and an .rpm into ./dist"
+	@echo "test-package  Install the packages in Debian and Fedora and check them"
 	@echo "test          Run the Go tests"
 	@echo "test-linux    Run the Go tests in a Linux container"
 	@echo "test-git      Run the git client against real signed repositories"
@@ -82,6 +83,19 @@ package-rpm: bin/datum-linux-$(DOCKER_ARCH)
 	docker run --rm -v "$(CURDIR):/src" -w /src fedora:41 sh -c \
 		'dnf install -y -q rpm-build python3 >/dev/null && \
 		 packaging/build.sh rpm $(DOCKER_ARCH) $(VERSION) bin/datum-linux-$(DOCKER_ARCH) dist'
+
+# Installs what was just built the way somebody would install it, then checks the result
+# from inside the container. The package managers are the real ones, so a postinst or a
+# scriptlet that fails shows up here rather than on a host.
+test-package: package
+	docker run --rm -e DEBIAN_FRONTEND=noninteractive -v "$(CURDIR):/src:ro" -w /src debian:trixie sh -c \
+		'apt-get update -qq >/dev/null && \
+		 apt-get install -y -qq ./dist/datum_$(VERSION)_$(DOCKER_ARCH).deb >/dev/null && \
+		 packaging/verify.sh'
+	docker run --rm -v "$(CURDIR):/src:ro" -w /src fedora:41 sh -c \
+		'dnf install -y -q ./dist/datum-$(VERSION)-1.$(RPMARCH).rpm >/dev/null 2>/tmp/dnf || \
+		   { cat /tmp/dnf; exit 1; }; \
+		 packaging/verify.sh'
 
 test:
 	go test ./...
