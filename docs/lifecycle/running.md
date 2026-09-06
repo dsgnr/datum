@@ -18,7 +18,7 @@ $ scp bin/datum-linux-amd64 web-001:/tmp/datum
 On the host:
 
 ```console
-# install -m 0755 /tmp/datum /usr/local/bin/datum
+# install -m 0755 /tmp/datum /usr/bin/datum
 # datum --help
 ```
 
@@ -133,7 +133,7 @@ Wants=network-online.target
 
 [Service]
 Type=exec
-ExecStart=/usr/local/bin/datum agent
+ExecStart=/usr/bin/datum agent
 # The agent stops scheduling on SIGTERM and abandons any pass still running, which
 # leaves the host partially applied in the way an interrupted pass always does.
 KillSignal=SIGTERM

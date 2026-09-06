@@ -13,6 +13,7 @@ package anchor
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"strings"
 
@@ -37,12 +38,16 @@ type Set struct {
 // moved anything.
 const (
 	DefaultConfig = config.Path
-	DefaultBinary = "/usr/bin/datum"
 	// The name the agent's package and unit take. Both are the same word in practice, and
 	// a fleet that renames either loses this protection for it, which is why the names are
 	// part of the set rather than compiled in.
 	DefaultName = "datum"
 )
+
+// binaryPaths are the conventional install locations. A package uses /usr/bin and a
+// hand-copied build usually goes to /usr/local/bin, and protecting one leaves the other
+// replaceable by a commit.
+var binaryPaths = []string{"/usr/bin/datum", "/usr/local/bin/datum"}
 
 // For builds the protected set from an agent's configuration.
 //
@@ -51,10 +56,19 @@ const (
 // one is writable is worse than protecting nothing.
 func For(cfg config.Config) Set {
 	set := Set{
-		Files:   []string{DefaultConfig, DefaultBinary},
+		Files:   append([]string{DefaultConfig}, binaryPaths...),
 		Dirs:    []string{filepath.Dir(DefaultConfig)},
 		Package: DefaultName,
 		Unit:    DefaultName + ".service",
+	}
+	// Wherever this process actually runs from, which covers an install location neither
+	// convention above predicts. A resource that can overwrite the running binary can
+	// replace the thing enforcing every other refusal.
+	if self, err := os.Executable(); err == nil {
+		if resolved, err := filepath.EvalSymlinks(self); err == nil {
+			self = resolved
+		}
+		set.Files = append(set.Files, self)
 	}
 	if cfg.Trust.Signers != "" {
 		set.Files = append(set.Files, cfg.Trust.Signers)
