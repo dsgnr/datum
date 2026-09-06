@@ -34,6 +34,9 @@ func TestEveryDocumentedPathIsRefused(t *testing.T) {
 	for _, target := range []string{
 		"/etc/datum/agent.yaml",
 		"/etc/datum/allowed-signers",
+		// Both conventional install locations. Protecting only the one a package uses
+		// leaves a hand-installed agent replaceable by a commit.
+		"/usr/local/bin/datum",
 		"/etc/datum/credentials/git",
 		"/etc/datum/secrets/app-password",
 		"/var/lib/datum/accepted-revision",
@@ -142,7 +145,7 @@ func TestOrdinaryConfigurationIsStillAllowed(t *testing.T) {
 		"/var/lib/postgresql",
 		"/var/lib/datumish",
 		"/usr/bin/datumctl",
-		"/usr/local/bin/datum",
+		"/usr/local/sbin/datum-helper",
 	} {
 		if err := set.Check(ref("File", "x"), target, desired("path", target)); err != nil {
 			t.Errorf("%s was refused: %v", target, err)
@@ -289,5 +292,25 @@ func TestAPathThatDoesNotExistIsNotAnIdentityProblem(t *testing.T) {
 	set := anchor.Set{Files: []string{"/etc/datum/agent.yaml"}}
 	if err := set.CheckIdentity(ref("File", "x"), filepath.Join(t.TempDir(), "absent")); err != nil {
 		t.Errorf("an absent path was refused: %v", err)
+	}
+}
+
+// Wherever the agent actually runs from is protected, which covers an install location
+// neither convention predicts. A resource that can overwrite the running binary replaces
+// the thing enforcing every other refusal.
+func TestTheRunningBinaryIsProtected(t *testing.T) {
+	self, err := os.Executable()
+	if err != nil {
+		t.Skipf("the running binary is not discoverable here: %v", err)
+	}
+	if resolved, err := filepath.EvalSymlinks(self); err == nil {
+		self = resolved
+	}
+
+	cfg := config.Default()
+	cfg.Host = "web-001"
+	set := anchor.For(cfg)
+	if err := set.Check(ref("File", "x"), self, desired("path", self)); err == nil {
+		t.Errorf("%s was allowed, so a commit could replace the running agent", self)
 	}
 }

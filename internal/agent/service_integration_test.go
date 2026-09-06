@@ -65,11 +65,15 @@ func install(t *testing.T, mode string) {
 	t.Helper()
 
 	unit := fenced(t, docPath, unitPath)
-	// The documented ExecStart points at the installed binary and the fleet on disk.
-	// Only those two paths are adjusted, so everything else under test is what a
-	// reader would use.
-	unit = strings.ReplaceAll(unit, "/usr/local/bin/datum", mustBuild(t))
-	unit = strings.ReplaceAll(unit, "/var/lib/datum/fleet", fleetDir(t))
+	// The documented ExecStart names the installed binary, which is the one path adjusted
+	// here, so everything else under test is what a reader would use. An absent path is an
+	// error and not a no-op, because a unit pointing at a binary nobody built would fail
+	// for reasons that look like the agent's.
+	installed := "/usr/bin/datum"
+	if !strings.Contains(unit, installed) {
+		t.Fatalf("the documented unit does not run %s", installed)
+	}
+	unit = strings.ReplaceAll(unit, installed, mustBuild(t))
 
 	if err := os.MkdirAll("/etc/datum", 0o755); err != nil {
 		t.Fatalf("mkdir /etc/datum: %v", err)
