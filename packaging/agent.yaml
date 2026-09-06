@@ -1,0 +1,24 @@
+# Datum agent configuration. Every key and its default is documented at
+# https://getdatum.sh/reference/agent-config/
+#
+# This file as shipped does not name a host, so the agent will not start. A machine
+# acquires its identity at enrolment rather than at installation, which is why a package
+# cannot fill this in: an image that carried a host name would give every machine booted
+# from it the same one.
+#
+# host: web-001
+#
+# source:
+#   url: https://git.example.com/fleet.git
+#
+# trust.require defaults to signed-commit, so the revision has to be signed by a key in
+# /etc/datum/allowed-signers. Set it to none to run without verification, which reports
+# itself through a metric.
+#
+# trust:
+#   require: signed-commit
+#
+# Starting a machine in observe mode reports what would change without changing it.
+#
+# reconciliation:
+#   mode: observe

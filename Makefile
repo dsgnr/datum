@@ -12,12 +12,14 @@ GO_BUILD := CGO_ENABLED=0 go build
 DOCKER_ARCH := $(shell docker version --format '{{.Server.Arch}}' 2>/dev/null)
 
 .PHONY: help build build-linux dist test test-linux test-apt test-dnf test-sysctl test-user test-systemd test-git test-source fmt vet lint shell clean \
+	package package-deb package-rpm \
 	docs-install docs-serve docs-build docs-check docs-mermaid
 
 help:
 	@echo "build         Build ./bin/datum for this machine"
 	@echo "build-linux   Cross-compile for linux/amd64 and linux/arm64"
 	@echo "dist          Build every supported target into ./bin"
+	@echo "package       Build a .deb and an .rpm into ./dist"
 	@echo "test          Run the Go tests"
 	@echo "test-linux    Run the Go tests in a Linux container"
 	@echo "test-git      Run the git client against real signed repositories"
@@ -57,6 +59,29 @@ bin/datum-linux-arm64: $(SOURCES)
 	GOOS=linux GOARCH=arm64 $(GO_BUILD) -o $@ ./cmd/datum
 
 dist: build build-linux
+
+# Version for a package. No tags yet, so this is a placeholder that sorts below any real
+# release rather than something pretending to be one.
+VERSION ?= 0.1.0~dev
+
+# The two ecosystems name the same machine differently, and both names end up in a file
+# name this Makefile has to be able to predict.
+RPMARCH := $(if $(filter arm64,$(DOCKER_ARCH)),aarch64,x86_64)
+
+# Packages are built by each distribution's own tools in its own container, because how a
+# package behaves on install is the part worth not guessing at.
+package: package-deb package-rpm
+
+package-deb: bin/datum-linux-$(DOCKER_ARCH)
+	docker run --rm -e DEBIAN_FRONTEND=noninteractive -v "$(CURDIR):/src" -w /src debian:trixie sh -c \
+		'apt-get update -qq >/dev/null && \
+		 apt-get install -y -qq --no-install-recommends dpkg-dev python3 >/dev/null && \
+		 packaging/build.sh deb $(DOCKER_ARCH) $(VERSION) bin/datum-linux-$(DOCKER_ARCH) dist'
+
+package-rpm: bin/datum-linux-$(DOCKER_ARCH)
+	docker run --rm -v "$(CURDIR):/src" -w /src fedora:41 sh -c \
+		'dnf install -y -q rpm-build python3 >/dev/null && \
+		 packaging/build.sh rpm $(DOCKER_ARCH) $(VERSION) bin/datum-linux-$(DOCKER_ARCH) dist'
 
 test:
 	go test ./...

@@ -16,3 +16,4 @@ __pycache__/
 # Installed by the mermaid documentation check
 /test/mermaid/node_modules/
 /test/mermaid/package-lock.json
+/dist/
