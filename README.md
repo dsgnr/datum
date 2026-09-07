@@ -89,7 +89,14 @@ statically linked with cgo disabled, so cross-compiling needs no toolchain beyon
 ```bash
 make build-linux    # linux/amd64 and linux/arm64 into ./bin
 make dist           # those two and this machine's
+make package        # a .deb and an .rpm into ./dist
+make test-package   # install both and check what landed
 ```
+
+The packages are built by each distribution's own tools in a container, so nothing beyond Docker is
+needed to build them. Installing one puts the binary in `/usr/bin`, a default configuration naming
+no host in `/etc/datum`, and a systemd unit that is left disabled. [Installing the
+agent](https://getdatum.sh/lifecycle/installation/) covers what lands where.
 
 `make shell` builds for whatever architecture Docker reports and opens an Ubuntu container with
 the binary and the example fleet already mounted, which is the quickest way to run it on Linux

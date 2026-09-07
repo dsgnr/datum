@@ -1,29 +1,47 @@
 # Running Datum on a host
 
-This page covers installing the binary, configuring the agent and running it as a service.
-Everything here works today, including fetching and verifying a revision. What is still
-missing is listed at the end.
+Installing the agent, configuring it and running it as a service all work today, including fetching
+and verifying a revision. What is still missing is listed at the end.
 
-## Install the binary
+## Install the agent
 
-There are no releases. Build from source and copy the result to the host.
+There are no releases yet, so build a package and copy it to the host.
 
 ```console
 $ git clone https://github.com/dsgnr/datum.git
 $ cd datum
-$ make build-linux
-$ scp bin/datum-linux-amd64 web-001:/tmp/datum
+$ make package
+$ scp dist/datum_0.1.0~dev_amd64.deb web-001:/tmp/
 ```
 
 On the host:
 
 ```console
-# install -m 0755 /tmp/datum /usr/bin/datum
+# apt-get install /tmp/datum_0.1.0~dev_amd64.deb
 # datum --help
 ```
 
-The binary is statically linked with cgo disabled, so it needs nothing else installed.
-Cross-compiling needs no toolchain beyond Go.
+`make package` produces a `.deb` and an `.rpm`, each built by its own distribution's tools in
+a container, so no packaging toolchain is needed on the machine doing the build. Installing
+either one puts down what [installation](installation.md#what-installation-provides)
+describes, along with the unit shown below and a default configuration that names no host.
+
+The service is installed and left disabled. A machine that has not been
+[enrolled](enrolment.md) has no identity, so an agent enabled at install time would fail every
+pass until somebody gave it one.
+
+Copying the binary on its own still works, and then the directories, the configuration and
+the unit are the fleet's own to create.
+
+```console
+$ make build-linux
+$ scp bin/datum-linux-amd64 web-001:/tmp/datum
+# install -m 0755 /tmp/datum /usr/bin/datum
+```
+
+The binary is statically linked with cgo disabled, so it needs no shared libraries.
+Cross-compiling needs no toolchain beyond Go. What it does need on the host is `git`, and
+`ssh-keygen` for the default of ssh-signed commits, which is what the packages depend on.
 
 ## Give the host a signing key to trust
 
@@ -57,6 +75,8 @@ discloses plans.
 ```console
 # install -d -m 0700 -o root -g root /var/lib/datum
 ```
+
+The packages create it already, so the line above is for a host built by copying the binary.
 
 ## Configure the agent
 
