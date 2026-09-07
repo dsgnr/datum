@@ -35,7 +35,7 @@ func runConfig(e *env, args []string) int {
 
 	cfg, warnings, err := config.Load(*path)
 	if err != nil {
-		e.printf("%s\n", *path)
+		// The error already names the file, so no heading is printed above it.
 		e.errorf("%v\n", err)
 		return exitError
 	}
