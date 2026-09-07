@@ -69,6 +69,24 @@ jobs:
           file bin/datum-linux-arm64 | grep -q 'aarch64'
           ! file bin/datum-linux-amd64 | grep -q 'dynamically linked'
 
+  # Builds the packages with each distribution's own tools, installs them and checks what
+  # landed. A postinst that fails shows up here rather than on somebody's host.
+  package:
+    name: Packages
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+      - run: make test-package
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: packages
+          path: dist/
+
   # Same make targets as locally, so a failure here reproduces with one command.
   integration:
     name: ${{ matrix.suite }}
@@ -99,7 +117,7 @@ jobs:
     name: All checks
     runs-on: ubuntu-latest
     if: always()
-    needs: [check, macos, cross, integration]
+    needs: [check, macos, cross, package, integration]
     steps:
       - run: |
           results="${{ join(needs.*.result, ' ') }}"
