@@ -60,6 +60,9 @@ func run(e *env, args []string) int {
 	case "-h", "--help", "help":
 		usage(e.out)
 		return exitOK
+	case "-version", "--version":
+		e.printf("%s", versionReport())
+		return exitOK
 	}
 
 	for _, c := range commands {
