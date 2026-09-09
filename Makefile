@@ -3,9 +3,15 @@ PYTHON   := $(VENV)/bin/python
 ZENSICAL := $(VENV)/bin/zensical
 STAMP    := $(VENV)/.installed
 
+# Version for a package and for `datum version`. No tags yet, so this is a placeholder that
+# sorts below any real release rather than something pretending to be one.
+VERSION ?= 0.1.0~dev
+
 # Datum runs on Linux, so a build on any other machine is for development only.
 # CGO is off because the agent has to run on a host with nothing installed on it.
-GO_BUILD := CGO_ENABLED=0 go build
+# The version is stamped in so a packaged binary reports the version it was packaged as.
+# The commit comes from the toolchain's own VCS stamping and needs nothing here.
+GO_BUILD := CGO_ENABLED=0 go build -ldflags "-X main.version=$(VERSION)"
 
 # The architecture Docker runs containers as, for the integration tests that ship a
 # test binary into an image rather than installing a toolchain in it.
@@ -61,10 +67,6 @@ bin/datum-linux-arm64: $(SOURCES)
 
 dist: build build-linux
 
-# Version for a package. No tags yet, so this is a placeholder that sorts below any real
-# release rather than something pretending to be one.
-VERSION ?= 0.1.0~dev
-
 # The two ecosystems name the same machine differently, and both names end up in a file
 # name this Makefile has to be able to predict.
 RPMARCH := $(if $(filter arm64,$(DOCKER_ARCH)),aarch64,x86_64)
@@ -91,11 +93,11 @@ test-package: package
 	docker run --rm -e DEBIAN_FRONTEND=noninteractive -v "$(CURDIR):/src:ro" -w /src debian:trixie sh -c \
 		'apt-get update -qq >/dev/null && \
 		 apt-get install -y -qq ./dist/datum_$(VERSION)_$(DOCKER_ARCH).deb >/dev/null && \
-		 packaging/verify.sh'
+		 packaging/verify.sh $(VERSION)'
 	docker run --rm -v "$(CURDIR):/src:ro" -w /src fedora:41 sh -c \
 		'dnf install -y -q ./dist/datum-$(VERSION)-1.$(RPMARCH).rpm >/dev/null 2>/tmp/dnf || \
 		   { cat /tmp/dnf; exit 1; }; \
-		 packaging/verify.sh'
+		 packaging/verify.sh $(VERSION)'
 
 test:
 	go test ./...
