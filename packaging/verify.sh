@@ -34,6 +34,12 @@ echo "--- the state directory is empty, because no pass has run"
 echo "--- the binary runs, so it is built for this machine and needs no libraries"
 /usr/bin/datum --help >/dev/null 2>&1 || fail "datum --help failed"
 
+# A package whose binary cannot say which version it is leaves an operator guessing, and the
+# version it reports has to be the one the package was built as.
+echo "--- the binary reports the version it was packaged as"
+reported=$(/usr/bin/datum version | head -1)
+[ "$reported" = "datum ${1:-0.1.0~dev}" ] || fail "datum version said '$reported'"
+
 echo "--- git and ssh-keygen are there, because verifying a revision uses both"
 command -v git >/dev/null || fail "the package did not pull in git"
 command -v ssh-keygen >/dev/null || fail "the package did not pull in ssh-keygen"
