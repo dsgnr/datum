@@ -34,6 +34,7 @@ resource types.
 | Last known good, so a bad revision does not stop a host working | Implemented |
 | `datum revision` | Implemented |
 | Refusing resources that target Datum's own files | Implemented |
+| Packaging as a `.deb` and an `.rpm` | Implemented |
 | Secret resolution and reboot handling | Not started |
 
 Applying is Linux-only. Reading a host works anywhere, since the safety rules
@@ -139,6 +140,7 @@ written down.
 
 ## Versioning
 
-There are no releases. When there are, the documentation will carry a version
-matcher and this page will be replaced by something that records what shipped
-rather than what is intended.
+There are no releases. The packages build from the repository and carry a version that sorts below
+any real one, so a machine cannot end up with a build claiming to be something it is not. When there
+are releases, the documentation will carry a version matcher and this page will be replaced by
+something that records what shipped rather than what is intended.

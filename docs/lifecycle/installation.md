@@ -4,14 +4,9 @@ Installation puts the agent and its providers on a machine and does nothing else
 installed machine holds no identity, no credential and no knowledge of any repository, so it
 reconciles nothing until it is [enrolled](enrolment.md).
 
-!!! note "Proposed behaviour"
-
-    Nothing on this page exists as packaging. The separation it describes is the part that matters,
-    because an image built on the assumption that installation includes enrolment cannot be un-built
-    once thousands of machines have booted from it.
-
-    For installing the binary that does exist and running the agent as a service, see
-    [running Datum on a host](running.md).
+A `.deb` and an `.rpm` build this layout and nothing else. There are no releases to download yet,
+so both are built from the repository with `make package`, which is covered in
+[running Datum on a host](running.md#install-the-agent).
 
 ## What installation provides
 
@@ -115,25 +110,27 @@ virtualisation mechanism, and nothing about Datum's model objects to it.
 
 ## Verifying an installation
 
-```text
-$ datum status
+An installed machine that has not been enrolled says which part is missing, and it says it by name
+instead of failing somewhere later.
 
-host       (not enrolled)
-source     https://git.example.com/fleet.git
-providers  package, file, directory, symlink, service, user, group, sysctl
+```console
+# datum config check
 
-this host has no identity, so nothing has been reconciled
+/etc/datum/agent.yaml: host is required, because a machine has to claim a name a Host document matches
 ```
 
-Reporting an unenrolled state explicitly, rather than failing to start or reporting a converged host
-with nothing in its manifest, is what makes a broken image obvious during a build rather than during
-an incident. A machine that silently reports success while managing nothing is the outcome this
-design exists to avoid.
+The agent itself refuses to start for the same reason and exits 1, so a machine built from a broken
+image is a unit that will not come up during the build, not a converged-looking host during an
+incident. A machine that silently reports success while managing nothing is the outcome this design
+exists to avoid.
+
+`datum status` still answers, because reading a state directory needs no identity, and on a
+freshly installed machine it reports that no pass has run.
 
 !!! note "Open question"
 
-    Whether the agent should refuse to start when it has no identity, or run and report an
-    unenrolled state as shown above, is undecided. Running makes the state observable through
-    [metrics](../observability/metrics.md) before any enrolment has happened, and it also means a
-    misconfigured machine looks like a working one to anything checking only whether the process is
-    alive.
+    Refusing to start means an unenrolled machine publishes no
+    [metrics](../observability/metrics.md), so the fleet's own monitoring cannot see it waiting.
+    Whether the agent should instead run and report an unenrolled state is still open, against the
+    risk that a misconfigured machine then looks like a working one to anything checking only
+    whether the process is alive.
