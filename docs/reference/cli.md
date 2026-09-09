@@ -3,8 +3,8 @@
 !!! warning "Some of these commands do not exist yet"
 
     `render`, `explain`, `observe`, `diff`, `plan`, `reconcile`, `status`, `validate`,
-    `affected`, `agent`, `config check` and `revision` are implemented. `init` and `migrate` are
-    not, and the output shown for those two is illustrative.
+    `affected`, `agent`, `config check`, `revision` and `version` are implemented. `init` and
+    `migrate` are not, and the output shown for those two is illustrative.
 
     Every resource type has a provider. Which one serves a host depends on what it runs, so a type
     with none here is reported as skipped, which makes a host
@@ -55,6 +55,7 @@ datum revision       the accepted revision         reads and writes local state
 | `--revision REV` | Use a specific repository revision instead of the current one. |
 | `--repo PATH` | Use a local checkout instead of the configured remote. |
 | `--json` | Emit machine-readable output. |
+| `--version` | Report the version, the revision it was built from and the platform. |
 
 `--host` is what makes the read-only commands useful from a laptop. Resolution reads only
 repository content, so rendering another host's desired state needs no access to that
@@ -62,8 +63,8 @@ machine.
 
 !!! note "Implementation status"
 
-    Of the four, `--host` and `--repo` are the two that work. `--host` is required on the commands
-    that take it, because nothing works out which host the local machine is, and that is
+    Of the five, `--host`, `--repo` and `--version` are the ones that work. `--host` is required on
+    the commands that take it, because nothing works out which host the local machine is, and that is
     [enrolment](../lifecycle/enrolment.md), not a missing default. `datum agent` is the exception,
     since it reads `host` from [its configuration](agent-config.md#identity) and fetches from
     `source.url` instead of needing `--repo`. `--revision` and `--json` are not implemented, so
@@ -384,6 +385,28 @@ left off is a suggestion.
 cleared 8b91f2036f4e6b0f5a7c1d2e3f4a5b6c7d8e9f01
 the next signed revision this host sees becomes its baseline
 ```
+
+## datum version
+
+Reports what this binary is.
+
+```console
+$ datum version
+
+datum 0.1.0~dev
+revision  87c303c0399fd34ab377c7dbd827e739eaf822e1, committed 2026-09-23T14:36:12Z
+platform  linux/amd64, go1.25.5
+```
+
+`datum --version` prints the same thing, because a binary is asked its version both ways and
+guessing wrong should not be an error.
+
+The revision line is stamped by the Go toolchain from the checkout the binary was built in, so
+a build carries its own commit without anything being passed in. A build from a tree with
+uncommitted changes says so on that line, and a build with no version passed in reports
+`unknown` instead of a number it was never given. There are no releases yet, so the version on
+a package built from this repository is the placeholder `0.1.0~dev`, which sorts below any real
+release.
 
 ## datum init
 

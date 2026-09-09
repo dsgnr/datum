@@ -32,7 +32,7 @@ resource types.
 | Fetching from a remote, with a hardened checkout | Implemented |
 | Signature verification and the descendant check | Implemented |
 | Last known good, so a bad revision does not stop a host working | Implemented |
-| `datum revision` | Implemented |
+| `datum revision`, `datum version` | Implemented |
 | Refusing resources that target Datum's own files | Implemented |
 | Packaging as a `.deb` and an `.rpm` | Implemented |
 | Secret resolution and reboot handling | Not started |
