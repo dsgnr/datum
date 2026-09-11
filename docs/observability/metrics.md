@@ -134,6 +134,17 @@ rule](#emit-absolute-timestamps-never-elapsed-time) load-bearing and not merely 
 
 ## The metrics
 
+**Agent build.**
+
+```text
+datum_agent_info{version,revision}   gauge, always 1
+```
+
+One series per host, changing only when the agent is replaced, which is what makes an upgrade
+visible across a fleet. `version` is the release the binary was built as, or `unknown` for a build
+that was not given one, and `revision` is the commit it came from. The same two values are what
+[`datum version`](../reference/cli.md#datum-version) prints on the host.
+
 **Pass timing and outcome.**
 
 ```text
