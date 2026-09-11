@@ -5,8 +5,7 @@ installed machine holds no identity, no credential and no knowledge of any repos
 reconciles nothing until it is [enrolled](enrolment.md).
 
 A `.deb` and an `.rpm` build this layout and nothing else. There are no releases to download yet,
-so both are built from the repository with `make package`, which is covered in
-[running Datum on a host](running.md#install-the-agent).
+so both are [built from the repository](#building-from-source).
 
 ## What installation provides
 
@@ -22,6 +21,33 @@ needs at runtime.
 None of those paths are managed by Datum itself, which is the subject of
 [ADR-0010](../adr/0010-no-self-managed-trust-anchors.md), so an installation can be replaced by a
 package upgrade without a reconciliation pass being involved.
+
+## Building from source
+
+The binary needs Go 1.25 or newer and nothing else. The packages additionally need Docker, because
+each one is built by its own distribution's tools in a container.
+
+```console
+$ git clone https://github.com/dsgnr/datum.git
+$ cd datum
+$ make build          # ./bin/datum for this machine
+$ make build-linux    # linux/amd64 and linux/arm64 into ./bin
+$ make package        # a .deb and an .rpm into ./dist
+```
+
+Applying state needs Linux, so `make build` on macOS or Windows produces a binary that reads a host
+without being able to change one. The cross-compiled binaries are statically linked with cgo
+disabled, and `make package` names its output for the architecture Docker reports, so an x86 machine
+writes `datum_0.1.0~dev_amd64.deb` and `datum-0.1.0~dev-1.x86_64.rpm`.
+
+`make test-package` installs both packages in throwaway containers and checks the layout above, the
+directory modes and that the service was left disabled. CI runs the same target, so a package that
+installs wrongly fails there rather than on a host.
+
+The version in those file names is a placeholder that sorts below any real release, and
+[`datum version`](../reference/cli.md#datum-version) reports it along with the commit the binary was
+built from. Copying a package to a machine and starting the service is
+[running Datum on a host](running.md#install-the-agent).
 
 ## What an image must not contain
 

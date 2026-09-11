@@ -5,26 +5,23 @@ and verifying a revision. What is still missing is listed at the end.
 
 ## Install the agent
 
-There are no releases yet, so build a package and copy it to the host.
+There are no releases yet, so [build the packages](installation.md#building-from-source), then copy
+the one the host needs.
 
 ```console
-$ git clone https://github.com/dsgnr/datum.git
-$ cd datum
-$ make package
 $ scp dist/datum_0.1.0~dev_amd64.deb web-001:/tmp/
 ```
 
-On the host:
+On the host, install it with the matching package manager.
 
 ```console
-# apt-get install /tmp/datum_0.1.0~dev_amd64.deb
-# datum --help
+# apt-get install /tmp/datum_0.1.0~dev_amd64.deb    # Debian and Ubuntu
+# dnf install /tmp/datum-0.1.0~dev-1.x86_64.rpm     # Fedora and RHEL
 ```
 
-`make package` produces a `.deb` and an `.rpm`, each built by its own distribution's tools in
-a container, so no packaging toolchain is needed on the machine doing the build. Installing
-either one puts down what [installation](installation.md#what-installation-provides)
-describes, along with the unit shown below and a default configuration that names no host.
+[`datum version`](../reference/cli.md#datum-version) then reports which build landed. Installing
+either package puts down what [installation](installation.md#what-installation-provides) describes,
+along with the unit shown below and a default configuration that names no host.
 
 The service is installed and left disabled. A machine that has not been
 [enrolled](enrolment.md) has no identity, so an agent enabled at install time would fail every
