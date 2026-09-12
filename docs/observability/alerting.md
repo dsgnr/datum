@@ -31,12 +31,13 @@ file left behind by a dead agent keeps scraping successfully.
 failing or wedged.
 
 ```text
-time() - datum_pass_last_success_timestamp_seconds > 3600
+time() - datum_pass_last_success_timestamp_seconds > 7200
 ```
 
 `up` does not cover this case, since the agent is running and answering scrapes. The threshold is a
-multiple of the reconciliation interval, not an absolute figure, and alerting at three or four
-missed passes tolerates a transient failure and a slow pass while still catching a genuine stall.
+multiple of the reconciliation interval, not an absolute figure. Two hours is four missed passes at
+the default of thirty minutes, which tolerates a transient failure and a slow pass while still
+catching a genuine stall.
 
 This relies on metrics being [absolute
 timestamps](metrics.md#emit-absolute-timestamps-never-elapsed-time) and not elapsed times, and it is
@@ -50,10 +51,10 @@ entirely down produces `up == 0` for every job on it and is not specifically a D
 | Condition | Query | Why |
 | --------- | ----- | --- |
 | Agent gone | `up{job="datum"} == 0` | The agent is not running or the host is unreachable. |
-| Not converging | `time() - datum_pass_last_success_timestamp_seconds > 3600` | The agent is running and passes are not succeeding. |
+| Not converging | `time() - datum_pass_last_success_timestamp_seconds > 7200` | The agent is running and passes are not succeeding. |
 | Failing | `datum_host_state{state="failed"} == 1` | A resource failed to apply or verify. |
 | Coverage gap | `datum_host_state{state="degraded"} == 1` | Part of the manifest cannot be reconciled here. |
-| Behind the fleet | `max(datum_revision_applied_timestamp_seconds) - datum_revision_applied_timestamp_seconds > 86400` | A host has not picked up changes others have. |
+| Behind the fleet | `scalar(max(datum_revision_applied_timestamp_seconds)) - datum_revision_applied_timestamp_seconds > 86400` | A host has not picked up changes others have. |
 | Stuck on a bad revision | `datum_revision_attempted_timestamp_seconds != datum_revision_applied_timestamp_seconds` | The newest revision failed to resolve, and the host is on [last known good](../reconciliation/last-known-good.md). |
 | Awaiting reboot too long | `datum_reboot_required == 1` held for longer than the reboot policy allows | A change has been applied and is not in effect. |
 | Verification disabled | `datum_trust_require{mode="none"} == 1` | A host is applying desired state it has not verified. |
