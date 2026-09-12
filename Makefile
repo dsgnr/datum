@@ -11,7 +11,7 @@ VERSION ?= 0.1.0~dev
 # CGO is off because the agent has to run on a host with nothing installed on it.
 # The version is stamped in so a packaged binary reports the version it was packaged as.
 # The commit comes from the toolchain's own VCS stamping and needs nothing here.
-GO_BUILD := CGO_ENABLED=0 go build -ldflags "-X main.version=$(VERSION)"
+GO_BUILD := CGO_ENABLED=0 go build -ldflags "-X github.com/dsgnr/datum/internal/version.version=$(VERSION)"
 
 # The architecture Docker runs containers as, for the integration tests that ship a
 # test binary into an image rather than installing a toolchain in it.

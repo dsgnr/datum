@@ -17,6 +17,7 @@ import (
 	"github.com/dsgnr/datum/internal/metrics"
 	"github.com/dsgnr/datum/internal/report"
 	"github.com/dsgnr/datum/internal/state"
+	"github.com/dsgnr/datum/internal/version"
 )
 
 func newRegistry() *metrics.Registry {
@@ -421,5 +422,33 @@ func TestADriftedPassCountsAsASuccessfulPass(t *testing.T) {
 	}
 	if got := mustSample(t, text, "datum_pass_last_success_timestamp_seconds"); got == 0 {
 		t.Error("a drifted pass did not count as a success")
+	}
+}
+
+// A fleet upgrading its agents needs to see which build each host runs, and asking every
+// host on the command line does not scale to five hundred of them.
+func TestTheAgentBuildIsExported(t *testing.T) {
+	text := newRegistry().Render()
+
+	var series string
+	for _, line := range strings.Split(text, "\n") {
+		if strings.HasPrefix(line, "datum_agent_info{") {
+			series = line
+		}
+	}
+	if series == "" {
+		t.Fatal("datum_agent_info is absent")
+	}
+	if !strings.Contains(series, `version="`) {
+		t.Errorf("no version label in %q", series)
+	}
+	if !strings.HasSuffix(series, " 1") {
+		t.Errorf("an info series is always 1, got %q", series)
+	}
+
+	// The version reported here has to be the one the command line reports, or a fleet
+	// gets two answers to one question.
+	if !strings.Contains(series, `version="`+version.Version()+`"`) {
+		t.Errorf("%q does not carry version %q", series, version.Version())
 	}
 }

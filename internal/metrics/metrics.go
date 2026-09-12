@@ -23,6 +23,7 @@ import (
 	"github.com/dsgnr/datum/internal/config"
 	"github.com/dsgnr/datum/internal/report"
 	"github.com/dsgnr/datum/internal/state"
+	"github.com/dsgnr/datum/internal/version"
 )
 
 // hostStates and resourceStates are listed so that a state which is not current is
@@ -148,6 +149,13 @@ func (r *Registry) Render() string {
 
 	var b strings.Builder
 	w := &writer{b: &b}
+
+	// Which build is running, so an upgrade can be followed across a fleet. A host can be
+	// asked its version on the command line, and nothing else answers it for all of them.
+	revision, _ := version.Revision()
+	w.help("datum_agent_info", "gauge", "The agent build running on this host")
+	w.sample("datum_agent_info",
+		labels{{"version", version.Version()}, {"revision", revision}}, 1)
 
 	w.gauge("datum_pass_last_attempt_timestamp_seconds",
 		"Unix time of the last pass attempt", timestamp(r.lastAttempt))

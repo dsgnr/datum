@@ -5,6 +5,8 @@ package main
 import (
 	"strings"
 	"testing"
+
+	"github.com/dsgnr/datum/internal/version"
 )
 
 // All three spellings are accepted, so none of them has to be guessed.
@@ -33,10 +35,10 @@ func TestVersionTakesNoArguments(t *testing.T) {
 // A build that was not told its version says unknown, which is what a `go build` with no
 // ldflags produces and what the test binary itself is.
 func TestAnUnstampedBuildSaysUnknown(t *testing.T) {
-	if version != "unknown" {
-		t.Skipf("this binary was stamped as %q", version)
+	if version.Version() != "unknown" {
+		t.Skipf("this binary was stamped as %q", version.Version())
 	}
-	if !strings.Contains(versionReport(), "datum unknown") {
-		t.Errorf("report was %q", versionReport())
+	if !strings.Contains(version.Report(), "datum unknown") {
+		t.Errorf("report was %q", version.Report())
 	}
 }

@@ -8,6 +8,8 @@ import (
 	"io"
 	"os"
 	"sort"
+
+	"github.com/dsgnr/datum/internal/version"
 )
 
 // Exit codes are part of the command line contract, so they are named.
@@ -61,7 +63,7 @@ func run(e *env, args []string) int {
 		usage(e.out)
 		return exitOK
 	case "-version", "--version":
-		e.printf("%s", versionReport())
+		e.printf("%s", version.Report())
 		return exitOK
 	}
 
