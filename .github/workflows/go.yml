@@ -87,6 +87,14 @@ jobs:
           name: packages
           path: dist/
 
+  # The example alert rules ship as documentation, so they are checked like anything else.
+  prometheus:
+    name: Alert rules
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - run: make test-prometheus
+
   # Same make targets as locally, so a failure here reproduces with one command.
   integration:
     name: ${{ matrix.suite }}
@@ -117,7 +125,7 @@ jobs:
     name: All checks
     runs-on: ubuntu-latest
     if: always()
-    needs: [check, macos, cross, package, integration]
+    needs: [check, macos, cross, package, prometheus, integration]
     steps:
       - run: |
           results="${{ join(needs.*.result, ' ') }}"
