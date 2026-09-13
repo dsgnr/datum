@@ -1,7 +1,8 @@
 # Example fleet
 
 A small repository to run the commands against. Three hosts, seven layers, and
-enough overlap between them to show what composition does.
+enough overlap between them to show what composition does. Monitoring configuration lives
+alongside it in [prometheus](prometheus/README.md).
 
 ```bash
 make build

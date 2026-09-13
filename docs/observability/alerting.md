@@ -10,6 +10,11 @@ explicitly.
     [metrics](metrics.md) exist to support them, and a metric nobody can write a useful alert
     against is a metric that should not exist.
 
+The conditions below are written out as Prometheus rules in
+[`examples/prometheus`](https://github.com/dsgnr/datum/tree/main/examples/prometheus), along with a
+scrape configuration and a `promtool` test that asserts each one fires on the series the agent
+exports.
+
 ## A host that stops reconciling is the failure to catch
 
 The other alerts here fire on a reported problem. This one fires on the absence of a report, which
