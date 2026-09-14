@@ -1,0 +1,117 @@
+# The alerts from https://getdatum.sh/observability/alerting/ as rules.
+#
+# Thresholds here assume the default 30m reconciliation interval. A fleet on a different
+# interval scales the staleness and lag windows with it, because every one of them is
+# counted in missed passes rather than in absolute time.
+groups:
+  - name: datum
+    rules:
+      # A stopped agent reports nothing, so this is the only condition that cannot come
+      # from the agent's own metrics. Without it the rest of this file detects nothing on
+      # a host that has gone quiet.
+      - alert: DatumAgentGone
+        expr: up{job="datum"} == 0
+        for: 5m
+        labels:
+          severity: page
+        annotations:
+          summary: No metrics from the Datum agent on {{ $labels.instance }}
+          description: The agent is not running or the host is unreachable.
+
+      # Two hours is four missed passes at the default interval, which tolerates one
+      # transient failure and one slow pass before paging.
+      - alert: DatumNotConverging
+        expr: time() - datum_pass_last_success_timestamp_seconds > 7200
+        labels:
+          severity: page
+        annotations:
+          summary: No successful Datum pass on {{ $labels.instance }} for two hours
+          description: The agent is running and its passes are not succeeding.
+
+      - alert: DatumHostFailed
+        expr: datum_host_state{state="failed"} == 1
+        for: 15m
+        labels:
+          severity: page
+        annotations:
+          summary: Datum pass failed on {{ $labels.instance }}
+          description: A resource failed to apply or failed verification.
+
+      - alert: DatumHostDegraded
+        expr: datum_host_state{state="degraded"} == 1
+        for: 1h
+        labels:
+          severity: ticket
+        annotations:
+          summary: Datum cannot reconcile part of the manifest on {{ $labels.instance }}
+          description: A resource type has no provider here, so those resources are skipped.
+
+      # scalar() is needed because max() drops every label, and a bare vector-to-vector
+      # subtraction would match nothing and the alert would never fire.
+      - alert: DatumHostBehindFleet
+        expr: scalar(max(datum_revision_applied_timestamp_seconds)) - datum_revision_applied_timestamp_seconds > 86400
+        for: 30m
+        labels:
+          severity: ticket
+        annotations:
+          summary: "{{ $labels.instance }} is a day behind the newest revision the fleet has applied"
+          description: The host has not picked up changes other hosts already have.
+
+      # One bad commit trips this on every host the change matched, so route it grouped by
+      # revision rather than by host or a single typo pages somebody five hundred times.
+      - alert: DatumStuckOnBadRevision
+        expr: datum_revision_attempted_timestamp_seconds != datum_revision_applied_timestamp_seconds
+        for: 30m
+        labels:
+          severity: page
+        annotations:
+          summary: "{{ $labels.instance }} cannot resolve the revision it fetched"
+          description: The newest revision failed to resolve and the host is on last known good.
+
+      # The window belongs to the fleet's own reboot policy. A day is a placeholder.
+      - alert: DatumAwaitingRebootTooLong
+        expr: datum_reboot_required == 1
+        for: 24h
+        labels:
+          severity: ticket
+        annotations:
+          summary: "{{ $labels.instance }} has been waiting to reboot for a day"
+          description: A change has been applied and is not in effect until the host restarts.
+
+      # The last three fire on a control instead of a failure. They are steady states
+      # rather than events, so on most fleets they are better read as an inventory query
+      # than routed to anybody, and they are here because a fleet that never asks will
+      # never find out.
+      - alert: DatumVerificationDisabled
+        expr: datum_trust_require{mode="none"} == 1
+        for: 1h
+        labels:
+          severity: ticket
+        annotations:
+          summary: "{{ $labels.instance }} applies desired state without verifying it"
+          description: trust.require is none on this host.
+
+      - alert: DatumDowngradeProtectionUnarmed
+        expr: datum_trust_baseline_present == 0
+        for: 1h
+        labels:
+          severity: ticket
+        annotations:
+          summary: "{{ $labels.instance }} started without a baseline revision"
+          description: Provisioning skipped the baseline, so the first pass had nothing to compare against.
+
+      - alert: DatumRefusingRevisions
+        expr: increase(datum_revisions_refused_total[1h]) > 0
+        labels:
+          severity: page
+        annotations:
+          summary: "{{ $labels.instance }} refused a revision, reason {{ $labels.reason }}"
+          description: A signature, tag or ancestry check is rejecting what the host fetched.
+
+      - alert: DatumRefusingResources
+        expr: increase(datum_resources_refused_total[1h]) > 0
+        labels:
+          severity: ticket
+        annotations:
+          summary: "{{ $labels.instance }} refused a resource, reason {{ $labels.reason }}"
+          description: A safety control is refusing to apply something the repository declared.

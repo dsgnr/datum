@@ -18,7 +18,7 @@ GO_BUILD := CGO_ENABLED=0 go build -ldflags "-X github.com/dsgnr/datum/internal/
 DOCKER_ARCH := $(shell docker version --format '{{.Server.Arch}}' 2>/dev/null)
 
 .PHONY: help build build-linux dist test test-linux test-apt test-dnf test-sysctl test-user test-systemd test-git test-source fmt vet lint shell clean \
-	package package-deb package-rpm test-package \
+	package package-deb package-rpm test-package test-prometheus \
 	docs-install docs-serve docs-build docs-check docs-mermaid
 
 help:
@@ -27,6 +27,7 @@ help:
 	@echo "dist          Build every supported target into ./bin"
 	@echo "package       Build a .deb and an .rpm into ./dist"
 	@echo "test-package  Install the packages in Debian and Fedora and check them"
+	@echo "test-prometheus  Check the example alert rules with promtool"
 	@echo "test          Run the Go tests"
 	@echo "test-linux    Run the Go tests in a Linux container"
 	@echo "test-git      Run the git client against real signed repositories"
@@ -98,6 +99,15 @@ test-package: package
 		'dnf install -y -q ./dist/datum-$(VERSION)-1.$(RPMARCH).rpm >/dev/null 2>/tmp/dnf || \
 		   { cat /tmp/dnf; exit 1; }; \
 		 packaging/verify.sh $(VERSION)'
+
+# The example rules ship as documentation, so they are checked the way an operator would
+# find out they were wrong. A rule can parse and still match nothing, which is what the
+# tests catch and the syntax check does not.
+test-prometheus:
+	docker run --rm -v "$(CURDIR)/examples/prometheus:/rules:ro" -w /rules \
+		--entrypoint promtool prom/prometheus:v3.1.0 check config prometheus.yml
+	docker run --rm -v "$(CURDIR)/examples/prometheus:/rules:ro" -w /rules \
+		--entrypoint promtool prom/prometheus:v3.1.0 test rules datum.rules.test.yml
 
 test:
 	go test ./...

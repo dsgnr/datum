@@ -1,0 +1,22 @@
+# Scraping Datum agents. The job has to be called datum for the up{job="datum"} alert in
+# datum.rules.yml to fire, since that is the one signal a stopped agent cannot send itself.
+#
+# metrics.listen defaults to 127.0.0.1:10056, so an agent only answers a remote scrape once
+# that is changed to an address the collector can reach. A fleet already running
+# node_exporter can set metrics.textfile instead and leave the listener off, in which case
+# the datum series arrive under the node_exporter job and the up alert has to be written
+# against that job rather than this one.
+global:
+  scrape_interval: 1m
+  evaluation_interval: 1m
+
+rule_files:
+  - datum.rules.yml
+
+scrape_configs:
+  - job_name: datum
+    static_configs:
+      - targets:
+          - web-001:10056
+          - web-002:10056
+          - db-001:10056

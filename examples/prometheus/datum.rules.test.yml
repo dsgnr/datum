@@ -1,0 +1,101 @@
+# Unit tests for the rules, run with `promtool test rules`. Every alert here is written
+# against metric names and labels the agent actually exports, and a rule that parses but
+# matches nothing is the failure this catches.
+rule_files:
+  - datum.rules.yml
+
+evaluation_interval: 1m
+
+tests:
+  - interval: 1m
+    input_series:
+      - series: 'up{job="datum",instance="web-001:10056"}'
+        values: '0+0x30'
+    alert_rule_test:
+      - eval_time: 10m
+        alertname: DatumAgentGone
+        exp_alerts:
+          - exp_labels:
+              severity: page
+              job: datum
+              instance: web-001:10056
+            exp_annotations:
+              summary: No metrics from the Datum agent on web-001:10056
+              description: The agent is not running or the host is unreachable.
+
+  # A host whose applied revision is a day older than the newest in the fleet. max() drops
+  # every label, so without scalar() this subtraction matches nothing and never fires.
+  - interval: 1m
+    input_series:
+      - series: 'datum_revision_applied_timestamp_seconds{job="datum",instance="web-001:10056"}'
+        values: '1000000+0x60'
+      - series: 'datum_revision_applied_timestamp_seconds{job="datum",instance="web-002:10056"}'
+        values: '900000+0x60'
+    alert_rule_test:
+      - eval_time: 40m
+        alertname: DatumHostBehindFleet
+        exp_alerts:
+          - exp_labels:
+              severity: ticket
+              job: datum
+              instance: web-002:10056
+            exp_annotations:
+              summary: web-002:10056 is a day behind the newest revision the fleet has applied
+              description: The host has not picked up changes other hosts already have.
+
+  # Attempted ahead of applied is the shape of a commit that failed to resolve.
+  - interval: 1m
+    input_series:
+      - series: 'datum_revision_attempted_timestamp_seconds{job="datum",instance="web-001:10056"}'
+        values: '1000060+0x60'
+      - series: 'datum_revision_applied_timestamp_seconds{job="datum",instance="web-001:10056"}'
+        values: '1000000+0x60'
+    alert_rule_test:
+      - eval_time: 40m
+        alertname: DatumStuckOnBadRevision
+        exp_alerts:
+          - exp_labels:
+              severity: page
+              job: datum
+              instance: web-001:10056
+            exp_annotations:
+              summary: web-001:10056 cannot resolve the revision it fetched
+              description: The newest revision failed to resolve and the host is on last known good.
+
+  - interval: 1m
+    input_series:
+      - series: 'datum_host_state{job="datum",instance="web-001:10056",state="failed"}'
+        values: '1+0x30'
+      - series: 'datum_host_state{job="datum",instance="web-001:10056",state="converged"}'
+        values: '0+0x30'
+    alert_rule_test:
+      - eval_time: 20m
+        alertname: DatumHostFailed
+        exp_alerts:
+          - exp_labels:
+              severity: page
+              job: datum
+              instance: web-001:10056
+              state: failed
+            exp_annotations:
+              summary: Datum pass failed on web-001:10056
+              description: A resource failed to apply or failed verification.
+
+  # A refusal carries the reason, and the annotation has to name it or an operator has to
+  # go and query for what the control actually rejected.
+  - interval: 1m
+    input_series:
+      - series: 'datum_revisions_refused_total{job="datum",instance="web-001:10056",reason="untrusted-signer"}'
+        values: '0 1 2 2 2 2 2 2 2 2'
+    alert_rule_test:
+      - eval_time: 9m
+        alertname: DatumRefusingRevisions
+        exp_alerts:
+          - exp_labels:
+              severity: page
+              job: datum
+              instance: web-001:10056
+              reason: untrusted-signer
+            exp_annotations:
+              summary: web-001:10056 refused a revision, reason untrusted-signer
+              description: A signature, tag or ancestry check is rejecting what the host fetched.
