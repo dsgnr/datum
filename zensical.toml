@@ -60,15 +60,23 @@ nav = [
     "resources/applications.md",
     { "Resource types" = [
       "resources/types/index.md",
-      "resources/types/package.md",
-      "resources/types/file.md",
-      "resources/types/directory.md",
-      "resources/types/service.md",
-      "resources/types/user.md",
-      "resources/types/group.md",
-      "resources/types/sysctl.md",
-      "resources/types/repository.md",
-      "resources/types/symlink.md",
+      { "Core" = [
+        "resources/types/package.md",
+        "resources/types/repository.md",
+        "resources/types/file.md",
+        "resources/types/directory.md",
+        "resources/types/symlink.md",
+      ] },
+      { "Identity" = [
+        "resources/types/user.md",
+        "resources/types/group.md",
+      ] },
+      { "Runtime" = [
+        "resources/types/service.md",
+      ] },
+      { "Kernel" = [
+        "resources/types/sysctl.md",
+      ] },
     ] },
   ] },
   { "Providers" = [
@@ -155,6 +163,7 @@ nav = [
     "adr/0012-substitution-from-declared-labels.md",
     "adr/0013-secret-references-resolved-on-the-host.md",
     "adr/0014-go-as-the-implementation-language.md",
+    "adr/0015-resource-type-domains.md",
   ] },
 ]
 

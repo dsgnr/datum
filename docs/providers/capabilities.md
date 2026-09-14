@@ -16,7 +16,7 @@ The better question is which provider satisfies each type on this host.
 Package   -> apt
 Service   -> systemd
 User      -> linux-user
-Group     -> linux-group
+Group     -> linux-user
 Sysctl    -> proc-sys
 File      -> posix-file
 ```
@@ -29,16 +29,17 @@ is, because the distribution has already been reduced to a set of provider choic
 
 The distributions the design targets differ in some capabilities and agree on others.
 
-| Type | Debian / Ubuntu | Fedora / RHEL | Alpine | Arch |
-| ---- | --------------- | ------------- | ------ | ---- |
-| `Package` | `apt` | `dnf` | `apk` | `pacman` |
-| `Service` | `systemd` | `systemd` | `openrc` | `systemd` |
-| `User` | `linux-user` | `linux-user` | `linux-user` | `linux-user` |
-| `Group` | `linux-group` | `linux-group` | `linux-group` | `linux-group` |
-| `Sysctl` | `proc-sys` | `proc-sys` | `proc-sys` | `proc-sys` |
-| `File` | `posix-file` | `posix-file` | `posix-file` | `posix-file` |
-| `Symlink` | `posix-file` | `posix-file` | `posix-file` | `posix-file` |
-| `Repository` | `apt` | `dnf` | `apk` | `pacman` |
+| Domain | Type | Debian / Ubuntu | Fedora / RHEL | Alpine | Arch |
+| ------ | ---- | --------------- | ------------- | ------ | ---- |
+| Core | `Package` | `apt` | `dnf` | `apk` | `pacman` |
+| Core | `Repository` | `apt` | `dnf` | `apk` | `pacman` |
+| Core | `File` | `posix-file` | `posix-file` | `posix-file` | `posix-file` |
+| Core | `Directory` | `posix-file` | `posix-file` | `posix-file` | `posix-file` |
+| Core | `Symlink` | `posix-file` | `posix-file` | `posix-file` | `posix-file` |
+| Identity | `User` | `linux-user` | `linux-user` | `linux-user` | `linux-user` |
+| Identity | `Group` | `linux-user` | `linux-user` | `linux-user` | `linux-user` |
+| Runtime | `Service` | `systemd` | `systemd` | `openrc` | `systemd` |
+| Kernel | `Sysctl` | `proc-sys` | `proc-sys` | `proc-sys` | `proc-sys` |
 
 Two things are visible in that table that a distribution-centric model obscures. Most capabilities
 are shared, so the great majority of provider code is written once and is not per-distribution at

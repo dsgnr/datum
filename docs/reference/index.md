@@ -30,17 +30,17 @@ arranged for finding a field or a definition instead of reading through.
 
 Fields specific to a resource type are documented with that type, not here.
 
-| Type | Reference |
-| ---- | --------- |
-| `Package` | [resources/types/package](../resources/types/package.md) |
-| `File` | [resources/types/file](../resources/types/file.md) |
-| `Directory` | [resources/types/directory](../resources/types/directory.md) |
-| `Service` | [resources/types/service](../resources/types/service.md) |
-| `User` | [resources/types/user](../resources/types/user.md) |
-| `Group` | [resources/types/group](../resources/types/group.md) |
-| `Sysctl` | [resources/types/sysctl](../resources/types/sysctl.md) |
-| `Symlink` | [resources/types/symlink](../resources/types/symlink.md) |
-| `Repository` | [resources/types/repository](../resources/types/repository.md) |
+| Domain | Type | Reference |
+| ------ | ---- | --------- |
+| Core | `Package` | [resources/types/package](../resources/types/package.md) |
+| Core | `Repository` | [resources/types/repository](../resources/types/repository.md) |
+| Core | `File` | [resources/types/file](../resources/types/file.md) |
+| Core | `Directory` | [resources/types/directory](../resources/types/directory.md) |
+| Core | `Symlink` | [resources/types/symlink](../resources/types/symlink.md) |
+| Identity | `User` | [resources/types/user](../resources/types/user.md) |
+| Identity | `Group` | [resources/types/group](../resources/types/group.md) |
+| Runtime | `Service` | [resources/types/service](../resources/types/service.md) |
+| Kernel | `Sysctl` | [resources/types/sysctl](../resources/types/sysctl.md) |
 
 ## Stability
 
