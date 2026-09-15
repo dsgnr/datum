@@ -1,6 +1,21 @@
 /* Site-wide tweaks, loaded on every page. The landing page styles live in
  * landing.css. */
 
+/* Typography
+ *
+ * The theme scales the root font size up twice on wide viewports, to 137.5% from
+ * 100em and again to 150% from 125em, which takes body copy from 15px to 16.5px
+ * and then to 18px. Pages here run to long prose, and 18px is uncomfortable to
+ * read across a large display.
+ *
+ * The second step is dropped and the first is kept, so body copy settles at
+ * 16.5px on anything above 100em and the remaining width becomes margin. */
+@media screen and (min-width: 125em) {
+  html {
+    font-size: 137.5%;
+  }
+}
+
 /* The landing page has its own search entry point, so the header one is noise
  * there. Instant navigation does not re-render the header partial or re-run
  * inline scripts when swapping pages, so the landing page is detected from the
