@@ -19,6 +19,7 @@ Each one records why a decision was needed, what was decided, and what the decis
 | [0012](0012-substitution-from-declared-labels.md) | Substitute declared label values, and nothing else | Accepted |
 | [0013](0013-secret-references-resolved-on-the-host.md) | Secret references, resolved on the host | Accepted |
 | [0014](0014-go-as-the-implementation-language.md) | Go as the implementation language | Accepted |
+| [0015](0015-resource-type-domains.md) | Group resource types into domains | Accepted |
 
 ## What gets an ADR
 
