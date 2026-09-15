@@ -11,22 +11,25 @@ and work-in-progress branches do not qualify.
 
 ## Resource types
 
-| Type | Provider | Status |
-| ---- | -------- | ------ |
-| `Package` | `apt` | Supported on Debian |
-| `Package` | `dnf` | Supported on Fedora |
-| `Package` | `apk` | Not implemented |
-| `Package` | `pacman` | Not implemented |
-| `File` | `posix-file` | Reads and writes on Linux, reads elsewhere |
-| `Directory` | `posix-file` | Reads and writes on Linux, reads elsewhere |
-| `Service` | `systemd` | Supported on Debian |
-| `User` | `linux-user` | Working, not yet through the checks |
-| `Group` | `linux-user` | Working, not yet through the checks |
-| `Sysctl` | `proc-sys` | Working, not yet through the checks |
-| `Symlink` | `posix-file` | Reads and writes on Linux, reads elsewhere |
-| `Repository` | `apt` | Supported on Debian, except `priority` |
-| `Repository` | `dnf` | Supported on Fedora, except `suite` and `components` |
-| `Repository` | `apk` | Not implemented |
+The rows are grouped by [domain](../resources/types/index.md#domains), in the order that
+section uses.
+
+| Domain | Type | Provider | Status |
+| ------ | ---- | -------- | ------ |
+| Core | `Package` | `apt` | Supported on Debian |
+| Core | `Package` | `dnf` | Supported on Fedora |
+| Core | `Package` | `apk` | Not implemented |
+| Core | `Package` | `pacman` | Not implemented |
+| Core | `Repository` | `apt` | Supported on Debian, except `priority` |
+| Core | `Repository` | `dnf` | Supported on Fedora, except `suite` and `components` |
+| Core | `Repository` | `apk` | Not implemented |
+| Core | `File` | `posix-file` | Reads and writes on Linux, reads elsewhere |
+| Core | `Directory` | `posix-file` | Reads and writes on Linux, reads elsewhere |
+| Core | `Symlink` | `posix-file` | Reads and writes on Linux, reads elsewhere |
+| Identity | `User` | `linux-user` | Working, not yet through the checks |
+| Identity | `Group` | `linux-user` | Working, not yet through the checks |
+| Runtime | `Service` | `systemd` | Supported on Debian |
+| Kernel | `Sysctl` | `proc-sys` | Working, not yet through the checks |
 
 `linux-user` and `proc-sys` claim no distribution, since the account database and the kernel
 parameter namespace are interfaces shared by every target. They still have per-distribution

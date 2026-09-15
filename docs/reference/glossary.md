@@ -214,6 +214,11 @@ Resource type
 :   The `type` of a resource, such as `Package` or `File`. See [resource
     types](../resources/types/index.md).
 
+Resource type domain
+:   A grouping of resource types by the part of a host they describe, being Core, Identity,
+    Runtime and Kernel. A grouping only, absent from documents and from resource
+    references. See [domains](../resources/types/index.md#domains).
+
 Revocation
 :   Withdrawing a host's ability to obtain desired state, which takes effect when its current
     credential expires. Stops future changes and undoes nothing. See [leaving the
