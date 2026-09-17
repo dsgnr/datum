@@ -2,11 +2,40 @@
 
 package document
 
-import "fmt"
+import (
+	"fmt"
+	"strings"
+)
 
-// SchemaVersion is the only value the datum field may take. Anything else is refused,
-// never guessed at.
+// SchemaVersion is the newest schema version this agent understands, and the one
+// Datum writes when it writes a document.
 const SchemaVersion = "v1alpha1"
+
+// SchemaVersions is every version this agent reads, oldest first.
+//
+// A document is interpreted at the version it declares, so a repository part-way
+// through a migration can hold documents at two versions and have each read at its
+// own. A version leaves this list only in a major release, which is a breaking change
+// announced as one.
+var SchemaVersions = []string{SchemaVersion}
+
+// SupportsSchema reports whether this agent reads a schema version.
+//
+// An unrecognised version is refused rather than guessed at. Applying a partial
+// understanding of desired state as root is worse than applying nothing.
+func SupportsSchema(version string) bool {
+	for _, supported := range SchemaVersions {
+		if supported == version {
+			return true
+		}
+	}
+	return false
+}
+
+// SupportedSchemas lists the versions for an error message or a report.
+func SupportedSchemas() string {
+	return strings.Join(SchemaVersions, ", ")
+}
 
 // Document types that are part of the fleet model, not resource types.
 const (
@@ -41,6 +70,11 @@ type Fleet struct {
 	Name     string
 	Exclude  []string
 	Position Position
+
+	// Schema is the version this document declared in its datum field. A document is
+	// interpreted at the version it declares, so this is kept rather than discarded
+	// once it has been checked.
+	Schema string
 }
 
 // Host declares a machine and its classification. It has no desired state.
@@ -48,6 +82,7 @@ type Host struct {
 	Name     string
 	Labels   map[string]string
 	Position Position
+	Schema   string
 }
 
 // Layer declares which hosts a set of resources applies to and how strongly.
@@ -56,6 +91,7 @@ type Layer struct {
 	Precedence int
 	Match      Matcher
 	Position   Position
+	Schema     string
 
 	// Dir holds the Layer document, relative to the fleet root. Resources at or
 	// below it belong to this layer, and relative paths resolve against it.
@@ -71,6 +107,7 @@ type Resource struct {
 	ReloadOn  []Reference
 	Desired   Value
 	Position  Position
+	Schema    string
 
 	// Layer is the nearest Layer document at or above this one.
 	Layer string

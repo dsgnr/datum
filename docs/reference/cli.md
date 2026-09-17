@@ -396,7 +396,12 @@ $ datum version
 datum 0.1.0~dev
 revision  87c303c0399fd34ab377c7dbd827e739eaf822e1, committed 2026-09-23T14:36:12Z
 platform  linux/amd64, go1.25.5
+schema    v1alpha1
 ```
+
+The schema line lists every [schema version](../repository/schema-versions.md) this binary
+reads, newest last. It answers whether a given binary can be pointed at a given repository
+without having to run it and read the parse error.
 
 `datum --version` prints the same thing, because a binary is asked its version both ways and
 guessing wrong should not be an error.
@@ -439,8 +444,16 @@ fleet      example
 revision   9c02ab
 hosts      500
 layers     14
+schema     v1alpha1 (612 documents)
 
 resolved 500 hosts, 0 errors
+```
+
+The schema line counts the documents declaring each version. A repository part-way through
+a migration lists both, which is where the remaining work shows up.
+
+```text
+schema     v1alpha1 581, v1beta1 31, migration in progress
 ```
 
 Errors report how many hosts they affect instead of repeating once per host, and

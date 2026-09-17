@@ -5,6 +5,7 @@ package main
 import (
 	"fmt"
 	"sort"
+	"strings"
 
 	"github.com/dsgnr/datum/internal/document"
 	"github.com/dsgnr/datum/internal/graph"
@@ -37,7 +38,8 @@ func runValidate(e *env, args []string) int {
 	e.printf("fleet      %s\n", result.Set.Fleet.Name)
 	e.printf("revision   %s\n", revision)
 	e.printf("hosts      %d\n", len(result.Set.Hosts))
-	e.printf("layers     %d\n\n", len(result.Set.Layers))
+	e.printf("layers     %d\n", len(result.Set.Layers))
+	e.printf("schema     %s\n\n", schemaSummary(result.Set))
 
 	var errs errorGroups
 	for _, layer := range result.Set.Layers {
@@ -81,6 +83,49 @@ func runValidate(e *env, args []string) int {
 	}
 	e.printf("resolved %d hosts, %s\n", len(result.Set.Hosts), plural(errs.len(), "error"))
 	return exitError
+}
+
+// schemaSummary counts the documents declaring each schema version.
+//
+// One version reads as a count. A repository part-way through a migration holds two, and
+// listing both with their counts is what makes the remaining work visible, since each
+// document is interpreted at the version it declares and nothing else reports the split.
+func schemaSummary(set document.Set) string {
+	counts := map[string]int{}
+	add := func(version string) {
+		if version != "" {
+			counts[version]++
+		}
+	}
+	add(set.Fleet.Schema)
+	for _, host := range set.Hosts {
+		add(host.Schema)
+	}
+	for _, layer := range set.Layers {
+		add(layer.Schema)
+	}
+	for _, resource := range set.Resources {
+		add(resource.Schema)
+	}
+
+	if len(counts) == 0 {
+		return "none declared"
+	}
+
+	versions := make([]string, 0, len(counts))
+	for version := range counts {
+		versions = append(versions, version)
+	}
+	sort.Strings(versions)
+
+	if len(versions) == 1 {
+		return fmt.Sprintf("%s (%s)", versions[0], plural(counts[versions[0]], "document"))
+	}
+	parts := make([]string, 0, len(versions))
+	for _, version := range versions {
+		parts = append(parts, fmt.Sprintf("%s %d", version, counts[version]))
+	}
+	return strings.Join(parts, ", ") + ", migration in progress"
 }
 
 // errorGroups collapses identical problems across hosts, so one typo in a widely
