@@ -1,8 +1,9 @@
 # Contributing to Datum
 
-Datum is in the design phase, so contributions are to the specification rather than to code. The
-fuller version of this guide is on the documentation site under Development, and this file covers
-what is needed to make a change.
+Datum is built specification first, and a complete pass now runs end to end. Contributions to the
+specification and to the code are both useful, and the design is still where a problem is cheapest
+to fix. The fuller version of this guide is on the documentation site under Development, and this
+file covers what is needed to make a change.
 
 ## What is useful now
 
