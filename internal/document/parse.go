@@ -66,8 +66,8 @@ func parseDocument(file string, root *yaml.Node, out *Parsed, errs *Errors) {
 		errs.Add(pos, "missing datum, which declares the schema version")
 		return
 	}
-	if version != SchemaVersion {
-		errs.Add(pos, "unsupported schema version %q, this agent supports %s", version, SchemaVersion)
+	if !SupportsSchema(version) {
+		errs.Add(pos, "unsupported schema version %q, this agent supports %s", version, SupportedSchemas())
 		return
 	}
 
@@ -87,19 +87,29 @@ func parseDocument(file string, root *yaml.Node, out *Parsed, errs *Errors) {
 		return
 	}
 
+	// The declared version is recorded on whatever this document turned out to be, so
+	// later stages can report it without re-reading the file.
 	switch docType {
 	case TypeFleet:
-		out.Fleets = append(out.Fleets, parseFleet(name, pos, fields, errs))
+		fleet := parseFleet(name, pos, fields, errs)
+		fleet.Schema = version
+		out.Fleets = append(out.Fleets, fleet)
 	case TypeHost:
-		out.Hosts = append(out.Hosts, parseHost(name, pos, fields, errs))
+		host := parseHost(name, pos, fields, errs)
+		host.Schema = version
+		out.Hosts = append(out.Hosts, host)
 	case TypeLayer:
-		out.Layers = append(out.Layers, parseLayer(name, pos, fields, errs))
+		layer := parseLayer(name, pos, fields, errs)
+		layer.Schema = version
+		out.Layers = append(out.Layers, layer)
 	default:
 		if !ResourceTypes[docType] {
 			errs.Add(pos, "unrecognised type %q", docType)
 			return
 		}
-		out.Resources = append(out.Resources, parseResource(docType, name, pos, fields, errs))
+		resource := parseResource(docType, name, pos, fields, errs)
+		resource.Schema = version
+		out.Resources = append(out.Resources, resource)
 	}
 }
 

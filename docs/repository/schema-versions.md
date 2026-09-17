@@ -26,12 +26,29 @@ Declaring the version per document also makes a gradual migration expressible. A
 through a migration holds documents at two versions with each interpreted at its own, rather than
 needing every file changed in a single commit.
 
+[`datum validate`](../reference/cli.md#datum-validate) counts the documents at each version, so a
+migration that is part-done reports how much of it is left.
+
+```text
+schema     v1alpha1 581, v1beta1 31, migration in progress
+```
+
 ## Newer agent, older repository
 
 An agent reading a repository written against an older schema works, and continues to work.
 
 An agent supports a range of schema versions and reads any document declaring one of them, so an agent
 that understands `v1alpha1` and `v1beta1` reads a repository containing either or both.
+
+!!! note "Implementation status"
+
+    The agent holds a list of the versions it reads, checks each document against that list, and
+    keeps the declared version on the parsed document so later stages can report it. `datum version`
+    lists the versions and `datum validate` counts the documents at each.
+
+    Only `v1alpha1` is on the list today, so the range is one version wide and no repository can
+    yet be part-way through a migration. The second version is what exercises this, and
+    `datum migrate` below does not exist.
 
 Support for a version is dropped only in a major agent release, and dropping it is a breaking change
 announced as one. An agent that no longer supports a version says so by naming the version instead
@@ -47,10 +64,12 @@ unrecognised schema version is an error in the same way an [unrecognised
 before the host is read.
 
 ```text
-error: unsupported schema version "v1beta1"
-  fleet/roles/web/nginx.yaml
-  this agent supports: v1alpha1
+fleet/roles/web/nginx.yaml:1: unsupported schema version "v1beta1", this agent supports v1alpha1
 ```
+
+The error names the versions this agent does read, so it distinguishes a document written
+against a newer schema from a typo. Which versions a binary reads is also reported by
+[`datum version`](../reference/cli.md#datum-version), without needing a repository to hand.
 
 Failing closed is the only safe behaviour available here. An agent that guessed at a newer schema would
 apply a partial understanding of desired state as root, and that is worse than applying nothing at all.
