@@ -11,9 +11,17 @@ cardinality reasons covered below, and the per-resource detail lives in logs and
     naming conventions because that is what most fleets already collect, and nothing about the design
     depends on Prometheus specifically.
 
-    The trust and refusal series exist and read zero, because the controls they report on are not
-    implemented. `datum_last_known_good_info` is absent, not zero, since exporting it would claim a
+    `datum_trust_require`, `datum_trust_signer_info`, `datum_trust_baseline_present` and
+    `datum_revisions_refused_total` all carry real values. `datum_resources_refused_total` reads
+    zero for every reason, since the [provider safety
+    controls](../security/provider-safety.md) it counts are not implemented.
+
+    `datum_last_known_good_info` is absent rather than zero, since exporting it would claim a
     fallback that nothing computes.
+
+    `datum_revision_attempted_timestamp_seconds` and `datum_revision_applied_timestamp_seconds`
+    both carry the time the pass finished, so they cannot yet diverge. The attempted and applied
+    revisions themselves do differ, and the two `_info` series report that correctly.
 
 ## Exposure
 
@@ -198,7 +206,22 @@ good is the newest that resolved and validated cleanly, and it only ever advance
 
 On a healthy host all three are equal. Attempted running ahead of applied is the signal that a
 revision failed to resolve, and it is the only combination that needs an alert, which is covered
-under [alerting](alerting.md#alerts-worth-having).
+under [alerting](alerting.md#alerts-worth-having). Compare the `_info` series to detect it, since
+the three timestamps all report when the pass finished.
+
+**Scheduling and failure counts.**
+
+```text
+datum_pass_consecutive_failures                  gauge
+datum_schedule_offset_seconds                    gauge
+```
+
+`datum_pass_consecutive_failures` separates a host that failed once from one that has failed forty
+times, which [nothing else
+reports](../reconciliation/failure-handling.md#consecutive-failures-are-counted) once a pass has
+ended. `datum_schedule_offset_seconds` is this host's fixed position within the interval, so a
+fleet's passes can be seen to be [spread rather than
+synchronised](../reconciliation/scheduling.md#passes-are-spread-deterministically).
 
 ## Security controls
 
