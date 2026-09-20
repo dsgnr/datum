@@ -46,7 +46,7 @@ equivalent.
 | `render`, `explain`, `validate`, `affected` | `apk` and `pacman` |
 | `observe`, `diff`, `plan` | `trust.strictPaths` |
 | `reconcile`, `status` | `--revision` and `--json` |
-| `agent`, `config check`, `revision` | |
+| `agent`, `config check`, `revision`, `version` | |
 | Fetching, verification, last known good | |
 | Refusing resources that target Datum | |
 | `Package` through `apt` and `dnf` | |
