@@ -47,7 +47,10 @@ datum config check   the resolved configuration    reads local files
 datum revision       the accepted revision         reads and writes local state
 ```
 
-## Global flags
+## Common flags
+
+These are spelled the same way wherever they appear. Each belongs to the commands that take
+it rather than to `datum` itself, so it goes after the command name and not before it.
 
 | Flag | Meaning |
 | ---- | ------- |
@@ -56,6 +59,10 @@ datum revision       the accepted revision         reads and writes local state
 | `--repo PATH` | Use a local checkout instead of the configured remote. |
 | `--json` | Emit machine-readable output. |
 | `--version` | Report the version, the revision it was built from and the platform. |
+
+`datum --host web-001 render` is not accepted, and `--version` is the one exception, since it
+is answered before any command is chosen. On `datum affected`, `--host` narrows the report to
+one host rather than selecting which host to resolve for.
 
 `--host` is what makes the read-only commands useful from a laptop. Resolution reads only
 repository content, so rendering another host's desired state needs no access to that
@@ -456,9 +463,9 @@ a migration lists both, which is where the remaining work shows up.
 schema     v1alpha1 581, v1beta1 31, migration in progress
 ```
 
-Errors report how many hosts they affect instead of repeating once per host, and
-`--strict` promotes warnings to errors. There is no separate lint command, for
-[the reasons given alongside
+Errors report how many hosts they affect instead of repeating once per host. Everything
+`validate` reports is an error, so there is nothing to promote and no `--strict`. There is
+no separate lint command either, for [the reasons given alongside
 it](../repository/validating-changes.md#there-is-no-datum-lint).
 
 ## datum affected
