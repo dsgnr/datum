@@ -35,7 +35,13 @@ resource types.
 | `datum revision`, `datum version` | Implemented |
 | Refusing resources that target Datum's own files | Implemented |
 | Packaging as a `.deb` and an `.rpm` | Implemented |
+| Grouping resource types into domains | Implemented |
 | Secret resolution and reboot handling | Not started |
+| `Package` and `Repository` through `apk` and `pacman` | Not started |
+| `trust.strictPaths`, and the provider path-safety rules it switches on | Not started |
+| The `--revision` and `--json` flags | Not started |
+| `datum init` and `datum migrate` | Not started |
+| Enrolment, so a host works out its own identity | Not started |
 
 Applying is Linux-only. Reading a host works anywhere, since the safety rules
 the writing path depends on have no portable equivalent.
@@ -88,7 +94,7 @@ reaches a stable version.
 
 ## What is settled so far
 
-Thirteen decisions are accepted, each with a record explaining what it was weighed against
+Fourteen decisions are accepted, each with a record explaining what it was weighed against
 and what it costs.
 
 | Decision | Record |
@@ -106,6 +112,7 @@ and what it costs.
 | Only declared label values are substituted into desired state | [ADR-0012](../adr/0012-substitution-from-declared-labels.md) |
 | Secrets are referenced in the repository and resolved on the host | [ADR-0013](../adr/0013-secret-references-resolved-on-the-host.md) |
 | The implementation is written in Go | [ADR-0014](../adr/0014-go-as-the-implementation-language.md) |
+| Resource types are grouped into domains | [ADR-0015](../adr/0015-resource-type-domains.md) |
 
 The reconciliation model itself is settled. Desired state comes from Git, observed state
 comes from the host, the two produce a plan, and the plan is applied and verified. The
