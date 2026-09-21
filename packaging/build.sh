@@ -91,9 +91,8 @@ Name:           datum
 Version:        $version
 Release:        1
 Summary:        Reconciles a Linux host against desired state held in Git
-License:        MIT
+License:        Apache-2.0
 URL:            https://getdatum.sh/
-BuildArch:      $rpmarch
 Requires:       git
 Requires:       openssh-clients
 
@@ -131,7 +130,13 @@ if [ \$1 -eq 0 ]; then
 fi
 EOF
 
-  rpmbuild --quiet --define "_topdir $root/rpmbuild" --define "_rpmdir $outdir" \
+  # --target sets the package architecture, which is what allows an x86_64 package to be
+  # built on an arm64 machine and the other way round. The spec deliberately carries no
+  # BuildArch: with one present rpmbuild refuses a foreign architecture outright, with "no
+  # compatible architectures found for build", whatever --target says. Nothing is compiled
+  # here, so there is nothing for the target to be wrong about.
+  rpmbuild --quiet --target "$rpmarch" \
+           --define "_topdir $root/rpmbuild" --define "_rpmdir $outdir" \
            --define "_rpmfilename datum-$version-1.$rpmarch.rpm" \
            -bb "$spec" >/dev/null
   ;;
