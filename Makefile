@@ -18,7 +18,7 @@ GO_BUILD := CGO_ENABLED=0 go build -ldflags "-X github.com/dsgnr/datum/internal/
 DOCKER_ARCH := $(shell docker version --format '{{.Server.Arch}}' 2>/dev/null)
 
 .PHONY: help build build-linux dist test test-linux test-apt test-dnf test-sysctl test-user test-systemd test-git test-source fmt vet lint shell clean \
-	package package-deb package-rpm test-package test-prometheus \
+	package package-deb package-rpm package-release test-package test-prometheus \
 	docs-install docs-serve docs-build docs-check docs-mermaid
 
 help:
@@ -86,6 +86,23 @@ package-rpm: bin/datum-linux-$(DOCKER_ARCH)
 	docker run --rm -v "$(CURDIR):/src" -w /src fedora:41 sh -c \
 		'dnf install -y -q rpm-build python3 >/dev/null && \
 		 packaging/build.sh rpm $(DOCKER_ARCH) $(VERSION) bin/datum-linux-$(DOCKER_ARCH) dist'
+
+# A release ships both architectures, so packaging cannot be limited to this machine's.
+# build.sh only wraps an already-built binary, so the target architecture is an argument
+# rather than something the container has to be able to execute.
+# set -e inside the container matters. A for loop reports only its last iteration, so
+# without it a failure on the first architecture is invisible and the target succeeds having
+# built half a release.
+package-release: build-linux
+	docker run --rm -e DEBIAN_FRONTEND=noninteractive -v "$(CURDIR):/src" -w /src debian:trixie sh -c \
+		'set -e; apt-get update -qq >/dev/null; \
+		 apt-get install -y -qq --no-install-recommends dpkg-dev python3 >/dev/null; \
+		 for a in amd64 arm64; do packaging/build.sh deb $$a $(VERSION) bin/datum-linux-$$a dist; done'
+	docker run --rm -v "$(CURDIR):/src" -w /src fedora:41 sh -c \
+		'set -e; dnf install -y -q rpm-build python3 >/dev/null; \
+		 for a in amd64 arm64; do packaging/build.sh rpm $$a $(VERSION) bin/datum-linux-$$a dist; done'
+	@test "$$(ls dist/*.deb dist/*.rpm 2>/dev/null | wc -l)" -eq 4 || \
+		{ echo "expected four packages in dist, found:"; ls dist; exit 1; }
 
 # Installs what was just built the way somebody would install it, then checks the result
 # from inside the container. The package managers are the real ones, so a postinst or a
