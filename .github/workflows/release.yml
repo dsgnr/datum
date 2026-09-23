@@ -1,0 +1,95 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: read
+
+jobs:
+  release:
+    name: Build and publish
+    runs-on: ubuntu-latest
+    permissions:
+      # Needed to create the release and attach files to it.
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          # The version line in `datum version` is stamped by the Go toolchain from the
+          # checkout, so the tag and its history have to be present.
+          fetch-depth: 0
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+          cache: true
+
+      # A tag of v0.1.0-alpha.1 becomes 0.1.0~alpha.1. Neither dpkg nor rpm accepts a
+      # hyphen in a version, and a tilde sorts below the release it precedes in both, which
+      # is what a pre-release has to do.
+      - name: Work out the version
+        id: version
+        run: |
+          set -eu
+          tag="${GITHUB_REF_NAME}"
+          version=$(printf '%s' "${tag#v}" | tr '-' '~')
+          echo "tag=$tag" >> "$GITHUB_OUTPUT"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "building $tag as $version"
+
+      # The tag is not a reason to skip the checks that every other push gets.
+      - run: make lint
+
+      - name: Build the binaries
+        run: make dist VERSION='${{ steps.version.outputs.version }}'
+
+      - name: Build the packages
+        run: make package-release VERSION='${{ steps.version.outputs.version }}'
+
+      # The packages are installed by the real package managers and inspected from inside
+      # the container, so a scriptlet that fails does so here and not on somebody's host.
+      - name: Install what was built and check it
+        run: make test-package VERSION='${{ steps.version.outputs.version }}'
+
+      - name: Check the binaries report the version they were tagged as
+        run: |
+          set -eu
+          expected='${{ steps.version.outputs.version }}'
+          got=$(./bin/datum version | head -1)
+          echo "$got"
+          case "$got" in
+            "datum $expected"*) ;;
+            *) echo "expected 'datum $expected', got '$got'"; exit 1 ;;
+          esac
+
+      - name: Collect the artefacts
+        run: |
+          set -eu
+          mkdir -p release
+          cp bin/datum-linux-amd64 bin/datum-linux-arm64 release/
+          cp dist/*.deb dist/*.rpm release/
+          cd release
+          sha256sum * > SHA256SUMS
+          cat SHA256SUMS
+
+      # A pre-release tag is marked as one, so it does not become "latest" for anybody
+      # installing without pinning. Anything with a suffix after the version is a
+      # pre-release, which covers alpha, beta and rc alike.
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -eu
+          tag='${{ steps.version.outputs.tag }}'
+          prerelease=""
+          case "$tag" in
+            *-*) prerelease="--prerelease" ;;
+          esac
+          gh release create "$tag" release/* \
+            --title "$tag" \
+            --generate-notes \
+            --verify-tag \
+            $prerelease
