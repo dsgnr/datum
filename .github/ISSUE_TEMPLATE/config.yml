@@ -1,0 +1,9 @@
+blank_issues_enabled: true
+
+contact_links:
+  - name: Report a vulnerability
+    url: https://github.com/dsgnr/datum/security/advisories/new
+    about: Anything exploitable goes through a private advisory, not a public issue.
+  - name: Open questions already recorded
+    url: https://getdatum.sh/development/open-questions/
+    about: Over sixty design questions are already written down. Answers are welcome on any of them.
