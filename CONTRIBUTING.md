@@ -107,6 +107,28 @@ Before each commit, inspect the diff, drop unrelated changes, and run `make docs
 documentation or `make lint` for code. The repository
 should build at every commit.
 
+## Releases
+
+A release is a tag. Pushing one matching `v*` builds the binaries and packages for both
+architectures, installs them to check what lands, and publishes them with checksums.
+
+```bash
+git tag -s v0.1.0-alpha.1 -m "v0.1.0-alpha.1"
+git push origin v0.1.0-alpha.1
+```
+
+The tag sets the version the binary reports and the version the packages carry. A hyphen in
+the tag becomes a tilde, so `v0.1.0-alpha.1` ships as `0.1.0~alpha.1`, which is what sorts
+below `0.1.0` in both dpkg and rpm. A tag with a suffix is published as a pre-release.
+
+The schema version in `datum: v1alpha1` is separate and changes on its own schedule, under [schema
+versions](https://getdatum.sh/repository/schema-versions/).
+
+## Reporting a vulnerability
+
+See [SECURITY.md](SECURITY.md). Anything exploitable goes through a private advisory rather
+than a public issue.
+
 ## Licence
 
 Contributions are made under the [Apache License 2.0](LICENSE).
