@@ -10,7 +10,6 @@ import (
 	"text/tabwriter"
 
 	"github.com/dsgnr/datum/internal/anchor"
-	"github.com/dsgnr/datum/internal/capability"
 	"github.com/dsgnr/datum/internal/document"
 	"github.com/dsgnr/datum/internal/graph"
 	"github.com/dsgnr/datum/internal/observe"
@@ -87,7 +86,7 @@ func runPass(ctx context.Context, e *env, f hostFlags) (pass, int) {
 		return pass{}, exitError
 	}
 
-	providers, err := capability.Detect()
+	providers, err := detectCapabilities()
 	if err != nil {
 		e.errorf("%v\n", err)
 		return pass{}, exitError
