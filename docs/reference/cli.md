@@ -416,9 +416,22 @@ guessing wrong should not be an error.
 The revision line is stamped by the Go toolchain from the checkout the binary was built in, so
 a build carries its own commit without anything being passed in. A build from a tree with
 uncommitted changes says so on that line, and a build with no version passed in reports
-`unknown` instead of a number it was never given. There are no releases yet, so the version on
-a package built from this repository is the placeholder `0.1.0~dev`, which sorts below any real
-release.
+`unknown` instead of a number it was never given. A build from a checkout rather than a release
+carries the version `0.1.0~dev`, which sorts below any released version.
+
+## Verifying a release
+
+Each release publishes `SHA256SUMS`, a detached signature over it as `SHA256SUMS.asc`, and the
+public half of the signing key as `signing-key.asc`.
+
+```console
+$ gpg --import signing-key.asc
+$ gpg --verify SHA256SUMS.asc SHA256SUMS
+$ sha256sum --check SHA256SUMS
+```
+
+The signature covers the checksum file, which covers every artefact listed in it. Altering an
+artefact fails the checksum and altering the checksum file fails the signature.
 
 ## datum init
 
