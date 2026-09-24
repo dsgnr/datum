@@ -40,8 +40,20 @@ jobs:
           echo "version=$version" >> "$GITHUB_OUTPUT"
           echo "building $tag as $version"
 
-      # The tag is not a reason to skip the checks that every other push gets.
       - run: make lint
+
+      # A tag can point at any commit, so the provider and repository suites run here
+      # rather than relying on a push to main having tested the same tree. The git and
+      # source suites cover signature verification and revision selection, which sit
+      # behind a build tag and so do not run under plain `go test ./...`.
+      - name: Integration suites
+        run: |
+          set -e
+          for suite in test-git test-source test-apt test-dnf test-sysctl test-user test-systemd; do
+            echo "::group::$suite"
+            make "$suite"
+            echo "::endgroup::"
+          done
 
       - name: Build the binaries
         run: make dist VERSION='${{ steps.version.outputs.version }}'
@@ -74,6 +86,30 @@ jobs:
           cd release
           sha256sum * > SHA256SUMS
           cat SHA256SUMS
+
+      # Datum refuses desired state that is not signed by a trusted key, so its own
+      # artefacts are signed too. Signing SHA256SUMS covers every file listed in it,
+      # since altering an artefact without altering the list is detected by the
+      # checksum and altering the list is detected by the signature.
+      - name: Sign the checksums
+        env:
+          RELEASE_SIGNING_KEY: ${{ secrets.RELEASE_SIGNING_KEY }}
+          RELEASE_SIGNING_PASSPHRASE: ${{ secrets.RELEASE_SIGNING_PASSPHRASE }}
+        run: |
+          set -eu
+          if [ -z "${RELEASE_SIGNING_KEY:-}" ]; then
+            echo "RELEASE_SIGNING_KEY is not set, so this release would be unsigned" >&2
+            exit 1
+          fi
+          printf '%s' "$RELEASE_SIGNING_KEY" | gpg --batch --quiet --import
+          keyid=$(gpg --list-secret-keys --with-colons | awk -F: '/^sec:/ {print $5; exit}')
+          printf '%s' "$RELEASE_SIGNING_PASSPHRASE" > /tmp/pass
+          gpg --batch --yes --pinentry-mode loopback --passphrase-file /tmp/pass \
+              --local-user "$keyid" --armor --detach-sign \
+              --output release/SHA256SUMS.asc release/SHA256SUMS
+          shred -u /tmp/pass
+          gpg --verify release/SHA256SUMS.asc release/SHA256SUMS
+          gpg --batch --yes --export --armor "$keyid" > release/signing-key.asc
 
       # A pre-release tag is marked as one, so it does not become "latest" for anybody
       # installing without pinning. Anything with a suffix after the version is a

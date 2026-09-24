@@ -109,8 +109,17 @@ should build at every commit.
 
 ## Releases
 
-A release is a tag. Pushing one matching `v*` builds the binaries and packages for both
-architectures, installs them to check what lands, and publishes them with checksums.
+A release is a tag. Pushing one matching `v*` runs the checks and the integration suites, builds
+the binaries and packages for both architectures, installs them to check what lands, then
+publishes them with signed checksums.
+
+Signing needs two repository secrets, `RELEASE_SIGNING_KEY` holding an armoured private key and
+`RELEASE_SIGNING_PASSPHRASE` holding its passphrase. The workflow fails rather than publishing
+unsigned artefacts if the key is absent.
+
+Before tagging, check the pages that describe the project as unreleased, which are
+`docs/introduction/project-status.md`, `docs/reference/cli.md` and the status table in
+[README.md](README.md).
 
 ```bash
 git tag -s v0.1.0-alpha.1 -m "v0.1.0-alpha.1"
