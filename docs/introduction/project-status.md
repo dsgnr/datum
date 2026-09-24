@@ -147,7 +147,13 @@ written down.
 
 ## Versioning
 
-There are no releases. The packages build from the repository and carry a version that sorts below
-any real one, so a machine cannot end up with a build claiming to be something it is not. When there
-are releases, the documentation will carry a version matcher and this page will be replaced by
-something that records what shipped rather than what is intended.
+The version of the agent is separate from the `v1alpha1` schema version in every document, and the
+two change on their own schedules. [Schema
+versions](../repository/schema-versions.md) covers the rules for the second.
+
+A build from a checkout carries the version `0.1.0~dev`, which sorts below any released version, so
+a machine cannot end up with a build claiming to be a release it is not. A release tag sets the
+version the binary reports and the version its packages carry, and a tag with a suffix such as
+`v0.1.0-alpha.1` is published as a pre-release.
+
+This page records what is built rather than what is intended, so it is updated with each release.
