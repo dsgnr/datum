@@ -66,11 +66,9 @@ Structure therefore emerges from wanting different matchers, not from Datum insi
 
 ## datum init
 
-!!! note "Proposed behaviour"
-
-    `datum init` does not exist yet, and what it creates is specified here because a generated
-    repository is the first thing a new user reads, so a cluttered one teaches the wrong habits from
-    the beginning.
+A generated repository is the first thing a new user reads, so a cluttered one teaches the wrong
+habits from the beginning. What the command creates is therefore kept to the minimum that
+reconciles.
 
 ```text
 $ datum init
@@ -105,6 +103,11 @@ name: base
 precedence: 0
 ```
 
+The fleet is named `example` unless `--name` says otherwise, and the schema version written is the
+one the agent that generated it understands. An existing document at either path stops the command
+before it writes anything, so running it twice reports the clash rather than replacing desired state
+somebody wrote.
+
 There is no example host, because a host name has to correspond to a real machine and a placeholder
 either gets committed by accident or gets deleted immediately. There are no example resources for
 the same reason, compounded by the tendency of generated examples to be copied rather than
@@ -119,7 +122,8 @@ which keeps the default output clean while putting the fuller starting point one
 
 ## datum init does not touch Git
 
-The command creates Datum configuration in the current directory and does not run `git init`.
+The command creates Datum configuration in the target directory (the current directory by default)
+and does not run `git init`.
 
 Adding Datum to an existing repository is at least as common as starting a new one, and a tool that
 unexpectedly creates a Git repository inside another one causes a confusing and time-consuming mess. It

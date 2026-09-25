@@ -36,11 +36,12 @@ resource types.
 | Refusing resources that target Datum's own files | Implemented |
 | Packaging as a `.deb` and an `.rpm` | Implemented |
 | Grouping resource types into domains | Implemented |
+| `datum init` | Implemented |
 | Secret resolution and reboot handling | Not started |
 | `Package` and `Repository` through `apk` and `pacman` | Not started |
 | `trust.strictPaths`, and the provider path-safety rules it switches on | Not started |
 | The `--revision` and `--json` flags | Not started |
-| `datum init` and `datum migrate` | Not started |
+| `datum migrate` | Not started |
 | Enrolment, so a host works out its own identity | Not started |
 
 Applying is Linux-only. Reading a host works anywhere, since the safety rules

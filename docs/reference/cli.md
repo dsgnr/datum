@@ -3,8 +3,7 @@
 !!! warning "Some of these commands do not exist yet"
 
     `render`, `explain`, `observe`, `diff`, `plan`, `reconcile`, `status`, `validate`,
-    `affected`, `agent`, `config check`, `revision` and `version` are implemented. `init` and
-    `migrate` are not, and the output shown for those two is illustrative.
+    `affected`, `init`, `agent`, `config check`, `revision` and `version` are implemented.
 
     Every resource type has a provider. Which one serves a host depends on what it runs, so a type
     with none here is reported as skipped, which makes a host
@@ -34,10 +33,9 @@ A second group operates on the repository and not on a host, and none of the com
 managed machine at any point.
 
 ```text
-datum init        create a new repository          writes local files
+datum init        scaffold Datum documents          writes local files
 datum validate    parse and resolve every host     no host access
 datum affected    which hosts a change reaches     no host access
-datum migrate     rewrite documents to a schema    writes local files
 ```
 
 Two more read and write the agent's own state, not a host or a repository.
@@ -448,9 +446,20 @@ next steps
   add resources under fleet/base/ or a new layer
 ```
 
-`--with-examples` adds a commented example host and resource. The reasoning behind the
-the created files being this few, and behind the command leaving Git alone, is set out
-under [creating a repository](../repository/index.md#datum-init).
+| Flag | Meaning |
+| ---- | ------- |
+| `--repo DIR` | Directory in which to create Datum files. Defaults to the current directory. |
+| `--name NAME` | Name for the `Fleet` document. Defaults to `example`. |
+| `--with-examples` | Also write a commented example host and resource. |
+
+The documents are written with the schema version this agent understands. If any generated-document
+path already exists, `init` stops before writing anything, so a second run reports the clash and
+leaves the first result alone. If writing a document fails, `init` removes the documents it created
+before reporting the error.
+
+The command warns when the directory is not inside a Git work tree and creates the repository
+anyway. The reasoning behind the created files being this few, and behind the command leaving Git
+alone, is set out under [creating a repository](../repository/index.md#datum-init).
 
 ## datum validate
 
@@ -500,26 +509,6 @@ db-001     unchanged
 `--show-resources --host NAME` expands one host into a diff between its two
 manifests, which reports what that host's desired state becomes, not what
 changed in the repository.
-
-## datum migrate
-
-Rewrites documents from one schema version to another, in place, and leaves the result for
-a human to review and commit.
-
-```text
-$ datum migrate --to v1beta1
-
-rewrote 41 documents in 18 files
-  fleet/base/packages.yaml
-  fleet/roles/web/nginx.yaml
-  ...
-
-review the diff before committing
-```
-
-A migration that cannot be performed mechanically stops and names the documents needing a
-human, and no agent ever performs one. Both points are covered under
-[schema versions](../repository/schema-versions.md#migration-is-a-repository-operation).
 
 ## Exit codes
 

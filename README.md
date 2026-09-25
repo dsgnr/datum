@@ -46,7 +46,7 @@ equivalent.
 | `render`, `explain`, `validate`, `affected` | `apk` and `pacman` |
 | `observe`, `diff`, `plan` | `trust.strictPaths` |
 | `reconcile`, `status` | `--revision` and `--json` |
-| `agent`, `config check`, `revision`, `version` | |
+| `agent`, `config check`, `init`, `revision`, `version` | |
 | Fetching, verification, last known good | |
 | Refusing resources that target Datum | |
 | `Package` through `apt` and `dnf` | |
@@ -55,7 +55,7 @@ equivalent.
 | `User`, `Group` through the shadow utilities | |
 | `Sysctl` through `/proc/sys` | |
 | Discovery, matchers, composition, precedence | Secrets and reboots |
-| Label substitution, manifest digests | `init` and `migrate` |
+| Label substitution, manifest digests | |
 | The resource graph, cycles, duplicate targets | |
 | Per-type field validation | |
 | Applying, verification, failure propagation | |

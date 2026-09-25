@@ -83,6 +83,31 @@ func Walk(dir string) (Result, error) {
 	return result, nil
 }
 
+// Files lists the documents under a fleet root that discovery reads, as slash
+// separated paths relative to root.
+//
+// Anything rewriting a repository has to see the same files the agent does, which is
+// why the walk and the exclusion rules are shared rather than restated.
+func Files(root string, exclude []string) ([]string, error) {
+	found, err := yamlFiles(root)
+	if err != nil {
+		return nil, err
+	}
+	var out []string
+	for _, file := range found {
+		rel, err := filepath.Rel(root, file)
+		if err != nil {
+			return nil, err
+		}
+		rel = filepath.ToSlash(rel)
+		if excluded(exclude, rel) {
+			continue
+		}
+		out = append(out, rel)
+	}
+	return out, nil
+}
+
 // yamlFiles lists the YAML under dir, skipping directories that never hold fleet
 // content.
 func yamlFiles(dir string) ([]string, error) {
