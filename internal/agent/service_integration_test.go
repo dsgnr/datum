@@ -112,7 +112,7 @@ func install(t *testing.T, mode string) {
 func mustBuild(t *testing.T) string {
 	t.Helper()
 	binary := filepath.Join(t.TempDir(), "datum")
-	build := exec.Command("go", "build", "-o", binary, "./cmd/datum")
+	build := exec.Command("go", "build", "-buildvcs=false", "-o", binary, "./cmd/datum")
 	build.Dir = "../.."
 	if out, err := build.CombinedOutput(); err != nil {
 		t.Fatalf("building datum: %v\n%s", err, out)
