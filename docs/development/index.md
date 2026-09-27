@@ -93,6 +93,9 @@ fourth in the code alone would have left the site describing a system that no lo
 
 ## The pages
 
+[Testing](testing.md)
+:   Local checks, integration targets, CI coverage and the test matrix still to build.
+
 [Working on the documentation](documentation.md)
 :   Building and previewing the site, the structure it follows, and the writing conventions.
 
