@@ -8,6 +8,8 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+
+	"github.com/dsgnr/datum/internal/discover"
 )
 
 func TestInitCreatesARepositoryThatValidates(t *testing.T) {
@@ -143,5 +145,24 @@ func TestInitIsQuietInsideAWorkTree(t *testing.T) {
 	}
 	if strings.Contains(got.err, "not inside a git work tree") {
 		t.Errorf("there should be no warning inside a work tree, got %q", got.err)
+	}
+}
+
+func TestInitPreservesYAMLSensitiveFleetNames(t *testing.T) {
+	for _, name := range []string{"-", "null", "true", "0123", ".nan"} {
+		t.Run(name, func(t *testing.T) {
+			dir := t.TempDir()
+			got := invoke("init", "--repo", dir, "--name", name)
+			if got.code != exitOK {
+				t.Fatalf("init failed: %s", got.all())
+			}
+			result, err := discover.Walk(dir)
+			if err != nil {
+				t.Fatalf("generated repository cannot be read: %v", err)
+			}
+			if result.Set.Fleet.Name != name {
+				t.Fatalf("fleet name = %q, want %q", result.Set.Fleet.Name, name)
+			}
+		})
 	}
 }

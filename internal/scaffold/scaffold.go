@@ -37,7 +37,7 @@ func Files(fleet string, withExamples bool) []File {
 datum: %s
 type: Fleet
 
-name: %s
+name: %q
 `, document.SchemaVersion, fleet),
 		},
 		{
