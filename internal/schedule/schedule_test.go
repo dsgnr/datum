@@ -3,6 +3,7 @@
 package schedule_test
 
 import (
+	"math"
 	"testing"
 	"time"
 
@@ -188,5 +189,27 @@ func TestAZeroIntervalDoesNotDivideByZero(t *testing.T) {
 	s := schedule.New("web-001", 0, 0)
 	if wait := s.Wait(time.Now()); wait <= 0 {
 		t.Errorf("wait = %s", wait)
+	}
+}
+
+func TestLargeIntervalsDoNotOverflowBackoff(t *testing.T) {
+	// Four times this valid duration wraps to zero without checked arithmetic.
+	for _, failures := range []int{2, 1, 3, 0} {
+		s := schedule.New("web-001", 1<<62, 0)
+		for range failures {
+			s.Record(schedule.Upstream)
+		}
+		wantInterval := time.Duration(math.MaxInt64)
+		if failures == 0 {
+			wantInterval = 1 << 62
+		}
+		now := at(t, "2026-02-08T09:00:00Z")
+		want := time.Unix(0, 0).Add(wantInterval)
+		if got := s.Next(now); !got.Equal(want) {
+			t.Errorf("after %d failures next = %s, want %s", failures, got, want)
+		}
+		if wait := s.Wait(now); wait <= 0 {
+			t.Errorf("after %d failures wait = %s", failures, wait)
+		}
 	}
 }

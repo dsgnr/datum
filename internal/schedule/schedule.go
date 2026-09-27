@@ -11,6 +11,7 @@ package schedule
 import (
 	"crypto/sha256"
 	"encoding/binary"
+	"math"
 	"time"
 )
 
@@ -119,17 +120,28 @@ func (s *Schedule) Record(failure Failure) {
 // running is skipped instead of queued, which falls out of always returning a time
 // after now.
 func (s Schedule) Next(now time.Time) time.Time {
-	interval := s.interval * time.Duration(s.Backoff())
+	interval := s.interval
+	multiplier := time.Duration(s.Backoff())
+	if interval > time.Duration(math.MaxInt64)/multiplier {
+		interval = time.Duration(math.MaxInt64)
+	} else {
+		interval *= multiplier
+	}
 
 	// Measured from the epoch so that every host with the same interval agrees on
 	// where the boundaries are, and only the offset separates them.
 	elapsed := now.UTC().Sub(time.Unix(0, 0).UTC())
-	boundary := elapsed - elapsed%interval
-	next := time.Unix(0, 0).UTC().Add(boundary + s.offset%interval)
-	for !next.After(now) {
-		next = next.Add(interval)
+	phase := elapsed % interval
+	if phase < 0 {
+		phase += interval
 	}
-	return next
+	// Work with the remaining delay rather than adding the offset to an epoch
+	// duration, which can itself overflow for large intervals and splays.
+	delay := s.offset%interval - phase
+	if delay <= 0 {
+		delay += interval
+	}
+	return now.UTC().Add(delay)
 }
 
 // Wait is how long to sleep before the next pass.
