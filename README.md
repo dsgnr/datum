@@ -81,7 +81,8 @@ make test-systemd  # run the systemd provider against a booted systemd
 make lint       # formatting, vet and tests, which is what CI runs
 ```
 
-Go 1.25 or newer, and no other dependency.
+Building requires Git, Make and the Go toolchain specified in `go.mod`. The ordinary Go tests
+run locally; the provider integration targets above additionally require a running Docker daemon.
 
 Datum runs on Linux, so a build on macOS or Windows is for development only. The binary is
 statically linked with cgo disabled, so cross-compiling needs no toolchain beyond Go.
@@ -93,9 +94,9 @@ make package        # a .deb and an .rpm into ./dist
 make test-package   # install both and check what landed
 ```
 
-The packages are built by each distribution's own tools in a container, so nothing beyond Docker is
-needed to build them. Installing one puts the binary in `/usr/bin`, a default configuration naming
-no host in `/etc/datum`, and a systemd unit that is left disabled. [Installing the
+The packages are built by each distribution's own tools in a container, so Docker is required
+alongside the build prerequisites above. Installing one puts the binary in `/usr/bin`, a default
+configuration naming no host in `/etc/datum`, and a systemd unit that is left disabled. [Installing the
 agent](https://getdatum.sh/lifecycle/installation/) covers what lands where.
 
 For a first run, follow the [quickstart](https://getdatum.sh/lifecycle/): inspect the example

@@ -30,8 +30,9 @@ package upgrade without a reconciliation pass being involved.
 
 ## Building from source
 
-The binary needs Go 1.25 or newer and nothing else. The packages additionally need Docker, because
-each one is built by its own distribution's tools in a container.
+The commands below need Git, Make and the Go toolchain specified in `go.mod`. Building packages
+additionally needs a running Docker daemon, because each package is built by its own distribution's
+tools in a container.
 
 ```console
 $ git clone https://github.com/dsgnr/datum.git
@@ -256,11 +257,13 @@ question.
 ## Read the result
 
 `status` reads the last report from the state directory. It touches neither the repository
-nor the host, so it is cheap to call from a monitoring check.
+nor the host, so it is cheap to call from a monitoring check. Run it as root for the installed
+agent: `/var/lib/datum` is private to root. The quickstart's user-owned state directory can be
+read by the user who created it with `--state`.
 
 ```console
-$ datum status
-$ datum status --output json | jq .hostState
+# datum status
+# datum status --output json | jq .hostState
 ```
 
 Reports are retained for the twenty most recent passes.

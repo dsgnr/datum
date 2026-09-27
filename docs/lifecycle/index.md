@@ -11,7 +11,7 @@ follow [Install and run the agent](installation.md).
 
 ## Build and inspect the example
 
-You need Git, Make and Go 1.25 or newer. Run these commands from the source directory:
+You need Git, Make and the Go toolchain specified in `go.mod`. Clone the source and build it:
 
 ```bash
 git clone https://github.com/dsgnr/datum.git
