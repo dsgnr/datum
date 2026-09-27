@@ -279,3 +279,24 @@ func TestDayDurationsRejectOverflow(t *testing.T) {
 		}
 	}
 }
+
+func TestSizesRejectNonFiniteAndOverflowingValues(t *testing.T) {
+	for _, text := range []string{"NaNMiB", "+InfGiB", "InfinityB", "9223372036854775808B", "8388608TiB", "1e100GiB"} {
+		if got, err := config.ParseSize(text); err == nil {
+			t.Errorf("ParseSize(%q) = %d without an error", text, got)
+		}
+	}
+}
+
+func TestIntegerSizesPreservePrecision(t *testing.T) {
+	for text, want := range map[string]config.Size{
+		"9223372036854775807B": 9223372036854775807,
+		"9007199254740993B":    9007199254740993,
+		"1.5MiB":               1572864,
+	} {
+		got, err := config.ParseSize(text)
+		if err != nil || got != want {
+			t.Errorf("ParseSize(%q) = %d, %v; want %d", text, got, err, want)
+		}
+	}
+}

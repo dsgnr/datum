@@ -115,11 +115,20 @@ func ParseSize(text string) (Size, error) {
 		if !ok {
 			continue
 		}
-		n, err := strconv.ParseFloat(strings.TrimSpace(digits), 64)
-		if err != nil || n < 0 {
+		digits = strings.TrimSpace(digits)
+		// Keep integer counts exact, including values beyond float64's precision.
+		if n, err := strconv.ParseInt(digits, 10, 64); err == nil {
+			if n < 0 || n > math.MaxInt64/unit.scale {
+				return 0, fmt.Errorf("%q is outside the supported size range", text)
+			}
+			return Size(n * unit.scale), nil
+		}
+		n, err := strconv.ParseFloat(digits, 64)
+		bytes := n * float64(unit.scale)
+		if err != nil || n < 0 || math.IsNaN(bytes) || math.IsInf(bytes, 0) || bytes >= float64(math.MaxInt64) {
 			return 0, fmt.Errorf("%q is not a size, want something like 16MiB", text)
 		}
-		return Size(n * float64(unit.scale)), nil
+		return Size(bytes), nil
 	}
 	n, err := strconv.ParseInt(trimmed, 10, 64)
 	if err != nil || n < 0 {
