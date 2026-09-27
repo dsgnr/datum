@@ -57,6 +57,7 @@ jobs:
         with:
           go-version-file: go.mod
           cache: true
+      - run: make test-build
       - run: make dist
 
       # A dynamically linked binary means cgo is back on.

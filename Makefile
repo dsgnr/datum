@@ -17,7 +17,7 @@ GO_BUILD := CGO_ENABLED=0 go build -ldflags "-X github.com/dsgnr/datum/internal/
 # test binary into an image rather than installing a toolchain in it.
 DOCKER_ARCH := $(shell docker version --format '{{.Server.Arch}}' 2>/dev/null)
 
-.PHONY: help build build-linux dist test test-linux test-apt test-dnf test-sysctl test-user test-systemd test-git test-source fmt vet lint shell clean \
+.PHONY: help build build-linux dist FORCE test test-build test-linux test-apt test-dnf test-sysctl test-user test-systemd test-git test-source fmt vet lint shell clean \
 	package package-deb package-rpm package-release test-package test-prometheus \
 	docs-install docs-serve docs-build docs-check docs-mermaid
 
@@ -29,6 +29,7 @@ help:
 	@echo "test-package  Install the packages in Debian and Fedora and check them"
 	@echo "test-prometheus  Check the example alert rules with promtool"
 	@echo "test          Run the Go tests"
+	@echo "test-build    Check that version changes rebuild the binary"
 	@echo "test-linux    Run the Go tests in a Linux container"
 	@echo "test-git      Run the git client against real signed repositories"
 	@echo "test-source   Run revision selection against a real signed repository"
@@ -48,22 +49,21 @@ help:
 	@echo "docs-mermaid  Parse every mermaid block with the real parser"
 	@echo "clean         Remove build output and caches"
 
-# Every source file, so a binary is rebuilt when the code changes. Without this the
-# cross-compiled outputs are up to date the moment they exist, and a container ends up
-# running yesterday's build against today's tests.
-SOURCES := $(shell find cmd internal -name '*.go') go.mod go.sum
+# Let Go's build cache decide what needs rebuilding. File timestamps alone miss
+# changes to VERSION, the toolchain and the VCS metadata embedded in the binary.
+FORCE:
 
 build: bin/datum
 
-bin/datum: $(SOURCES)
+bin/datum: FORCE
 	$(GO_BUILD) -o $@ ./cmd/datum
 
 build-linux: bin/datum-linux-amd64 bin/datum-linux-arm64
 
-bin/datum-linux-amd64: $(SOURCES)
+bin/datum-linux-amd64: FORCE
 	GOOS=linux GOARCH=amd64 $(GO_BUILD) -o $@ ./cmd/datum
 
-bin/datum-linux-arm64: $(SOURCES)
+bin/datum-linux-arm64: FORCE
 	GOOS=linux GOARCH=arm64 $(GO_BUILD) -o $@ ./cmd/datum
 
 dist: build build-linux
@@ -128,6 +128,9 @@ test-prometheus:
 
 test:
 	go test ./...
+
+test-build:
+	sh test/build/check.sh
 
 # Applying state is implemented on Linux only, so those tests skip everywhere else.
 # This runs the whole suite where all of it is reachable.
