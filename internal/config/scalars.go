@@ -4,6 +4,7 @@ package config
 
 import (
 	"fmt"
+	"math"
 	"strconv"
 	"strings"
 	"time"
@@ -49,7 +50,11 @@ func ParseDuration(text string) (time.Duration, error) {
 	if days, ok := strings.CutSuffix(text, "d"); ok {
 		// Only a bare number of days, so 1d30m still goes to the standard parser
 		// and keeps its meaning.
-		if n, err := strconv.Atoi(days); err == nil {
+		if n, err := strconv.ParseInt(days, 10, 64); err == nil {
+			const day = int64(24 * time.Hour)
+			if n > math.MaxInt64/day || n < math.MinInt64/day {
+				return 0, fmt.Errorf("%q overflows a duration", text)
+			}
 			return time.Duration(n) * 24 * time.Hour, nil
 		}
 	}

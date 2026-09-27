@@ -3,6 +3,7 @@
 package config_test
 
 import (
+	"fmt"
 	"strings"
 	"testing"
 	"time"
@@ -260,6 +261,21 @@ func TestDurationsPrintTheWayTheReferenceWritesThem(t *testing.T) {
 		}
 		if got := config.Duration(parsed).String(); got != want {
 			t.Errorf("Duration(%q).String() = %q, want %q", text, got, want)
+		}
+	}
+}
+
+func TestDayDurationsRejectOverflow(t *testing.T) {
+	for _, text := range []string{"106752d", "-106752d", "213504d", "9223372036854775807d"} {
+		if got, err := config.ParseDuration(text); err == nil {
+			t.Errorf("ParseDuration(%q) = %s without an overflow error", text, got)
+		}
+	}
+	for _, days := range []int64{-106751, 106751} {
+		text := fmt.Sprintf("%dd", days)
+		got, err := config.ParseDuration(text)
+		if want := time.Duration(days) * 24 * time.Hour; err != nil || got != want {
+			t.Errorf("ParseDuration(%q) = %s, %v; want %s", text, got, err, want)
 		}
 	}
 }
