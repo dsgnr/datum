@@ -1,3 +1,8 @@
+---
+description: "Compare Datum’s host-local reconciliation model with other configuration tools, including its trade-offs, overlap and intended use on Linux."
+seo_title: "Datum compared with Ansible, Puppet, Chef and NixOS"
+---
+
 # Compared with other tools
 
 Configuration management has a long history and Datum borrows from most of it. What follows is where

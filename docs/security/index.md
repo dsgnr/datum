@@ -1,3 +1,8 @@
+---
+description: "Understand Datum’s trust boundaries, signed Git revisions, host credentials, provider safety and protections for the agent’s own controls."
+seo_title: "Datum security and repository trust model"
+---
+
 # Security model
 
 The agent runs as root and takes its input from a repository that several people can write to. This
@@ -5,8 +10,9 @@ section states what is trusted, what is defended and what is not defended.
 
 !!! note "Implementation status"
 
-    Nothing here is implemented. Each item states whether it is a design position the rest of the
-    documentation depends on or a requirement recorded for later.
+    Repository verification, hardened fetching and several protections are implemented. Other
+    controls remain proposed or incomplete; each page marks its status and the
+    [support and project status](../introduction/project-status.md) pages summarize coverage.
 
 ## Principals
 
@@ -117,5 +123,5 @@ values, temporary files and reports, and the local privilege escalations that ha
 [Time and ordering](time.md) :   How the security controls order events without depending on a host
 clock, using monotonic ordering where available.
 
-See [installation](../lifecycle/index.md) for the operational side, covering what an image may
+See [enrolment](../lifecycle/enrolment.md) for the operational side, covering what an image may
 carry, how a repository credential reaches a machine and what leaving the fleet does to it.

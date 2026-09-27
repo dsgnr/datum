@@ -88,11 +88,7 @@ a higher number.
 Provenance is recorded per field as well as per resource, since a question is
 usually about one value.
 
-!!! note "Proposed command"
-
-    `datum explain` is a proposed command and does not exist. The output below
-    shows what the design has to be able to produce, which is the part being
-    committed to.
+`datum explain` reports the provenance and winning value for each field:
 
 ```text
 $ datum explain File[nginx-config] --host web-001

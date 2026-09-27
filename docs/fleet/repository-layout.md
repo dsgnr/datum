@@ -1,3 +1,7 @@
+---
+description: "Organise a Datum fleet repository with host documents, layers, resource files and content sources. Learn discovery rules and directory boundaries."
+---
+
 # Repository layout
 
 A Datum repository holds four types of document. `Fleet` declares the root of a

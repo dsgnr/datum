@@ -1,3 +1,8 @@
+---
+description: "Learn Datum’s resource model, including declared-only ownership, identities, dependencies, validation and how resources behave during reconciliation."
+seo_title: "Declarative Linux resources - Datum"
+---
+
 # Resources
 
 A resource is a typed description of one thing on a host. A resource states the
@@ -73,7 +78,7 @@ badly is expensive because every type added afterwards inherits the answer.
 :   How desired state names a credential without containing one, and where the value comes from.
 
 [Resource types](types/index.md)
-:   The nine proposed types grouped into domains, their fields, and the provider
+:   The nine implemented types grouped into domains, their fields, and the provider
     differences each one cannot hide.
 
 ## What is not a resource

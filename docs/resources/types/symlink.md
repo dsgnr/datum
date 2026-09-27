@@ -1,3 +1,8 @@
+---
+description: "Declare symbolic link targets and replacement rules with Datum. Look up desired-state fields, target identity and provider behaviour."
+seo_title: "Symlink resource reference - Datum"
+---
+
 # Symlink
 
 `Symlink` describes a symbolic link and where it points.
@@ -122,8 +127,7 @@ resource deleting something it does not claim, which
 A path that exists and is not a symbolic link is left alone and reported, rather than being removed
 as though it were the link that was declared.
 
-!!! note "Proposed behaviour"
+!!! note "Implementation status"
 
-    This type does not exist. It is specified because symbolic links currently have no
-    representation at all while `File` actively refuses them, which leaves a common requirement with
-    no expression at all, and not merely an undesigned one.
+    `Symlink` is implemented by the `posix-file` provider on Linux. It manages the link itself and
+    never follows the link to modify its target.

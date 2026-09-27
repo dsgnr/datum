@@ -1,3 +1,8 @@
+---
+description: "Declare Linux groups, identifiers and membership with Datum. Look up desired-state fields, target identity and provider behaviour."
+seo_title: "Group resource reference - Datum"
+---
+
 # Group
 
 `Group` describes a local group.
@@ -62,7 +67,7 @@ desired:
 As with `User`, a group that exists with a different gid than the one declared is
 drift that Datum reports and does not correct, because changing a gid orphans the
 group ownership of every file that refers to it. The provider declares the field
-[uncorrectable](../../concepts/drift.md#drift-no-provider-will-correct), so the
+[uncorrectable](../../concepts/index.md#drift-no-provider-will-correct), so the
 difference is reported on every pass and the number is left alone.
 
 Since `gid` is the only field a group has, that makes an update to an existing group a

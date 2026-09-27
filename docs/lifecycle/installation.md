@@ -1,11 +1,17 @@
-# Installing the agent
+---
+description: "Build and install Datum, configure a signed Git source, and run the systemd agent in observe mode before enabling configuration enforcement."
+seo_title: "Install and run the Linux agent - Datum"
+---
 
-Installation puts the agent and its providers on a machine and does nothing else. A freshly
-installed machine holds no identity, no credential and no knowledge of any repository, so it
-reconciles nothing until it is [enrolled](enrolment.md).
+# Install and run the agent
 
-A `.deb` and an `.rpm` build this layout and nothing else. There are no releases to download yet,
-so both are [built from the repository](#building-from-source).
+Build and install Datum on a Linux host, configure a signed Git source, then move from
+observing drift to applying changes. For a first look without installing a service,
+start with the [quickstart](index.md).
+
+Installing, configuring and running the agent are implemented. Automated enrolment and
+decommissioning remain design work; see [enrolment](enrolment.md) and
+[leaving the fleet](decommissioning.md) for those boundaries.
 
 ## What installation provides
 
@@ -46,93 +52,263 @@ installs wrongly fails there rather than on a host.
 
 The version in those file names is a placeholder that sorts below any real release, and
 [`datum version`](../reference/cli.md#datum-version) reports it along with the commit the binary was
-built from. Copying a package to a machine and starting the service is
-[running Datum on a host](running.md#install-the-agent).
+built from.
 
-## What an image must not contain
+## Install the agent
 
-A golden image, a container base layer or a machine template may carry the agent. It may not carry
-anything that identifies a particular machine or grants access to a fleet.
+There are no releases yet, so [build the packages](#building-from-source), then copy
+the one the host needs.
 
-| In an image | Allowed |
-| ----------- | ------- |
-| The agent and its providers | Yes |
-| Default configuration with no host name | Yes |
-| The repository URL in `source.url` | Yes, with the caveat below |
-| Trusted signing keys for the repository | Yes |
-| A host name in `/etc/datum/agent.yaml` | No |
-| A repository credential | No |
-| A baseline revision in `/var/lib/datum/` | No |
-
-Two of those prohibitions need stating plainly instead of being left as a table row.
-
-A host name in the image means every machine booted from it claims to be the same host, so a set of
-machines all apply one host's configuration and all report status under one name.
-
-A credential in the image means the credential is as widely distributed as the image, which is
-usually more widely than anyone intends. It cannot be scoped to one machine, it is readable by
-anyone who can obtain the image or a snapshot of a disk built from it, and revoking it requires
-rebuilding every machine that ever booted from it. That is the weakest of the
-[enrolment approaches](../security/handshake.md#getting-the-repository-credential-onto-a-host) for exactly this reason.
-
-The [baseline revision](enrolment.md#the-baseline-revision) is excluded for a different reason. It
-is not a secret and it is not host-specific, and it goes stale, because an image built in March
-would give a machine booted in September a baseline six months behind the repository. Every revision
-between the two would then satisfy the descendant check, which is most of what the control exists to
-refuse, so the baseline is written at enrolment and not baked in.
-
-## The repository URL is configuration, not discovery
-
-The agent learns where its repository is from explicit local configuration, and it
-does not discover that location from the network.
-
-```yaml title="/etc/datum/agent.yaml"
-source:
-  url: https://git.example.com/fleet.git
+```console
+$ scp dist/datum_0.1.0~dev_amd64.deb web-001:/tmp/
 ```
 
-Every other setting is in the [agent configuration reference](../reference/agent-config.md), and the
-one line above is the only part an image may carry.
+On the host, install it with the matching package manager.
 
-DNS service records and DHCP options are the conventional way to make this self-configuring, and
-both are rejected. The agent runs as root and applies whatever the resolved location gives it, so
-allowing the network to nominate that location hands the network's owner the ability to redirect a
-root process on every machine that boots. An attacker who controls DHCP on one segment would then
-control the configuration of everything on it.
+```console
+# apt-get install /tmp/datum_0.1.0~dev_amd64.deb    # Debian and Ubuntu
+# dnf install /tmp/datum-0.1.0~dev-1.x86_64.rpm     # Fedora and RHEL
+```
 
-Signature verification limits the damage without removing the problem. An attacker who redirects an
-agent to a repository it cannot verify causes that agent to stop reconciling instead of applying
-attacker content, which is a denial of service across the segment instead of a compromise. Carrying
-the location in the image avoids both outcomes and costs one line of configuration.
+[`datum version`](../reference/cli.md#datum-version) then reports which build landed. Installing
+either package puts down what [the installation layout](#what-installation-provides) describes,
+along with the unit shown below and a default configuration that names no host.
 
-## How this fits existing provisioning
+The service is installed and left disabled. A machine that has not been
+[enrolled](enrolment.md) has no identity, so an agent enabled at install time would fail every
+pass until somebody gave it one.
 
-The agent has no opinion about how it arrives, which is what lets each of these remain the fleet's
-own arrangement.
+Copying the binary on its own still works, and then the directories, the configuration and
+the unit are the fleet's own to create.
 
-| Mechanism | Installation | Enrolment |
-| --------- | ------------ | --------- |
-| Golden image or template | Baked into the image | On first boot |
-| cloud-init or ignition | Package install from user data | Credential or platform attestation from user data |
-| Network installation, such as PXE or kickstart | Package install in the installer | Credential placed by the installer, or first boot |
-| Container base image | Baked into the layer | Rarely appropriate, see below |
-| Autoscaling group | Baked into the image | Platform attestation, because no human is present |
+```console
+$ make build-linux
+$ scp bin/datum-linux-amd64 web-001:/tmp/datum
+# install -m 0755 /tmp/datum /usr/bin/datum
+```
 
-Autoscaling is the case that decides whether enrolment can require a human. A group that adds
-machines at three in the morning cannot wait for an operator to approve each one, so a fleet using
-autoscaling needs either platform attestation or short-lived credentials issued by whatever launches
-the instances. Manual approval remains available and is a choice a fleet makes about its own risk,
-not a default.
+The binary is statically linked with cgo disabled, so it needs no shared libraries.
+Cross-compiling needs no toolchain beyond Go. What it does need on the host is `git`, and
+`ssh-keygen` for the default of ssh-signed commits, which is what the packages depend on.
 
-## Containers are mostly the wrong fit
+## Give the host a signing key to trust
 
-A container that reconciles its own contents is describing a machine that should have been built by
-an image pipeline. Datum manages long-lived hosts whose state drifts, and a container's state is
-replaced rather than corrected.
+The agent verifies that a revision was signed by a key in `trust.signers` before it applies
+it. The file is in ssh allowed-signers format, and it is
+[not something Datum manages](../adr/0010-no-self-managed-trust-anchors.md), so whatever
+builds the machine puts it there.
 
-The one exception is a container used as a host, meaning a long-lived system container with an init
-system, its own package database and a lifetime measured in months. That is a host in everything but
-virtualisation mechanism, and nothing about Datum's model objects to it.
+```console
+# install -d -m 0755 /etc/datum
+# install -m 0644 allowed-signers /etc/datum/allowed-signers
+```
+
+```text title="/etc/datum/allowed-signers"
+release@example.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAI...
+```
+
+Replace the illustrative key with the public key used to sign your repository commits.
+
+A fleet signing commits with ssh keys needs nothing else. A fleet using gpg keeps its trust
+root in a keyring instead, which works for verification and means
+[`datum_trust_signer_info`](../observability/metrics.md#security-controls) reports nothing.
+
+Set `trust.require: none` to run without any of this, which is a decision that [reports itself
+through a metric](../observability/metrics.md#security-controls) rather than being invisible.
+
+## The state directory
+
+Datum keeps the pass lock and its reports in `/var/lib/datum`. The directory must be mode `0700`,
+and the agent refuses to run otherwise instead of correcting it, because a readable state directory
+discloses plans.
+
+```console
+# install -d -m 0700 -o root -g root /var/lib/datum
+```
+
+The packages create it already, so the line above is for a host built by copying the binary.
+
+## Configure the agent
+
+The agent reads `/etc/datum/agent.yaml`. Every key and its default is in the
+[agent configuration reference](../reference/agent-config.md), and the smallest file that
+works names the host and the source.
+
+```yaml title="/etc/datum/agent.yaml"
+host: web-001
+
+source:
+  url: https://git.example.com/fleet.git
+
+reconciliation:
+  mode: observe
+  interval: 30m
+```
+
+`trust.require` defaults to `signed-commit`, so that file expects every commit on the tracked branch
+to be signed by a key in `/etc/datum/allowed-signers`. A fleet signing releases instead of every
+commit uses `signed-tag` with a `tagPattern`.
+
+For a private repository, provision read access for the service account as well. The
+implemented `source.credential` accepts an SSH identity file, not an HTTPS token; use an
+SSH source URL with it. See [repository credentials](../security/repository-trust.md#repository-credentials)
+and the [source configuration](../reference/agent-config.md) for details.
+
+Starting in `observe` mode lets the first pass report what it would change without applying it.
+
+Check the file before starting anything. The resolved values include the defaults, which is
+what catches a key in the wrong place.
+
+```console
+# datum config check
+
+/etc/datum/agent.yaml       ok
+  host                     web-001
+  source.url               https://git.example.com/fleet.git
+  source.branch            main
+  trust.require            signed-commit
+  trust.signers            /etc/datum/allowed-signers   1 key
+  trust.requireDescendant  true
+  reconciliation.mode      observe
+  reconciliation.interval  30m, offset 06:51
+  reconciliation.timeout   15m
+  metrics.listen           127.0.0.1:10056
+  state                    /var/lib/datum   root 0700   ok
+```
+
+The offset is this host's position within the interval, derived from its name; it tells you
+when a pass is due.
+
+## Preview the host
+
+The source repository must contain a `Host` named `web-001` and the resources it should
+manage. Use the [quickstart](index.md) to learn the repository layout, then commit and push
+your desired state with a signature from a trusted key.
+
+To preview a local checkout on the target host:
+
+```console
+# git clone https://git.example.com/fleet.git /tmp/fleet
+# datum validate --repo /tmp/fleet
+# datum plan --host web-001 --repo /tmp/fleet
+```
+
+`plan` changes nothing and exits 2 when it finds drift. These commands read the checkout
+directly; they do not perform the agent's signature verification. Start the service in
+`observe` mode below to verify the remote and record a pass before enabling changes.
+
+The standalone `reconcile` command defaults to `enforce`; it does not inherit the
+agent's `reconciliation.mode`. Use `--mode observe` explicitly when trying it by hand.
+
+## Run the agent as a service
+
+The packages already install the unit below. Create it only if you copied the binary
+manually. The agent schedules its own passes, so there is no timer.
+
+```ini title="/etc/systemd/system/datum.service"
+[Unit]
+Description=Datum reconciliation agent
+Documentation=https://getdatum.sh/
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=exec
+ExecStart=/usr/bin/datum agent
+# The agent stops scheduling on SIGTERM and abandons any pass still running, which
+# leaves the host partially applied in the way an interrupted pass always does.
+KillSignal=SIGTERM
+TimeoutStopSec=30s
+Restart=on-failure
+RestartSec=30s
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```console
+# systemctl daemon-reload
+# systemctl enable --now datum.service
+# systemctl status datum.service
+# journalctl -u datum.service -f
+```
+
+The agent clones `source.url` into `/var/lib/datum/repository` on its first pass and fetches
+after that. Naming a checkout with `--repo` is still possible and skips fetching and
+verification entirely, which is refused unless `trust.require` is `none`, so a host cannot end
+up applying an unverified tree while its configuration says otherwise.
+
+The agent runs no pass at startup. It waits for its own offset within the first interval,
+so a fleet rebooting together does not reconcile all at once.
+
+## Enable enforcement
+
+After the first scheduled pass, read `datum status` and review the reported drift. Adjust
+the repository until the planned changes are the ones you intend, then set
+`reconciliation.mode: enforce` in `/etc/datum/agent.yaml` and restart the agent:
+
+```console
+# datum config check
+# systemctl restart datum.service
+```
+
+The next scheduled pass applies changes. Check `datum status` afterwards; see the
+[status reference](../reference/status.md) for failures and per-resource outcomes.
+To pause changes, return to `observe` and restart, or stop the service with
+`systemctl stop datum.service`.
+
+## Scrape the metrics
+
+The agent serves the last pass on loopback.
+
+```console
+$ curl -s http://127.0.0.1:10056/metrics | grep datum_pass_last_success
+```
+
+A scrape reads nothing. It returns what the last pass recorded, so scraping often costs nothing on
+the host. The full catalogue is under [metrics](../observability/metrics.md), and the first alert to
+add is `up{job="datum"} == 0`, which is why the endpoint lives in the process whose health is in
+question.
+
+## Read the result
+
+`status` reads the last report from the state directory. It touches neither the repository
+nor the host, so it is cheap to call from a monitoring check.
+
+```console
+$ datum status
+$ datum status --output json | jq .hostState
+```
+
+Reports are retained for the twenty most recent passes.
+
+## Exit codes
+
+`reconcile` exits 0 when it converged or changed something, 1 on failure, 2 when it reported drift
+it did not apply, and 3 when another pass holds the lock. That matters for a monitoring check, not
+for the service, because the agent holds the exit code itself and reports outcomes through metrics.
+
+`agent` exits 0 when it was asked to stop and 1 when it could not start, which is why
+`Restart=on-failure` does not fight a deliberate `systemctl stop`.
+
+## What is missing
+
+The agent fetches, verifies, falls back, and refuses desired state that targets its own
+controls. Three things on the pages this one links to are specified and not implemented.
+
+| Missing | Designed in |
+| ------- | ----------- |
+| `trust.strictPaths` | [Provider safety](../security/provider-safety.md#untrusted-path-components) |
+| `source.maxSourceSize` | [Limits](../security/repository-fetch.md#limits) |
+| Secret references | [Secrets](../resources/secrets.md) |
+
+Two limits of what is implemented need stating instead of being left to discover. Verifying a
+revision is no use on a host whose clock is wrong in a way that matters for key expiry, which is
+[time](../security/time.md), and nothing enforces a freshness bound yet. And the refusal of
+resources that target Datum's own files protects Datum's controls from being disabled by desired
+state, which is not the same as protecting the host from a repository that is trusted to configure
+it. A `File` writing `/etc/sudoers.d/` is root-equivalent and permitted, because that is what a
+configuration system is for.
 
 ## Verifying an installation
 

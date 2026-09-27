@@ -1,3 +1,7 @@
+---
+description: "Choose observe mode to report configuration drift or enforce mode to correct it. Learn where Datum’s host-local reconciliation mode is configured."
+---
+
 # Reconciliation modes
 
 Detecting drift and correcting it are separate operations, which the design has treated as a
@@ -17,10 +21,7 @@ enforce
    └── reconcile it
 ```
 
-!!! note "Proposed behaviour"
-
-    Modes are proposed. The two named here are concrete, per-resource policy is sketched, and
-    nothing is implemented.
+`observe` and `enforce` are implemented. Per-resource overrides remain an open question.
 
 ## The two modes
 
@@ -34,7 +35,7 @@ exactly the drift an `enforce`-mode pass would act on. The report is not an appr
 enforcement would find, because it is produced by the same code path, which is the property that
 makes `observe` mode trustworthy as a preview of enforcement.
 
-`observe` mode stops after the [plan](plan.md). A pass in `observe` mode builds the full ordered
+`observe` mode stops after the [plan](index.md#plan). A pass in `observe` mode builds the full ordered
 plan and reports it without applying any action, so the host's state is unchanged.
 
 ## Why this matters for adoption
@@ -95,4 +96,4 @@ acting.
 The definition of drift is the same in both modes. An `observe`-mode host that has diverged is
 drifted, not converged, and its [status](../reference/status.md) says so. Reporting drift without
 correcting it is not the same as being in the desired state, so a host with reported drift is
-`drifted` rather than [converged](reconciliation.md#convergence).
+`drifted` rather than [converged](index.md#convergence).

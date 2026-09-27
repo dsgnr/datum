@@ -1,3 +1,7 @@
+---
+description: "See which Datum commands, resource providers and agent features are implemented, what remains planned, and the current alpha compatibility limits."
+---
+
 # Project status
 
 Datum is being built, specification first. A complete pass runs end to end for all nine
@@ -41,14 +45,13 @@ resource types.
 | `Package` and `Repository` through `apk` and `pacman` | Not started |
 | `trust.strictPaths`, and the provider path-safety rules it switches on | Not started |
 | The `--revision` and `--json` flags | Not started |
-| `datum migrate` | Not started |
 | Enrolment, so a host works out its own identity | Not started |
 
 Applying is Linux-only. Reading a host works anywhere, since the safety rules
 the writing path depends on have no portable equivalent.
 
 The order follows from where a mistake costs least. Resolution is [a pure function of the
-repository](../concepts/desired-state.md#resolution-does-not-read-the-host), so it can be built and
+repository](../concepts/index.md#resolution-does-not-read-the-host), so it can be built and
 tested without a machine to break, and it is the half of the system every other part depends on.
 Reading a host came next, since it changes nothing, which left applying as the last part to build.
 
@@ -142,7 +145,7 @@ description written afterwards, so the two moving apart is a defect in both.
 
 That cuts the other way as well. Where the implementation found a gap the specification had not
 thought through, the answer goes into the documentation as a decision instead of staying in the code
-as an accident. The fourth [pass outcome](../concepts/reconciliation.md#pass-outcomes) arrived that
+as an accident. The fourth [pass outcome](../concepts/index.md#pass-outcomes) arrived that
 way, because an observe-mode pass that found work to do fitted none of the three that had been
 written down.
 

@@ -1,3 +1,8 @@
+---
+description: "Describe Linux hosts with labels, select configuration layers with matchers, and resolve a shared Git repository into per-host desired state."
+seo_title: "Managing a Linux fleet from Git - Datum"
+---
+
 # Fleet
 
 A fleet is the set of hosts one repository describes, from a single machine to several

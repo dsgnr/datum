@@ -1,3 +1,8 @@
+---
+description: "Find Datum CLI commands, agent configuration, document formats, resource fields, status definitions, provider support and interface stability."
+seo_title: "Datum command and configuration reference"
+---
+
 # Reference
 
 The pages in this section are lookup material. They assume the model is already understood and are
@@ -12,12 +17,11 @@ arranged for finding a field or a definition instead of reading through.
     machine trusts Datum.
 
 [Command line interface](cli.md)
-:   The proposed commands, their output, and their exit codes. No part of it is
-    implemented.
+:   Implemented commands, their flags, output and exit codes, with notes where behaviour is still
+    proposed.
 
 [Status](status.md)
-:   The host and fleet status model, designed before implementation so the architecture
-    preserves the right information.
+:   The implemented per-host status report and the proposed fleet-wide status model.
 
 [Interfaces and stability](stability.md)
 :   Which interfaces become contracts, and when. Everything is unstable before 1.0.
@@ -26,9 +30,15 @@ arranged for finding a field or a definition instead of reading through.
 :   One entry per concept, with links to the page that specifies it, and a list of terms this
     documentation avoids.
 
+[State and lifecycle](../concepts/state.md)
+:   Resource and host state vocabulary, including the proposed reboot states.
+
+[Provider support matrix](../providers/support-matrix.md)
+:   Implemented providers and their platform coverage.
+
 ## Per-type field references
 
-Fields specific to a resource type are documented with that type, not here.
+Fields specific to each resource type are listed under Resource types in this section.
 
 | Domain | Type | Reference |
 | ------ | ---- | --------- |
@@ -45,5 +55,5 @@ Fields specific to a resource type are documented with that type, not here.
 ## Stability
 
 The `v1alpha1` schema carries no compatibility promise. Field names, defaults and
-semantics can change without a migration path until the schema reaches a stable version,
-and nothing described anywhere on this site is implemented yet.
+semantics can change without a compatibility or migration promise until the schema reaches a stable
+version. See [project status](../introduction/project-status.md) for implementation coverage.

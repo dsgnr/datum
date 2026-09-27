@@ -107,7 +107,7 @@ alert](../observability/alerting.md#a-host-that-stops-reconciling-is-the-failure
 on the pass giving up.
 
 An abandoned pass is a
-[partially applied pass](../concepts/reconciliation.md#pass-outcomes), which the model already
+[partially applied pass](../concepts/index.md#pass-outcomes), which the model already
 accommodates. Actions that completed stay completed, nothing is reverted, and the next pass observes
 whatever state the machine is actually in.
 

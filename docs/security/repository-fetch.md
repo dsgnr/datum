@@ -130,4 +130,4 @@ the limits above on what it is asked to process.
     A vulnerability in the Git implementation is a vulnerability in Datum. Signature verification
     does not help, since parsing happens first. The exposure is bounded by the remote being a
     configured address, which is why [the repository URL is configuration and not
-    discovery](../lifecycle/installation.md#the-repository-url-is-configuration-not-discovery).
+    discovery](../lifecycle/enrolment.md#the-repository-url-is-configuration-not-discovery).

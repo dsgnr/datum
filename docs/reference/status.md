@@ -1,14 +1,18 @@
+---
+description: "Interpret datum status reports, resource states and reconciliation outcomes. Understand current local reporting and the proposed fleet-wide view."
+seo_title: "Datum status reports and host outcomes"
+---
+
 # Status
 
-Status is designed before implementation on purpose, because status added afterwards reports
-whatever the code happened to keep rather than what an operator needs. Fixing the shape first is
-also a way of forcing the architecture to preserve the right information, since every field here is
-something a component has to be able to produce.
+`datum status` reports the latest pass on the local host. The command and its text and JSON output
+are implemented. This page describes the host report and a proposed fleet-wide view; the examples
+are models, not exact renderings of the current command.
 
-!!! note "Proposed format"
+!!! note "Illustrative model"
 
-    The fields are proposed. The renderings are illustrative and the layout is not settled. What
-    the model has to contain is firmer than how it is printed.
+    These examples group useful host-status fields for explanation; they are not the exact layout
+    returned by `datum status`. Fleet-wide aggregation is not implemented.
 
 ## What status answers
 
@@ -119,19 +123,18 @@ detail the aggregate leaves to a per-host view.
 
 ## Machine-readable output
 
-Status is consumed by other tools as well as read by people, so a structured form is required
-alongside the human one.
+Status can be consumed by other tools as well as read by people, so the command supports JSON
+alongside human-readable text.
 
 ```text
 datum status --output json
 ```
 
-!!! note "Open question"
+!!! note "Stability"
 
-    The exact JSON schema is undecided, and it is one of the interfaces that becomes a
-    [contract](../reference/stability.md) the moment anyone automates against it. The field names
-    above are the candidate schema, and they need settling before the first release, not after tools
-    depend on a shape that was never designed.
+    JSON output is implemented, but it is not a stable interface before 1.0. Its shape may change;
+    consumers should pin the Datum version they use and review the
+    [stability policy](stability.md).
 
 ## What status is not
 

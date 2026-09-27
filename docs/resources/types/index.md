@@ -1,8 +1,13 @@
+---
+description: "Look up Datum’s nine resource types for packages, repositories, files, directories, symlinks, users, groups, services and kernel parameters."
+seo_title: "Linux resource type reference - Datum"
+---
+
 # Resource types
 
-Nine types are proposed for the first implementation. The set is small because every
-type inherits the common behaviour decided in the rest of this section, and because
-adding types is cheap once that behaviour is right and expensive before it is.
+The first implementation has nine types. The set is small because every type inherits the common
+[resource behaviour](../index.md) described in the user guide, and because adding types is cheap once that behaviour
+is right and expensive before it is.
 
 ## Domains
 
@@ -66,11 +71,10 @@ have no domain here at all. Adding a fifth domain is expected before any of thos
 added, and stretching one of these four to fit would lose the property that makes the
 grouping worth having.
 
-!!! note "Proposed schemas"
+!!! note "Schema stability"
 
-    Every field on every page in this section is proposed. The `datum: v1alpha1` schema
-    marker means field names, defaults and semantics can change without a migration
-    path.
+    These schemas are implemented, but remain alpha. The `datum: v1alpha1` marker means field names,
+    defaults and semantics can change without a compatibility or migration promise.
 
 ## How these types were chosen
 

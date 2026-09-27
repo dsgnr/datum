@@ -2,7 +2,7 @@
 
 Two concurrent passes against one host observe the same state, build overlapping plans and apply
 them against each other. This page specifies the mechanism that prevents it, which [the concepts
-section asserts](../concepts/reconciliation.md#one-pass-at-a-time) without saying how.
+section asserts](../concepts/index.md#one-pass-at-a-time) without saying how.
 
 !!! note "Implementation status"
 

@@ -1,3 +1,8 @@
+---
+description: "Create a Datum repository with datum init, add host and layer documents, and validate the fleet before publishing desired state to Git."
+seo_title: "Create a fleet configuration repository - Datum"
+---
+
 # Creating a repository
 
 A Datum repository is a Git repository containing documents. There is no database to initialise, no

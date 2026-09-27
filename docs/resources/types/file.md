@@ -1,3 +1,8 @@
+---
+description: "Declare file content, ownership, permissions and validation with Datum. Look up desired-state fields, target identity and provider behaviour."
+seo_title: "File resource reference - Datum"
+---
+
 # File
 
 `File` describes the content and metadata of one file.

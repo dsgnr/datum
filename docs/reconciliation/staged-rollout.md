@@ -82,7 +82,7 @@ Pausing a rollout means not performing the next merge. Nothing has to be told to
 the later rings never saw the change.
 
 Reverting a ring that has already received a change is a commit on that ring's branch, in the same way
-[any correction is a new commit](../concepts/reconciliation.md#there-is-no-rollback). A `git revert`
+[any correction is a new commit](../concepts/index.md#there-is-no-rollback). A `git revert`
 moves history forward and satisfies
 [downgrade protection](../security/repository-trust.md#verifying-that-a-revision-is-current), whereas
 resetting a ring branch backwards and force-pushing does not, and hosts on that ring would refuse the

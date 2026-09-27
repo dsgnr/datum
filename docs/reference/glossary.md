@@ -10,7 +10,7 @@ Accepted revision
 
 Action
 :   What a plan intends to do to a single resource. One of `none`, `create`, `update`,
-    `remove` or `skip`. See [plan](../concepts/plan.md#actions).
+    `remove` or `skip`. See [plan](../concepts/index.md#actions).
 
 Affected hosts
 :   The hosts whose effective manifest digest differs between two repository revisions,
@@ -50,7 +50,7 @@ Configuration validation
 Convergence
 :   The condition of a host whose observed state satisfies its desired state for every
     resource in its effective manifest. Established by observation, not asserted.
-    See [reconciliation](../concepts/reconciliation.md#convergence).
+    See [reconciliation](../concepts/index.md#convergence).
 
 Declarative
 :   The property that desired state is fully described by the repository at a revision.
@@ -64,7 +64,7 @@ Decommissioning
 
 Desired state
 :   The resources a repository says should apply to one host, resolved at one repository
-    revision. See [desired state](../concepts/desired-state.md).
+    revision. See [desired state](../concepts/index.md#desired-state).
 
 Diff
 :   The phase that compares desired against observed state, field by field. Performed by
@@ -72,7 +72,7 @@ Diff
 
 Drift
 :   A difference between desired and observed state. Recorded per field, and caused by a
-    change on the host or a change in the repository. See [drift](../concepts/drift.md).
+    change on the host or a change in the repository. See [drift](../concepts/index.md#drift).
 
 Effective manifest
 :   The resolved desired state for one host at one revision, carrying provenance and
@@ -146,7 +146,7 @@ Mode
 Observation
 :   Reading the current state of the resources in a manifest from a host. Read-only,
     scoped to the manifest, and never cached between passes. See [observed
-    state](../concepts/observed-state.md).
+    state](../concepts/index.md#observed-state).
 
 Observed state
 :   What observation reports, at a point in time.
@@ -164,7 +164,7 @@ Pass lock
     [one pass at a time](../reconciliation/locking.md).
 
 Plan :   The ordered set of actions that would resolve the drift found in one pass. Data, not an
-execution. See [plan](../concepts/plan.md).
+execution. See [plan](../concepts/index.md#plan).
 
 Planner
 :   The component that performs diffing and planning.
@@ -186,11 +186,11 @@ Reconciler
 
 Reconciliation
 :   One complete pass for one host. See
-    [reconciliation](../concepts/reconciliation.md).
+    [reconciliation](../concepts/index.md#reconciliation).
 
 Repository revision
 :   The exact commit that desired state was resolved from. See [desired
-    state](../concepts/desired-state.md#repository-revision).
+    state](../concepts/index.md#repository-revision).
 
 Reproducible
 :   The property that the same revision produces the same result on the same host at any

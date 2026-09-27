@@ -1,3 +1,8 @@
+---
+description: "Declare Linux user accounts, identifiers and account properties with Datum. Look up desired-state fields, target identity and provider behaviour."
+seo_title: "User resource reference - Datum"
+---
+
 # User
 
 `User` describes a local user account.

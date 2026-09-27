@@ -1,3 +1,7 @@
+---
+description: "Configure useful alerts for Datum agents, focusing on stale reconciliation, unavailable agents and trust-control failures rather than routine drift."
+---
+
 # Alerting
 
 Which conditions should page somebody, and which are normal operation. A reconciliation system
@@ -89,7 +93,7 @@ and the next pass retries. Alerting on a sustained failure rather than an instan
 the staleness and failing conditions above already do.
 
 **Drift itself, on an enforcing host.** Drift is [ordinary
-input](../concepts/drift.md) that the next pass corrects. A host that drifts and converges is
+input](../concepts/index.md#drift) that the next pass corrects. A host that drifts and converges is
 behaving correctly, and the interesting case is a resource that drifts repeatedly, which is a
 [different question](../development/open-questions.md) Datum does not yet answer.
 

@@ -18,13 +18,13 @@ service are unaffected.
 **Resolution.** Unchanged. The repository is still at `8b91f20`, so the fleet resolver produces the
 same effective manifest with the same digest, `sha256:3f2a9c4e`. Nothing about the edit is visible at
 this stage, because [resolution does not read the
-host](../concepts/desired-state.md#resolution-does-not-read-the-host).
+host](../concepts/index.md#resolution-does-not-read-the-host).
 
 **Observation.** The `File` provider reads the path and reports a content digest that no longer
 matches. Mode, owner and group still match.
 
 **Diff.** One field differs on one resource. Drift is recorded [per
-field](../concepts/drift.md#drift-is-per-field), so the diff says content differs and says nothing
+field](../concepts/index.md#drift-is-per-field), so the diff says content differs and says nothing
 about mode.
 
 ```text

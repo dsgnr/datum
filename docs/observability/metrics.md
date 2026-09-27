@@ -1,3 +1,8 @@
+---
+description: "Look up Datum’s Prometheus metrics for reconciliation results, resource drift, scheduling, provider support and repository trust controls."
+seo_title: "Datum Prometheus metrics reference"
+---
+
 # Metrics
 
 Metrics answer aggregate questions across a fleet. They are not a per-resource export, for
@@ -163,7 +168,7 @@ datum_passes_total{outcome}                  counter
 ```
 
 `outcome` is one of `converged`, `changed`, `drifted` or `failed`, matching the [pass
-outcomes](../concepts/reconciliation.md#pass-outcomes).
+outcomes](../concepts/index.md#pass-outcomes).
 
 **Host condition.**
 

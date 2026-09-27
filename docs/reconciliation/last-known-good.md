@@ -29,7 +29,7 @@ signature that does not verify
 ```
 
 Every one of these is caught before observation, by the parts of the pipeline that run against
-[repository content alone](../concepts/desired-state.md#resolution-does-not-read-the-host). None of
+[repository content alone](../concepts/index.md#resolution-does-not-read-the-host). None of
 them says anything about whether the host is healthy, and none of them can be fixed on the host,
 because the fault is in the repository.
 
@@ -89,8 +89,8 @@ Last known good is a revision identifier, not a snapshot of the host and not a r
 applied.
 
 That distinction matters, because Datum [keeps no record of what it previously
-applied](../concepts/desired-state.md#desired-state-is-not-a-record-of-what-datum-did) and has [no
-rollback](../concepts/reconciliation.md#there-is-no-rollback). Last known good does not reintroduce
+applied](../concepts/index.md#desired-state-is-not-a-record-of-what-datum-did) and has [no
+rollback](../concepts/index.md#there-is-no-rollback). Last known good does not reintroduce
 either. The agent still resolves desired state from Git, still reads the host fresh on every pass,
 and still holds no observed state between passes. All it retains is which commit to resolve, which
 is [the one thing carried between

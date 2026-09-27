@@ -1,3 +1,8 @@
+---
+description: "Declare package sources for apt and dnf with Datum. Look up desired-state fields, target identity and provider behaviour."
+seo_title: "Repository resource reference - Datum"
+---
+
 # Repository
 
 `Repository` describes a package source the host may install from.

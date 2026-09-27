@@ -1,10 +1,11 @@
 ---
 title: Datum
-description: Datum reconciles Linux hosts against desired state held in a Git repository.
 template: landing.html
 hide:
   - navigation
   - toc
+description: "Manage Linux hosts from Git with Datum. Preview configuration drift, reconcile declared resources, and verify changes with a host-local agent."
+seo_title: "Datum: Git-based Linux configuration management"
 ---
 
 <div class="dt-landing">
@@ -20,7 +21,7 @@ hide:
         differs.
       </p>
       <div class="dt-hero__ctas">
-        <a class="dt-cta dt-cta--primary" href="introduction/">Documentation</a>
+        <a class="dt-cta dt-cta--primary" href="lifecycle/">Get started</a>
         <a class="dt-cta dt-cta--secondary" href="#install">Install</a>
       </div>
       <div class="dt-hero__meta">
@@ -106,12 +107,9 @@ hide:
 <span class="dt-k">cd</span> datum
 make build
 
-<span class="dt-c"># Read the repository and the host, change nothing</span>
-./bin/datum plan --host web-001 --repo examples/fleet
-
-<span class="dt-c"># Reconcile, then report on the pass</span>
-./bin/datum reconcile --host web-001 --repo examples/fleet
-./bin/datum status</code></pre>
+<span class="dt-c"># Inspect the example fleet</span>
+./bin/datum validate --repo examples/fleet
+./bin/datum render --host web-001 --repo examples/fleet</code></pre>
       </div>
     </div>
   </div>

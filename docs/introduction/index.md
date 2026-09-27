@@ -1,3 +1,8 @@
+---
+description: "Learn what Datum manages, how Linux hosts reconcile desired state from Git, and where to begin with installation, fleet authoring and operations."
+seo_title: "Git-based Linux configuration management - Datum"
+---
+
 # Introduction
 
 Everything Datum manages is a resource, a typed description of one thing on a
@@ -14,9 +19,10 @@ desired:
   state: present
 ```
 
-Nine [resource types](../resources/types/index.md) are proposed for the first
-implementation. They are `Package`, `File`, `Directory`, `Symlink`, `Service`,
-`User`, `Group`, `Sysctl` and `Repository`.
+Datum implements nine [resource types](../resources/types/index.md): `Package`, `File`,
+`Directory`, `Symlink`, `Service`, `User`, `Group`, `Sysctl` and `Repository`. Provider support
+varies by type and platform; the [support matrix](../providers/support-matrix.md) shows what runs
+where.
 
 The set is small because the shared behaviour has to be settled first. Identity, how state
 is read back, how resources order themselves against each other and how a change is
@@ -26,8 +32,8 @@ verified are all inherited by every type added later. The
 ## Providers
 
 A `Package` resource describes package state and does not mean `apt`. Which package manager
-realises it is a property of the host, so `apt`, `dnf`, `apk` and `pacman` sit behind one
-resource type as providers. `Service` has one candidate provider, `systemd`.
+realises it is a property of the host. `apt` and `dnf` providers are implemented; `apk` and
+`pacman` support is planned. `Service` currently has the `systemd` provider.
 
 Provider names stay out of resource documents. Selection is derived from the host, mostly by
 reading `/etc/os-release`. Once a distribution check is allowed into the resource model it
@@ -85,7 +91,7 @@ one of them is useful on its own.
    state that was asked for.
 
 Observation happens before any decision and again after any change, which makes
-[drift](../concepts/drift.md) ordinary input. A machine somebody edited by hand is not an
+[drift](../concepts/index.md#drift) ordinary input. A machine somebody edited by hand is not an
 error to report. It produces a non-empty plan on the next pass and converges, so the engine
 needs no special case for it.
 
@@ -106,30 +112,46 @@ independently, so an instruction to take a machine out of a load balancer before
 upgrading it cannot be expressed. Provisioning machines and building images sit
 outside Datum as well.
 
-Secret material never sits in the repository. A document holds a
-[reference](../resources/secrets.md) that the host resolves at apply time, which is
-[ADR-0013](../adr/0013-secret-references-resolved-on-the-host.md). The reason it works that
-way is that every host reads the whole repository, so anything
-committed there is readable by every managed machine. Datum does not store secrets or serve
-them, and the store a reference resolves against is somebody else's.
+Secret values should not sit in the repository, since every host can read everything committed
+there. The resource model accepts a
+[secret reference](../resources/secrets.md), but resolving references is not implemented yet;
+Datum does not store or serve secrets.
 
 ## Security
 
-An agent running as root, taking instructions from a repository several people can write
-to, is the whole of the security problem. The [security](../security/index.md) section
-states what is trusted, enumerates the attack vectors by what the attacker can already do,
-and covers how a host might prove its identity.
+An agent running as root and taking instructions from a repository several people can write
+to is the central security concern. The [security](../security/index.md) section explains the
+trust model and threat scenarios; its implementation-status notes distinguish working controls
+from proposed ones.
 
 Two things need saying before reading further. Anyone who can merge to the tracked branch can run
 configuration as root on every host their change matches, and that is a trust assumption, not
 something Datum defends against. A host reports its own status, so a converged fleet report is a
 claim made by the hosts, not evidence about them.
 
-## Reading on
+## Choose a path
 
-[Why Datum?](why-datum.md) sets out the problems this design is responding to,
-and [how Datum works](how-datum-works.md) follows a single change through the
-whole pipeline. [Design principles](design-principles.md) records the constraints
-the design is held to, [compared with other tools](comparison.md) places it against
-Puppet, NixOS and the rest, and [project status](project-status.md) explains how this
-site distinguishes settled decisions from open proposals.
+[Why Datum?](why-datum.md) explains the problem it addresses. [How Datum works](how-datum-works.md)
+follows one change through reconciliation, and [project status](project-status.md) separates
+implemented behaviour from work still underway.
+
+[Follow a worked scenario](../journeys/first-host.md)
+:   See an existing Ubuntu server adopted in observe mode, from repository documents through the
+    first plan and steady state. The [journeys index](../journeys/index.md) has scenarios for
+    mixed fleets, production changes, manual drift and a bad commit.
+
+[Learn the model](../concepts/index.md)
+:   Start with desired and observed state, then follow the path through drift, planning and
+    reconciliation. Continue to [fleet composition](../fleet/index.md) and
+    [resource behaviour](../resources/index.md).
+
+[Try Datum](../lifecycle/index.md)
+:   Start with the quickstart, then [install and run](../lifecycle/installation.md) the agent, then use the
+    [CLI reference](../reference/cli.md) and the sections on
+    [security](../security/index.md), [reconciliation](../reconciliation/index.md) and
+    [observability](../observability/index.md).
+
+[Contribute to Datum](../development/index.md)
+:   Check [project status](project-status.md), review the [open questions](../development/open-questions.md),
+    then see the [development guide](../development/index.md) and
+    [architecture decisions](../adr/index.md).

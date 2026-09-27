@@ -1,3 +1,8 @@
+---
+description: "Check which Linux package managers, service managers and resource providers Datum implements, including platform coverage and current limitations."
+seo_title: "Linux provider support matrix - Datum"
+---
+
 # Support matrix
 
 `Package` on Debian and Fedora, and `Service` on Debian, are the supported entries. Each has been

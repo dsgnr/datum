@@ -125,6 +125,6 @@ resolves and validates cleanly, then removes nginx everywhere, which is what the
 declared.
 
 Datum does not prevent that. The [repository is the control
-plane](../concepts/reconciliation.md#there-is-no-rollback), review limits how many hosts a change
+plane](../concepts/index.md#there-is-no-rollback), review limits how many hosts a change
 reaches, and recovery is a new commit. Validation catches malformed desired state and not mistaken
 desired state.

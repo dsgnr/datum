@@ -1,3 +1,8 @@
+---
+description: "Declare installed packages and versions through supported Linux package managers with Datum. Look up desired-state fields, target identity and provider behaviour."
+seo_title: "Package resource reference - Datum"
+---
+
 # Package
 
 `Package` describes whether a package is installed, and optionally which version.

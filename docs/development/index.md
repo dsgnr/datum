@@ -6,6 +6,35 @@ types, and [project status](../introduction/project-status.md) tracks what is an
 The most useful contributions are still the ones that find a problem in the design before anything is
 built around it.
 
+## Making a change
+
+Start with the behaviour you want to change, then find the page or code that owns it. The
+[project status](../introduction/project-status.md) shows what exists; the
+[architecture decisions](../adr/index.md) explain why accepted behaviour works the way it does.
+Check [open questions](open-questions.md) before proposing a design change, since the question may
+already be recorded.
+
+Make the smallest change that resolves the problem:
+
+1. For a design disagreement, explain the operational case and the cost of the current decision.
+   If the decision is accepted, propose a replacement rather than editing the decision in place.
+2. For an unclear or incorrect explanation, update the page that owns the topic and check its
+   examples and links to related pages.
+3. For a code change, include a test for the behaviour and keep the implementation consistent with
+   the documented design. If the implementation reveals a design gap, record the decision in the
+   docs as part of the same change.
+
+Run the check for the kind of change you made:
+
+```sh
+make lint        # Go formatting, vet and tests
+make docs-check  # strict documentation build and Mermaid checks
+```
+
+For a provider change, also run its integration target from `make help`; those tests exercise real
+system tooling and may require Docker or a Linux host. Before finishing, check that the change says
+what users can do today, not what is only planned.
+
 ## What is useful
 
 Disagreeing with a decision, given a reason. Every architecture decision record has a Consequences
@@ -58,7 +87,7 @@ instead, which is the arrangement working.
 
 Where the implementation finds a gap the specification had not thought through, the answer goes into
 the documentation as a decision instead of staying in the code as an accident. The fourth [pass
-outcome](../concepts/reconciliation.md#pass-outcomes) arrived that way. An observe-mode pass that
+outcome](../concepts/index.md#pass-outcomes) arrived that way. An observe-mode pass that
 found work to do fitted none of the three outcomes that had been written down, and inventing a
 fourth in the code alone would have left the site describing a system that no longer existed.
 

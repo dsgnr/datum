@@ -148,7 +148,7 @@ every other host's configuration. At five hundred hosts that has to be weighed a
 arrangement buys.
 
 Five hundred agents polling one Git remote is a load question the design has not answered. The
-[reconciliation interval](../concepts/reconciliation.md#retry) is undecided precisely because it has to
+[reconciliation interval](../concepts/index.md#failure-containment-and-retry) is undecided precisely because it has to
 be short enough that drift does not persist and long enough that a fleet does not overwhelm a remote,
 and that trade-off is exactly what this journey exposes.
 

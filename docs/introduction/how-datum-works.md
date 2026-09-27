@@ -1,3 +1,7 @@
+---
+description: "Follow a Datum pass from Git repository resolution through observation, drift detection, planning, applying changes and verifying the host."
+---
+
 # How Datum works
 
 This page follows one change from a Git commit through to a verified result on a single host. The

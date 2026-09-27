@@ -1,3 +1,8 @@
+---
+description: "Declare Linux kernel parameters and their runtime values with Datum. Look up desired-state fields, target identity and provider behaviour."
+seo_title: "Sysctl resource reference - Datum"
+---
+
 # Sysctl
 
 `Sysctl` describes the value of a kernel parameter, both in the running kernel and

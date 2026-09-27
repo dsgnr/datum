@@ -69,8 +69,8 @@ capability is a coverage gap and not a fault.
 
 ## Why this is worth formalising now
 
-The capability framing is not a feature, it is a discipline that keeps the provider boundary
-honest, and disciplines are cheaper to adopt before there is code than after.
+The capability framing makes the provider boundary explicit: it shows which provider serves each
+resource type and where a host has no matching provider.
 
 A resource type is defined by what it means, not by how any distribution realises it. A provider is
 defined by the one type it satisfies on the one class of system it understands. The set that maps
@@ -79,8 +79,9 @@ one input. Nothing else in Datum is permitted to ask what the distribution is, a
 set is what makes that restriction practical and not aspirational, because it gives every downstream
 component the provider it needs without the component having to know why that provider was chosen.
 
-!!! note "Proposed design"
+!!! note "Implementation status"
 
-    Capability sets describe the intended structure and are not implemented. The provider names
-    used here, `linux-user`, `proc-sys`, `posix-file` and the rest, are illustrative, and the
-    [support matrix](support-matrix.md) records that none of them exist yet.
+    The provider implementations listed here exist. Selection is implemented, but the capability-set
+    model described on this page is a way to reason about the resulting mapping, not a separately
+    configured object. The [support matrix](support-matrix.md) records which providers are available
+    for each resource type and platform.

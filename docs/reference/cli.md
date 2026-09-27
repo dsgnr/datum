@@ -1,12 +1,14 @@
+---
+description: "Look up Datum commands for validation, rendering, planning, reconciliation, status and agent operation, with supported flags and exit codes."
+seo_title: "Datum CLI reference: commands, flags and exit codes"
+---
+
 # Command line interface
 
-!!! warning "Some of these commands do not exist yet"
+!!! note "Availability"
 
-    `render`, `explain`, `observe`, `diff`, `plan`, `reconcile`, `status`, `validate`,
-    `affected`, `init`, `agent`, `config check`, `revision` and `version` are implemented.
-
-    Every resource type has a provider. Which one serves a host depends on what it runs, so a type
-    with none here is reported as skipped, which makes a host
+    The commands listed below are implemented. Provider availability still varies by host; a
+    resource type with no provider is skipped, which makes a host
     [degraded](../concepts/state.md#host-state-across-passes) rather than converged.
 
     Applying is Linux-only. Reading a host works anywhere, since the safety rules the writing path
@@ -332,7 +334,7 @@ interval, so a fleet rebooting together does not reconcile at once.
 It exits `0` when asked to stop and `1` when it could not start. `SIGTERM` and `SIGINT` both
 stop scheduling and end a pass that is still running, which leaves the host partially applied
 in the way any [interrupted pass](../reconciliation/failure-handling.md#a-pass-is-bounded) does.
-[Running Datum on a host](../lifecycle/running.md#run-the-agent-as-a-service) has the unit file.
+[Running Datum on a host](../lifecycle/installation.md#run-the-agent-as-a-service) has the unit file.
 
 ## datum config check
 
@@ -478,12 +480,8 @@ schema     v1alpha1 (612 documents)
 resolved 500 hosts, 0 errors
 ```
 
-The schema line counts the documents declaring each version. A repository part-way through
-a migration lists both, which is where the remaining work shows up.
-
-```text
-schema     v1alpha1 581, v1beta1 31, migration in progress
-```
+The schema line counts documents by declared version. The current agent supports only `v1alpha1`,
+so every valid document in a repository uses that version.
 
 Errors report how many hosts they affect instead of repeating once per host. Everything
 `validate` reports is an error, so there is nothing to promote and no `--strict`. There is

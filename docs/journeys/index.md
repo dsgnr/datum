@@ -3,7 +3,8 @@
 Five scenarios followed end to end, from a commit through resolution, validation, provider selection,
 observation, planning, applying, verification and status, to the next pass.
 
-These exist as a test of the specification, not as a tutorial. A model that reads well in isolation
+For hands-on setup, use the [quickstart](../lifecycle/index.md) and
+[installation guide](../lifecycle/installation.md). These journeys test the specification. A model that reads well in isolation
 can still fail to answer a concrete question, and walking a scenario the whole way through is the
 cheapest way to find that out before there is code. Each page ends with what the journey tests, and
 several of them end by naming something the design does not do.

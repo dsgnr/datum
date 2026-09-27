@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+
+{# Search titles may be more descriptive than sidebar labels. #}
+{% set seo_title = config.site_name %}
+{% if page and page.meta and page.meta.seo_title %}
+  {% set seo_title = page.meta.seo_title %}
+{% elif page and page.title %}
+  {% set seo_title = (page.title | striptags) ~ " - " ~ config.site_name %}
+{% endif %}
+{% set seo_description = config.site_description %}
+{% if page and page.meta and page.meta.description %}
+  {% set seo_description = page.meta.description %}
+{% endif %}
+
+{% block htmltitle %}
+  <title>{{ seo_title }}</title>
+{% endblock %}
+
+{% block extrahead %}
+  {{ super() }}
+  {% if page and page.canonical_url %}
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="{{ config.site_name }}">
+    <meta property="og:title" content="{{ seo_title }}">
+    <meta property="og:description" content="{{ seo_description }}">
+    <meta property="og:url" content="{{ page.canonical_url }}">
+    <meta name="twitter:card" content="summary">
+    <meta name="twitter:title" content="{{ seo_title }}">
+    <meta name="twitter:description" content="{{ seo_description }}">
+    {% if page.canonical_url == config.site_url %}
+      <script type="application/ld+json">
+        {{ {"@context": "https://schema.org", "@type": "WebSite", "name": config.site_name, "url": config.site_url, "description": seo_description} | tojson }}
+      </script>
+    {% endif %}
+  {% else %}
+    <meta name="robots" content="noindex">
+  {% endif %}
+{% endblock %}

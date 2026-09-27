@@ -109,7 +109,7 @@ The two lower rows are out of scope and no syntax makes them otherwise. A resour
 leaves no trace has nothing for the next pass to observe, so every pass would attempt it again, and
 the only way to prevent that would be for Datum to record that it once acted. Recording that makes
 Datum the authority on what happened instead of the host, which is the assumption [observed
-state](../concepts/observed-state.md) exists to avoid and the reason drift detection works at all.
+state](../concepts/index.md#observed-state) exists to avoid and the reason drift detection works at all.
 
 The consequence is that Datum is not an orchestration tool. A one-off sequence with no observable
 end state is a job for whatever runs jobs, and attempting it here would mean the first resource
@@ -218,7 +218,7 @@ This resolves what was previously an open question against `Service`.
 
 A service with three files in `reloadOn`, all of which changed in the same pass, reloads once.
 
-That falls out of the plan having [one action per resource](../concepts/plan.md#actions) and not one
+That falls out of the plan having [one action per resource](../concepts/index.md#actions) and not one
 action per trigger. The three files each get their own `update`, the service gets a single `update`
 whose reason names every trigger that fired, and the ordering guarantees every file is written
 before the reload happens.

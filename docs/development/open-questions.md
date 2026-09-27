@@ -212,7 +212,7 @@ These affect the shape of code that would be written first.
 
 ## Reporting and interface
 
-[Approved plans](../concepts/plan.md#a-plan-is-not-a-stored-artefact-to-replay)
+[Approved plans](../concepts/index.md#a-plan-is-not-a-stored-artefact-to-replay)
 :   Change control usually wants a reviewed plan to be the thing applied, which conflicts with
     rebuilding the plan at apply time. Applying a fresh plan only when it is equivalent to the
     approved one is a possible resolution and has not been designed.
@@ -222,12 +222,12 @@ These affect the shape of code that would be written first.
     [`degraded` host state](../concepts/state.md#host-state-across-passes) answers the reporting
     half, and the exit code is still undecided.
 
-[Detecting repeated correction](../concepts/drift.md#where-drift-comes-from)
+[Detecting repeated correction](../concepts/index.md#where-drift-comes-from)
 :   A resource corrected on consecutive passes suggests something else on the machine manages the
     same target. Detecting it needs history across passes, and the accepted revision pointer is
     currently the only thing an agent carries forward.
 
-[Machine-readable plan format](../concepts/plan.md)
+[Machine-readable plan format](../concepts/index.md#plan)
 :   The contents of a plan are settled and the serialised form is not. Something structured is
     needed before anything can consume plans programmatically.
 

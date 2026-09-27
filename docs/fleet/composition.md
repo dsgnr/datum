@@ -1,3 +1,7 @@
+---
+description: "Understand how Datum combines matching configuration layers into a host’s effective manifest, including field merging and resource identity."
+---
+
 # Composition
 
 Composition is the step that turns a set of matching layers into one set of

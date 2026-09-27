@@ -231,7 +231,7 @@ mandatory, and detects failures of every class including the ones validation can
 A configuration can validate and still be wrong, because `sshd -t` checks syntax and not whether the
 resulting policy is sensible, so validation passing is never taken as evidence that the change was
 correct. Verification is what establishes that the host reached the state that was asked for, and
-[convergence is defined by it](../concepts/reconciliation.md#convergence).
+[convergence is defined by it](../concepts/index.md#convergence).
 
 The combinations are as follows.
 
@@ -244,7 +244,7 @@ The combinations are as follows.
 In all three the resource is `failed`, dependents are
 [blocked](../concepts/state.md#resource-state-within-a-pass), independent resources continue, and
 the next pass observes and tries again. Datum attempts no recovery of its own, since [there is no
-rollback](../concepts/reconciliation.md#there-is-no-rollback), and a recovery path for the
+rollback](../concepts/index.md#there-is-no-rollback), and a recovery path for the
 validation case alone would cover the least damaging failure of the three.
 
 ## Verification can be stronger than field comparison

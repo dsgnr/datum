@@ -1,3 +1,8 @@
+---
+description: "Reference the YAML fields for Datum Fleet, Host, Layer and resource documents, including matchers, dependencies, merge rules and validation."
+seo_title: "Datum fleet and resource YAML format"
+---
+
 # Document format
 
 Field reference for the four document types. The explanations behind these fields are in

@@ -6,7 +6,7 @@ defines the vocabulary for both.
 ## Resource state within a pass
 
 A resource moves through a small set of states during one pass. These are finer than the [plan
-actions](plan.md#actions), since an action is what the plan intends and a state is what the resource
+actions](index.md#actions), since an action is what the plan intends and a state is what the resource
 reached.
 
 | State | Meaning |

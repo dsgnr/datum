@@ -1,3 +1,8 @@
+---
+description: "Declare directory presence, ownership and permissions with Datum. Look up desired-state fields, target identity and provider behaviour."
+seo_title: "Directory resource reference - Datum"
+---
+
 # Directory
 
 `Directory` describes the existence and metadata of one directory.

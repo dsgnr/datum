@@ -1,3 +1,7 @@
+---
+description: "Learn how Datum verifies Git commit and tag signatures, configures trusted signers, uses repository credentials and detects revision downgrades."
+---
+
 # Trusting desired state
 
 Two questions have to be answered before an agent acts on a revision. Was this desired state

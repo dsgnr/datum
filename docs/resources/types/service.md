@@ -1,3 +1,8 @@
+---
+description: "Declare systemd service state, enablement and configuration-triggered restarts with Datum. Look up desired-state fields, target identity and provider behaviour."
+seo_title: "Service resource reference - Datum"
+---
+
 # Service
 
 `Service` describes whether a service is running now and whether it starts at boot.
@@ -81,7 +86,7 @@ exits zero. A masked unit is the same question from the other direction.
 For those, `enabled` is reported as unobservable, not as `false`, so it is left out of the
 comparison. Reporting it as `false` would mean a host declaring `enabled: true` for a static unit
 drifted on every pass and never converged, and the action that was supposed to fix it did nothing. A
-[difference that cannot be measured is not drift](../../concepts/drift.md), and this is one of them.
+[difference that cannot be measured is not drift](../../concepts/index.md#drift), and this is one of them.
 
 The unit file state is reported as its own observed field, so `datum observe`
 says `static` instead of leaving somebody to wonder why `enabled` is absent.

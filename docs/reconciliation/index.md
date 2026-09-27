@@ -1,7 +1,12 @@
+---
+description: "Understand how Datum schedules reconciliation, locks passes, handles failures, rolls out changes and retains a last-known-good configuration."
+seo_title: "Operating continuous reconciliation - Datum"
+---
+
 # Reconciliation
 
 Reconciliation is the loop that makes a host match its desired state and keeps it matching. The
-[concepts](../concepts/reconciliation.md) section defines the loop and its phases, and the
+[concepts](../concepts/index.md#reconciliation) section defines the loop and its phases, and the
 [architecture](../architecture/reconciliation-flow.md) section follows the data through one pass.
 This section covers behaviour that spans passes rather than happening within one.
 
@@ -26,4 +31,4 @@ This section covers behaviour that spans passes rather than happening within one
     offline hosts working, and why declarative is not the same as reproducible.
 
 Between them these answer what a pass does over time, as distinct from what one pass does, which is
-the [concepts](../concepts/reconciliation.md) section.
+the [concepts](../concepts/index.md#reconciliation) section.

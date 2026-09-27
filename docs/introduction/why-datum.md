@@ -1,3 +1,7 @@
+---
+description: "Why Datum uses declarative resources and continuous reconciliation to manage existing Linux hosts from Git without a central configuration server."
+---
+
 # Why Datum?
 
 Configuration management is neither new nor unsolved. Datum exists because a particular

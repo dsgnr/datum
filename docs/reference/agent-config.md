@@ -1,3 +1,8 @@
+---
+description: "Configure the Datum agent’s host identity, Git source, signature trust, reconciliation mode and interval, metrics listener and state directory."
+seo_title: "Datum agent configuration reference"
+---
+
 # Agent configuration
 
 `/etc/datum/agent.yaml` is the complete configuration for one agent, and every key in it is
@@ -86,7 +91,7 @@ desired state.
 | `source.maxSourceSize` | `16MiB` | Largest single content source a `File` may read. |
 
 The URL is configuration, not something discovered from the network, because [letting DNS or DHCP
-nominate it](../lifecycle/installation.md#the-repository-url-is-configuration-not-discovery) would
+nominate it](../lifecycle/enrolment.md#the-repository-url-is-configuration-not-discovery) would
 hand whoever runs the network the ability to redirect a root process.
 
 `source.branch` doing double duty as ring membership is deliberate. A ring is a control over how far

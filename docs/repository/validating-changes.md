@@ -1,3 +1,7 @@
+---
+description: "Validate Datum configuration changes before merging: check repository syntax, resolve hosts, compare affected manifests and review the change scope."
+---
+
 # Validating changes before merging
 
 A commit that reaches the tracked branch reaches every host its matchers select, so the useful place to
@@ -8,7 +12,7 @@ machine.
 
     The commands described here are proposed, not implemented. What makes them possible is already
     decided, which is that [resolution does not read the
-    host](../concepts/desired-state.md#resolution-does-not-read-the-host), so every check below is a
+    host](../concepts/index.md#resolution-does-not-read-the-host), so every check below is a
     function of repository content alone.
 
 ## datum validate

@@ -98,45 +98,12 @@ needed to build them. Installing one puts the binary in `/usr/bin`, a default co
 no host in `/etc/datum`, and a systemd unit that is left disabled. [Installing the
 agent](https://getdatum.sh/lifecycle/installation/) covers what lands where.
 
-`make shell` builds for whatever architecture Docker reports and opens an Ubuntu container with
-the binary and the example fleet already mounted, which is the quickest way to run it on Linux
-from a machine that is not.
+For a first run, follow the [quickstart](https://getdatum.sh/lifecycle/): inspect the example
+fleet, then preview and apply one managed file in a Linux shell. The
+[installation guide](https://getdatum.sh/lifecycle/installation/) takes a host from package
+installation to a continuously running agent, starting in observe mode.
 
-```bash
-./bin/datum validate --repo examples/fleet
-./bin/datum render --host web-001 --repo examples/fleet
-./bin/datum explain 'File[nginx-config]' --host web-001 --repo examples/fleet
-./bin/datum affected --from HEAD~1 --to HEAD --repo examples/fleet
-```
-
-Those four read repository content only. The next three read a machine and change nothing on it.
-
-```bash
-./bin/datum observe --host web-001 --repo examples/fleet
-./bin/datum diff    --host web-001 --repo examples/fleet
-./bin/datum plan    --host web-001 --repo examples/fleet
-```
-
-`diff` and `plan` exit 2 when something differs, so either works as a drift check in a scheduled
-job without parsing the output.
-
-Every command above reads and changes nothing, so any of them is safe to run on a host in the middle
-of an incident.
-
-`reconcile` is the one that writes, and it needs Linux and enough privilege to change the targets
-the manifest names.
-
-```bash
-./bin/datum reconcile --host web-001 --repo examples/fleet --state /var/lib/datum
-./bin/datum status --state /var/lib/datum
-```
-
-`--mode observe` runs the same observation and the same diff and applies none of it, which produces
-a drift report. The state directory has to be mode 0700. A pass refuses to run otherwise and does
-not correct the mode, since a widened directory discloses the plans already written there.
-
-`examples/fleet` is a three-host repository to try the commands against, described in
-[examples/README.md](examples/README.md).
+The [example fleet](examples/README.md) demonstrates composition across three hosts.
 
 ## Previewing the documentation
 
@@ -158,9 +125,10 @@ leave the site broken. The toolchain is [Zensical](https://zensical.org/), pinne
 
 ## Where to start
 
-Read the site in order. The introduction covers what Datum manages and how one repository maps
-onto many machines, and the sections after it work through the vocabulary, the fleet model,
-resources, providers, the architecture and the security model.
+Start with the [quickstart](https://getdatum.sh/lifecycle/) and installation guide under
+Getting started. The User guide covers core concepts, writing desired state and operating agents.
+Reference provides command, configuration and resource field lookups. Design holds the architecture,
+security model, worked scenarios and development material.
 
 For the current state of the design, three places are the most useful entry points. `docs/adr/`
 records the decisions that are settled and why, `docs/development/open-questions.md` lists

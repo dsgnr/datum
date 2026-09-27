@@ -48,22 +48,24 @@ Adding a page means adding it to `nav` in the same change.
 
 ## Structure
 
-Each top-level section is a directory under `docs/` with an `index.md` giving an overview and
-linking to its pages. Navigation is explicit in `zensical.toml` rather than derived from the
-filesystem, which keeps reading order under control.
+Navigation is organised around four reader tasks, with Home as a separate link. It is
+explicit in `zensical.toml`; directory names describe subject areas and do not determine
+the sidebar hierarchy.
 
-| Section | Holds |
-| ------- | ----- |
-| `introduction/` | What Datum is, why it exists, how it works, current status |
-| `concepts/` | Vocabulary, defined precisely and once |
-| `fleet/` | How one repository produces per-host desired state |
-| `resources/` | The resource model and the proposed types |
-| `providers/` | The provider boundary and multi-distribution design |
-| `architecture/` | Components, data flow, trust boundaries, deployment |
-| `security/` | Trust model, attack vectors, handshakes and authenticity |
-| `reference/` | Field and command lookup, glossary |
-| `development/` | Contributing to the design, open questions |
-| `adr/` | Architecture decision records |
+| Navigation group | Holds |
+| ---------------- | ----- |
+| Getting started | Quickstart, installation, introduction and project status |
+| User guide | Core concepts, operating modes, fleet and repository authoring, resource behaviour, reconciliation and monitoring |
+| Reference | Commands, configuration, document and resource fields, status, supported providers and glossary |
+| Design | Principles, architecture, provider internals, security, scenario journeys, development and decisions |
+
+Keep short definitions together in `concepts/index.md`. Detailed operating modes and state
+vocabulary have their own pages. Resource behaviour belongs in the user guide, while the
+per-type field pages in `resources/types/` appear under Reference. Journeys are design
+scenarios; hands-on instructions belong in Getting started.
+
+Subject directories generally have an `index.md` that introduces and links to their pages.
+Keep those links useful even when related pages appear in different navigation groups.
 
 One concept has one home. Where a term is used in several sections, the section that owns it
 defines it and the others link to it, because a definition in two places becomes two
@@ -98,6 +100,22 @@ updating every example rather than leaving two syntaxes in circulation.
 
 Avoid marketing language, and avoid asserting that something works when nothing is
 implemented.
+
+## Search metadata and moved pages
+
+Give entry pages and reference pages a concise `description` in YAML frontmatter that
+summarises their actual content. Use `seo_title` when the search title needs more context
+than the sidebar label, for example `Install and run the Linux agent - Datum`. Keep titles
+distinct and avoid claims beyond the current implementation.
+
+`overrides/main.html` uses these fields for search titles and social previews, with the
+site description as a fallback. It also adds website structured data to the homepage.
+Canonical URLs and the sitemap come from Zensical; `docs/robots.txt` advertises the sitemap.
+
+When merging or moving a published page, preserve its old URL with a static HTML redirect,
+as in `concepts/desired-state/index.html`. Use an immediate meta refresh, a canonical URL
+for the destination page, and a visible link. Static redirects stay outside the navigation
+and sitemap. Check the generated redirect and its destination anchor after a clean build.
 
 ## Diagrams
 

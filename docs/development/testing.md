@@ -32,7 +32,7 @@ ordering and action selection are all pure functions from repository content and
 plan, and all of them can be tested without a host existing.
 
 That is a deliberate consequence of the architecture. Resolution [does not read the
-host](../concepts/desired-state.md#resolution-does-not-read-the-host), so the half of Datum most
+host](../concepts/index.md#resolution-does-not-read-the-host), so the half of Datum most
 likely to contain subtle logic errors is the half that needs no infrastructure to test.
 
 **Integration tests** cover one provider against real tooling. The `apt` provider against a real
@@ -139,7 +139,7 @@ find it.
 **Artificial drift** is introduced by changing the host directly and running another pass. Delete
 the package, rewrite the file, stop the service, change the mode, then assert the plan contains
 exactly the expected action and that the pass converges. Drift is [ordinary
-input](../concepts/drift.md), so a drift test is a normal pass against a modified host and nothing
+input](../concepts/index.md#drift), so a drift test is a normal pass against a modified host and nothing
 special.
 
 **Partial failures** are produced by making one resource fail on purpose, usually by making a path

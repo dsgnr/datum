@@ -49,7 +49,7 @@ resolves the manifest for a specific host from the branch, and `datum plan` agai
 what would change on that host, from a laptop, without touching production.
 
 That property comes from [resolution not reading the
-host](../concepts/desired-state.md#resolution-does-not-read-the-host), and it is what makes reviewing a
+host](../concepts/index.md#resolution-does-not-read-the-host), and it is what makes reviewing a
 fleet-wide change tractable.
 
 ## The risk the design does not remove
@@ -122,8 +122,8 @@ The pass outcome is `failed`, the host state is `failed`, and the
 [failing alert](../observability/alerting.md#alerts-worth-having) fires.
 
 The uncomfortable part is what has already happened. The file was written before the service failed, so
-the host is [partially changed](../concepts/reconciliation.md#pass-outcomes), and
-[nothing is undone](../concepts/reconciliation.md#there-is-no-rollback). A host whose sshd is down is a
+the host is [partially changed](../concepts/index.md#pass-outcomes), and
+[nothing is undone](../concepts/index.md#there-is-no-rollback). A host whose sshd is down is a
 host that cannot be logged into to fix by hand.
 
 What saves the situation is that the agent is still running locally and still reconciling. A corrective

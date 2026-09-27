@@ -318,7 +318,7 @@ its own, because modified content would not verify.
 **A malicious remote attacking the Git client.** Parsing happens before verification can, so
 signature checking does not help here. A hostile remote is attacking a parser, and the exposure is
 bounded by the remote being [a configured address, not a discovered
-one](../lifecycle/installation.md#the-repository-url-is-configuration-not-discovery) and by the
+one](../lifecycle/enrolment.md#the-repository-url-is-configuration-not-discovery) and by the
 [fetch limits](repository-fetch.md#limits).
 
 **Execution through the checkout itself.** Submodules, `.gitattributes` filters, `textconv` and hooks all

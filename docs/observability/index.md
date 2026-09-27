@@ -1,3 +1,8 @@
+---
+description: "Monitor Datum through local pass reports and Prometheus metrics. Understand host status, reconciliation freshness and useful alert conditions."
+seo_title: "Monitor Datum agents and configuration drift"
+---
+
 # Observability
 
 A fleet running Datum raises questions the reconciliation model does not answer on its own, such as

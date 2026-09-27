@@ -112,3 +112,9 @@ not care whether that manifest arrived from a local checkout or over a network.
 [Managing Datum with Datum](self-management.md)
 :   The boundary between the agent as a reconciler and the agent as a resource it manages,
     and why the running reconciler does not replace its own binary.
+
+[Enrolment](../lifecycle/enrolment.md)
+:   Provisioning identities and credentials, image boundaries, and baseline revisions.
+
+[Leaving the fleet](../lifecycle/decommissioning.md)
+:   Revocation, unenrolment and decommissioning, and what each leaves behind.

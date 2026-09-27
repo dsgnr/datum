@@ -7,7 +7,7 @@ does.
 
     The agent runs as a resident service, the offset is derived from the host name, and a tick it
     cannot take the lock for is skipped. What it cannot do yet is fetch, so the repository has to be
-    on disk and `--repo` names it. [Running Datum on a host](../lifecycle/running.md) covers starting
+    on disk and `--repo` names it. [Running Datum on a host](../lifecycle/installation.md) covers starting
     it.
 
     The interval, splay and timeouts take the default values below.
@@ -130,7 +130,7 @@ bounds the latency of a correction by the interval.
 terminal behaves like a service manager.
 
 A pass interrupted this way is a [partially applied
-pass](../concepts/reconciliation.md#pass-outcomes), the same state a [pass that exceeds its
+pass](../concepts/index.md#pass-outcomes), the same state a [pass that exceeds its
 timeout](failure-handling.md#a-pass-is-bounded) leaves. Completed actions stay completed, nothing is
 reverted, and the next pass observes the current state. Finishing the pass before exiting would make
 a stop take as long as the timeout allows, after which a service manager sends `SIGKILL`.
