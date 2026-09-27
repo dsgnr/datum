@@ -206,24 +206,7 @@ The packages already install the unit below. Create it only if you copied the bi
 manually. The agent schedules its own passes, so there is no timer.
 
 ```ini title="/etc/systemd/system/datum.service"
-[Unit]
-Description=Datum reconciliation agent
-Documentation=https://getdatum.sh/
-After=network-online.target
-Wants=network-online.target
-
-[Service]
-Type=exec
-ExecStart=/usr/bin/datum agent
-# The agent stops scheduling on SIGTERM and abandons any pass still running, which
-# leaves the host partially applied in the way an interrupted pass always does.
-KillSignal=SIGTERM
-TimeoutStopSec=30s
-Restart=on-failure
-RestartSec=30s
-
-[Install]
-WantedBy=multi-user.target
+--8<-- "datum.service"
 ```
 
 ```console

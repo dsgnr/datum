@@ -214,6 +214,8 @@ pymdownx.highlight.line_spans = "__span"
 pymdownx.highlight.pygments_lang_class = true
 pymdownx.inlinehilite = {}
 pymdownx.magiclink = {}
+pymdownx.snippets.base_path = ["packaging"]
+pymdownx.snippets.check_paths = true
 pymdownx.tabbed.alternate_style = true
 pymdownx.tilde = {}
 

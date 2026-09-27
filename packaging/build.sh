@@ -18,9 +18,7 @@ trap 'rm -rf "$root"' EXIT
 
 install -D -m 0755 "$binary" "$root/usr/bin/datum"
 install -D -m 0644 packaging/agent.yaml "$root/etc/datum/agent.yaml"
-mkdir -p "$root/lib/systemd/system"
-python3 packaging/extract-unit.py > "$root/lib/systemd/system/datum.service"
-chmod 0644 "$root/lib/systemd/system/datum.service"
+install -D -m 0644 packaging/datum.service "$root/lib/systemd/system/datum.service"
 
 # The state directory holds the accepted revision, the pass lock and pass reports. The
 # agent refuses to run if it is not 0700, so the package creates it correctly rather than

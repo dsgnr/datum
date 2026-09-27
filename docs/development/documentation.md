@@ -117,6 +117,13 @@ as in `concepts/desired-state/index.html`. Use an immediate meta refresh, a cano
 for the destination page, and a visible link. Static redirects stay outside the navigation
 and sitemap. Check the generated redirect and its destination anchor after a clean build.
 
+## Shared source files
+
+The service unit lives in `packaging/datum.service`. Packages install that file directly,
+and the installation guide includes it with `pymdownx.snippets`. Edit the unit file to
+change both. Snippet paths are relative to `packaging/`, and a missing file fails the
+documentation build.
+
 ## Diagrams
 
 Mermaid is available through the fenced block configuration in `zensical.toml`.

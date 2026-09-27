@@ -79,12 +79,12 @@ package: package-deb package-rpm
 package-deb: bin/datum-linux-$(DOCKER_ARCH)
 	docker run --rm -e DEBIAN_FRONTEND=noninteractive -v "$(CURDIR):/src" -w /src debian:trixie sh -c \
 		'apt-get update -qq >/dev/null && \
-		 apt-get install -y -qq --no-install-recommends dpkg-dev python3 >/dev/null && \
+		 apt-get install -y -qq --no-install-recommends dpkg-dev >/dev/null && \
 		 packaging/build.sh deb $(DOCKER_ARCH) $(VERSION) bin/datum-linux-$(DOCKER_ARCH) dist'
 
 package-rpm: bin/datum-linux-$(DOCKER_ARCH)
 	docker run --rm -v "$(CURDIR):/src" -w /src fedora:41 sh -c \
-		'dnf install -y -q rpm-build python3 >/dev/null && \
+		'dnf install -y -q rpm-build >/dev/null && \
 		 packaging/build.sh rpm $(DOCKER_ARCH) $(VERSION) bin/datum-linux-$(DOCKER_ARCH) dist'
 
 # A release ships both architectures, so packaging cannot be limited to this machine's.
@@ -96,10 +96,10 @@ package-rpm: bin/datum-linux-$(DOCKER_ARCH)
 package-release: build-linux
 	docker run --rm -e DEBIAN_FRONTEND=noninteractive -v "$(CURDIR):/src" -w /src debian:trixie sh -c \
 		'set -e; apt-get update -qq >/dev/null; \
-		 apt-get install -y -qq --no-install-recommends dpkg-dev python3 >/dev/null; \
+		 apt-get install -y -qq --no-install-recommends dpkg-dev >/dev/null; \
 		 for a in amd64 arm64; do packaging/build.sh deb $$a $(VERSION) bin/datum-linux-$$a dist; done'
 	docker run --rm -v "$(CURDIR):/src" -w /src fedora:41 sh -c \
-		'set -e; dnf install -y -q rpm-build python3 >/dev/null; \
+		'set -e; dnf install -y -q rpm-build >/dev/null; \
 		 for a in amd64 arm64; do packaging/build.sh rpm $$a $(VERSION) bin/datum-linux-$$a dist; done'
 	@test "$$(ls dist/*.deb dist/*.rpm 2>/dev/null | wc -l)" -eq 4 || \
 		{ echo "expected four packages in dist, found:"; ls dist; exit 1; }
