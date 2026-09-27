@@ -2,11 +2,9 @@
 
 // SPDX-License-Identifier: Apache-2.0
 
-// These tests run the agent as a real service under a booted systemd, using the unit
-// file taken out of the documentation instead of a copy written here. A unit that only
-// exists in a Markdown block is a unit nobody has run, and its mistakes are the ones a
-// reader would hit, such as a directive systemd rejects, a type that does not match how
-// the process behaves, or a stop that times out.
+// These tests run the agent as a real service under a booted systemd, using the
+// unit shipped by the packages and included in the documentation. They catch
+// rejected directives, a service type that does not match the process and slow stops.
 //
 // `make test-systemd` boots the container these need.
 package agent_test
@@ -15,34 +13,17 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"strings"
 	"testing"
 	"time"
 )
 
 const (
-	docPath     = "../../docs/lifecycle/running.md"
-	unitPath    = "/etc/systemd/system/datum.service"
-	configPath  = "/etc/datum/agent.yaml"
-	serviceName = "datum.service"
+	sourceUnitPath = "../../packaging/datum.service"
+	unitPath       = "/etc/systemd/system/datum.service"
+	configPath     = "/etc/datum/agent.yaml"
+	serviceName    = "datum.service"
 )
-
-// fenced pulls a code block out of the documentation by its title, so the test and the
-// page cannot drift apart.
-func fenced(t *testing.T, path, title string) string {
-	t.Helper()
-	data, err := os.ReadFile(path)
-	if err != nil {
-		t.Fatalf("reading %s: %v", path, err)
-	}
-	pattern := regexp.MustCompile("(?s)```[a-z]+ title=\"" + regexp.QuoteMeta(title) + "\"\n(.*?)```")
-	match := pattern.FindSubmatch(data)
-	if match == nil {
-		t.Fatalf("%s has no block titled %q", path, title)
-	}
-	return string(match[1])
-}
 
 func systemctl(t *testing.T, args ...string) (string, error) {
 	t.Helper()
@@ -59,19 +40,23 @@ func requireSystemd(t *testing.T) {
 	}
 }
 
-// install writes the unit from the documentation, plus a configuration file with a short
+// install writes the packaged unit, plus a configuration file with a short
 // interval so a test does not wait half an hour for a pass.
 func install(t *testing.T, mode string) {
 	t.Helper()
 
-	unit := fenced(t, docPath, unitPath)
-	// The documented ExecStart names the installed binary, which is the one path adjusted
+	data, err := os.ReadFile(sourceUnitPath)
+	if err != nil {
+		t.Fatalf("reading packaged unit: %v", err)
+	}
+	unit := string(data)
+	// The packaged ExecStart names the installed binary, which is the one path adjusted
 	// here, so everything else under test is what a reader would use. An absent path is an
 	// error and not a no-op, because a unit pointing at a binary nobody built would fail
 	// for reasons that look like the agent's.
 	installed := "/usr/bin/datum"
 	if !strings.Contains(unit, installed) {
-		t.Fatalf("the documented unit does not run %s", installed)
+		t.Fatalf("the packaged unit does not run %s", installed)
 	}
 	unit = strings.ReplaceAll(unit, installed, mustBuild(t))
 
@@ -129,9 +114,9 @@ func fleetDir(t *testing.T) string {
 	return abs
 }
 
-// The unit in the documentation has to be one systemd accepts and one that produces a
+// The packaged unit has to be one systemd accepts and one that produces a
 // service which stays up between passes.
-func TestTheDocumentedUnitStartsAndStaysRunning(t *testing.T) {
+func TestThePackagedUnitStartsAndStaysRunning(t *testing.T) {
 	requireSystemd(t)
 	install(t, "observe")
 
