@@ -9,6 +9,9 @@ repo_url = "https://github.com/dsgnr/datum"
 repo_name = "dsgnr/datum"
 edit_uri = "edit/main/docs/"
 
+# The pinned builder only discovers auto_append snippets automatically.
+watch = ["packaging/datum.service"]
+
 extra_css = [
   "stylesheets/site.css",
   "stylesheets/landing.css",

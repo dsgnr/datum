@@ -83,7 +83,7 @@ rpm)
   [ "$rpmarch" = "arm64" ] && rpmarch=aarch64
   [ "$rpmarch" = "amd64" ] && rpmarch=x86_64
 
-  spec=$root/../datum.spec
+  spec=$root/datum.spec
   cat > "$spec" <<EOF
 Name:           datum
 Version:        $version
