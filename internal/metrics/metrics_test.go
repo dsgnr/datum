@@ -452,3 +452,42 @@ func TestTheAgentBuildIsExported(t *testing.T) {
 		t.Errorf("%q does not carry version %q", series, version.Version())
 	}
 }
+
+func TestTextfileDoesNotFollowAnExistingTemporarySymlink(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "datum.prom")
+	victim := filepath.Join(dir, "unrelated")
+	if err := os.WriteFile(victim, []byte("keep me"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if err := os.Symlink(victim, path+".tmp"); err != nil {
+		t.Fatal(err)
+	}
+	r := newRegistry()
+	if err := metrics.WriteTextfile(path, r); err != nil {
+		t.Fatal(err)
+	}
+	data, err := os.ReadFile(victim)
+	if err != nil || string(data) != "keep me" {
+		t.Fatalf("unrelated file changed: %q, %v", data, err)
+	}
+	info, err := os.Lstat(path)
+	if err != nil || !info.Mode().IsRegular() {
+		t.Fatalf("textfile is not a regular file: %v, %v", info, err)
+	}
+}
+
+func TestTextfileCleansUpAfterRenameFailure(t *testing.T) {
+	dir := t.TempDir()
+	path := filepath.Join(dir, "datum.prom")
+	if err := os.Mkdir(path, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	if err := metrics.WriteTextfile(path, newRegistry()); err == nil {
+		t.Fatal("replacing a directory should fail")
+	}
+	entries, err := os.ReadDir(dir)
+	if err != nil || len(entries) != 1 {
+		t.Fatalf("temporary files left behind: %v, %v", entries, err)
+	}
+}

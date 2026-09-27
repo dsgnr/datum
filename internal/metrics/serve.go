@@ -106,15 +106,23 @@ func WriteTextfile(path string, r *Registry) error {
 	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
 		return err
 	}
-	temp := path + ".tmp"
+	temp, err := os.CreateTemp(filepath.Dir(path), ".datum-metrics-*")
+	if err != nil {
+		return err
+	}
+	defer os.Remove(temp.Name())
 	// World-readable, because a textfile collector usually runs as a different user from
 	// the agent. Nothing in the catalogue is secret.
-	if err := os.WriteFile(temp, []byte(r.Render()), 0o644); err != nil {
+	if err := temp.Chmod(0o644); err != nil {
+		temp.Close()
 		return err
 	}
-	if err := os.Rename(temp, path); err != nil {
-		os.Remove(temp)
+	if _, err := temp.WriteString(r.Render()); err != nil {
+		temp.Close()
 		return err
 	}
-	return nil
+	if err := temp.Close(); err != nil {
+		return err
+	}
+	return os.Rename(temp.Name(), path)
 }
