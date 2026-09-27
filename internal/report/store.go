@@ -8,7 +8,9 @@ import (
 	"os"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/dsgnr/datum/internal/statedir"
 )
@@ -17,8 +19,8 @@ import (
 // enough that the directory does not need managing.
 const Keep = 20
 
-// Names sort lexically in time order, which is what makes finding the latest a
-// directory listing rather than a read of every file.
+// Keep the original millisecond prefix so existing reports sort with new ones.
+// New names append the remaining nanoseconds and a sequence for identical times.
 const nameLayout = "20060102T150405.000Z"
 
 // Dir is where reports live under the state directory.
@@ -40,8 +42,10 @@ func Write(stateDir string, r Report) (string, error) {
 	}
 	body = append(body, '\n')
 
-	path := filepath.Join(dir, r.FinishedAt.UTC().Format(nameLayout)+".json")
-	if err := writeAtomic(path, body); err != nil {
+	prefix := filepath.Join(dir, fmt.Sprintf("%s-%06d",
+		r.FinishedAt.UTC().Format(nameLayout), r.FinishedAt.Nanosecond()%int(time.Millisecond)))
+	path, err := writeAtomic(prefix, body)
+	if err != nil {
 		return "", err
 	}
 	// A pruning failure does not invalidate the report that was just written.
@@ -107,7 +111,11 @@ func list(dir string) ([]string, error) {
 			out = append(out, entry.Name())
 		}
 	}
-	sort.Strings(out)
+	// Removing the extension puts a legacy timestamp before a new filename
+	// with the same millisecond prefix. The dot in .json would sort after a dash.
+	sort.Slice(out, func(i, j int) bool {
+		return strings.TrimSuffix(out[i], ".json") < strings.TrimSuffix(out[j], ".json")
+	})
 	return out, nil
 }
 
@@ -121,24 +129,57 @@ func prune(dir string, keep int) {
 	}
 }
 
-// writeAtomic keeps a half-written report from ever being read as a whole one.
-func writeAtomic(path string, body []byte) error {
-	temp, err := os.CreateTemp(filepath.Dir(path), ".report-")
+// writeAtomic publishes a complete report without replacing an existing one.
+func writeAtomic(prefix string, body []byte) (string, error) {
+	temp, err := os.CreateTemp(filepath.Dir(prefix), ".report-")
 	if err != nil {
-		return err
+		return "", err
 	}
 	defer os.Remove(temp.Name())
 
 	if err := temp.Chmod(statedir.FileMode); err != nil {
 		temp.Close()
-		return err
+		return "", err
 	}
 	if _, err := temp.Write(body); err != nil {
 		temp.Close()
-		return err
+		return "", err
 	}
 	if err := temp.Close(); err != nil {
-		return err
+		return "", err
 	}
-	return os.Rename(temp.Name(), path)
+
+	// Start after the highest retained sequence, not at the first gap: pruning
+	// may already have removed earlier reports with exactly this timestamp.
+	names, err := list(filepath.Dir(prefix))
+	if err != nil {
+		return "", err
+	}
+	var sequence uint64
+	for _, name := range names {
+		suffix, matches := strings.CutPrefix(name, filepath.Base(prefix)+"-")
+		if !matches {
+			continue
+		}
+		n, err := strconv.ParseUint(strings.TrimSuffix(suffix, ".json"), 10, 64)
+		if err == nil && n >= sequence {
+			if n == ^uint64(0) {
+				return "", fmt.Errorf("report sequence exhausted for %s", prefix)
+			}
+			sequence = n + 1
+		}
+	}
+	for {
+		path := fmt.Sprintf("%s-%020d.json", prefix, sequence)
+		// A hard link publishes the finished file atomically and fails if another
+		// writer already claimed the name. Rename would silently replace it.
+		err := os.Link(temp.Name(), path)
+		if err == nil {
+			return path, nil
+		}
+		if !os.IsExist(err) || sequence == ^uint64(0) {
+			return "", err
+		}
+		sequence++
+	}
 }

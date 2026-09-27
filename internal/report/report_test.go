@@ -4,9 +4,11 @@ package report
 
 import (
 	"encoding/json"
+	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 	"testing"
 	"time"
 
@@ -62,6 +64,107 @@ func TestWriteAndRead(t *testing.T) {
 	}
 	if got.DurationMS != 200 {
 		t.Errorf("durationMs = %d, want 200", got.DurationMS)
+	}
+}
+
+func TestReportsWithinOneMillisecondAreRetainedInTimeOrder(t *testing.T) {
+	dir := stateDir(t)
+	base := sample(14)
+	// Store out of order, including two passes with exactly the same timestamp.
+	for _, nanos := range []int{900, 100, 900} {
+		r := base
+		r.FinishedAt = base.FinishedAt.Add(time.Duration(nanos))
+		if _, err := Write(dir, r); err != nil {
+			t.Fatal(err)
+		}
+	}
+	history, err := History(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(history) != 3 {
+		t.Fatalf("retained %d reports, want 3", len(history))
+	}
+	for i, nanos := range []int{900, 900, 100} {
+		if want := base.FinishedAt.Add(time.Duration(nanos)); !history[i].FinishedAt.Equal(want) {
+			t.Errorf("history[%d] finished at %s, want %s", i, history[i].FinishedAt, want)
+		}
+	}
+}
+
+func TestIdenticalTimestampsRetainTheLatestPasses(t *testing.T) {
+	dir := stateDir(t)
+	for i := 0; i < Keep+5; i++ {
+		r := sample(14)
+		r.RevisionAttempted = fmt.Sprint(i)
+		if _, err := Write(dir, r); err != nil {
+			t.Fatal(err)
+		}
+	}
+	history, err := History(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if len(history) != Keep {
+		t.Fatalf("retained %d reports, want %d", len(history), Keep)
+	}
+	for i, r := range history {
+		if want := fmt.Sprint(Keep + 4 - i); r.RevisionAttempted != want {
+			t.Errorf("history[%d] revision = %s, want %s", i, r.RevisionAttempted, want)
+		}
+	}
+}
+
+func TestConcurrentReportsWithIdenticalTimestampsAreRetained(t *testing.T) {
+	dir := stateDir(t)
+	var writers sync.WaitGroup
+	for i := range 8 {
+		writers.Go(func() {
+			r := sample(14)
+			r.RevisionAttempted = fmt.Sprint(i)
+			if _, err := Write(dir, r); err != nil {
+				t.Errorf("write: %v", err)
+			}
+		})
+	}
+	writers.Wait()
+	history, err := History(dir)
+	if err != nil {
+		t.Fatal(err)
+	}
+	seen := make(map[string]bool)
+	for _, r := range history {
+		seen[r.RevisionAttempted] = true
+	}
+	if len(seen) != 8 {
+		t.Fatalf("retained %d distinct reports, want 8", len(seen))
+	}
+}
+
+func TestLegacyReportsSortBeforeNewerReportsInTheSameMillisecond(t *testing.T) {
+	dir := stateDir(t)
+	legacy := sample(14)
+	path, err := Write(dir, legacy)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Simulate the millisecond-only filename used before collision protection.
+	legacyPath := filepath.Join(Dir(dir), legacy.FinishedAt.Format("20060102T150405.000Z")+".json")
+	if err := os.Rename(path, legacyPath); err != nil {
+		t.Fatal(err)
+	}
+	newer := legacy
+	newer.FinishedAt = newer.FinishedAt.Add(time.Nanosecond)
+	if _, err := Write(dir, newer); err != nil {
+		t.Fatal(err)
+	}
+	latest, found, err := Latest(dir)
+	if err != nil || !found || !latest.FinishedAt.Equal(newer.FinishedAt) {
+		t.Fatalf("latest = %+v, found %v, error %v", latest, found, err)
+	}
+	history, err := History(dir)
+	if err != nil || len(history) != 2 {
+		t.Fatalf("history has %d entries, error %v", len(history), err)
 	}
 }
 
