@@ -16,7 +16,7 @@ jobs:
       # Needed to create the release and attach files to it.
       contents: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
         with:
           # The version line in `datum version` is stamped by the Go toolchain from the
           # checkout, so the tag and its history have to be present.
