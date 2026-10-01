@@ -60,5 +60,5 @@ jobs:
     steps:
       # Requires GitHub Pages to be enabled for the repository with
       # "GitHub Actions" selected as the source.
-      - uses: actions/deploy-pages@v4
+      - uses: actions/deploy-pages@v5
         id: deployment
